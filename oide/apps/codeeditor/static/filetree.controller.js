@@ -5,14 +5,18 @@ angular.module('oide.editor')
 .controller('FiletreeCtrl', ['$document', '$log', 'FiletreeService', function($document,$log,FiletreeService) {
   var self = this;
   self.treeData= FiletreeService.treeData;
-  $document.on('keydown', (function (e) {
-    if (e.keyCode === 17) {
-      self.treeOptions.multiSelection = true;
-    }
-  }));
+  // $document.on('keydown', (function (e) {
+  //   if (e.keyCode === 17) {
+  //     self.treeOptions.multiSelection = true;
+  //   }
+  // }));
   $document.on('keyup', (function (e) {
     if (e.keyCode === 17) {
-      self.treeOptions.multiSelection = false;
+      if(self.treeData.selectedNodes <= 1) {
+        self.treeOptions.multiSelection = false;
+      } else {
+        self.treeOptions.multiSelection = true;
+      }
     }
   }));
   self.treeOptions = {
