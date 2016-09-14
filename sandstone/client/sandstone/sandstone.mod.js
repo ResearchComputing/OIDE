@@ -3,6 +3,9 @@ function getSandstoneModule(depList) {
     .config(['$urlRouterProvider', function($urlRouterProvider) {
       $urlRouterProvider.otherwise('/editor');
     }])
+    .run(function(BroadcastService) {
+        // Loads the BroadcastService
+    })
     .controller('PageCtrl', ['$location','PageService',function($location,PageService) {
       var self = this;
       self.currentUrl = PageService.getCurrentUrl;

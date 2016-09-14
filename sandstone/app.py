@@ -14,16 +14,12 @@ STATIC_DIR = os.path.join(PROJECT_DIR,'client/sandstone')
 from sandstone import settings
 from sandstone.lib import ui_methods
 from sandstone.lib.app_loader import get_installed_app_static_specs
-from sandstone.lib.handlers.broadcast import BroadcastManager
 import sandstone.urls
 from sandstone.urls import URL_SCHEMA
 
 
-
-
 class SandstoneApplication(tornado.web.Application):
     def __init__(self, *args, **kwargs):
-        self.broadcast_manager = BroadcastManager()
         app_static_handlers = []
         for spec in get_installed_app_static_specs():
             s_url = r"/static/{}/(.*)".format(spec[0])

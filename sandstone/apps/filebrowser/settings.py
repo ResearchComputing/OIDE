@@ -1,4 +1,5 @@
 import os
+import signals
 
 APP_SPECIFICATION = {
     'APP_DESCRIPTION': {
