@@ -13,3 +13,4 @@ six==1.10.0
 terminado==0.6
 tornado==4.3
 pydispatcher==2.0.5
+watchdog==0.8.3

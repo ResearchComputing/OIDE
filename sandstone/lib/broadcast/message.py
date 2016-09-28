@@ -17,6 +17,13 @@ class BroadcastMessage:
             key=msg_d['key'],
             data=msg_d['data'])
 
+    @classmethod
+    def create_from_dict(cls, dict_obj):
+        return cls(
+            key=dict_obj['key'],
+            data=dict_obj['data']
+        )
+
     def __init__(self,**kwargs):
         msg_key = kwargs.get('key', None)
         msg_data = kwargs.get('data', None)

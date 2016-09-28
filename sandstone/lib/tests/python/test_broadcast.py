@@ -56,6 +56,15 @@ class BroadcastMessageTestCase(unittest.TestCase):
         self.assertEqual(bmsg.data,msg_d['data'])
         self.assertFalse(hasattr(bmsg,'extra'))
 
+    def test_create_from_dict(self):
+        msg_d = {
+            'key': 'test:test_msg',
+            'data': {'test': 'test'},
+        }
+        bmsg = BroadcastMessage.create_from_dict(msg_d)
+        self.assertEqual(bmsg.key, msg_d['key'])
+        self.assertEqual(bmsg.data, msg_d['data'])
+
     def test_to_json_string(self):
         msg_d = {
             'key': 'test:test_msg',

@@ -1,11 +1,25 @@
 describe("AceModeService unit tests", function(){
   beforeEach(module('sandstone'));
   beforeEach(module('sandstone.acemodes'));
+  beforeEach(module('sandstone.broadcastservice'));
 
   var aceModeService;
 
   beforeEach(inject(function(AceModeService){
     aceModeService = AceModeService;
+  }));
+
+  var mockBroadcastService;
+  module(function($provide) {
+      $provide.service('BroadcastService', function() {
+          this.sendMessage = function(message) {
+              console.log(message);
+          }
+      });
+  });
+
+  beforeEach(inject(function(BroadcastService) {
+      mockBroadcastService = BroadcastService;
   }));
 
   describe('AceModeService', function(){

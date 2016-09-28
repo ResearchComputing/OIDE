@@ -85,33 +85,44 @@ describe('Filetree directive', function(){
   beforeEach(module('sandstone.filesystemservice'));
   beforeEach(module('sandstone.templates'));
   beforeEach(module('sandstone.filetreedirective'));
+  beforeEach(module('sandstone.broadcastservice'));
 
-  beforeEach(inject(function($rootScope, _$compile_, $httpBackend, FilesystemService){
+  var mockBroadcastService;
+  beforeEach(module(function($provide) {
+      $provide.service('BroadcastService', function() {
+          this.sendMessage = function(message) {
+              if(message.key == 'filetree:expanded') {
+                  rootScope.$emit('filetree:got_contents', {
+                      contents: files,
+                      node: dirs[0]
+                  })
+              }
+          }
+      });
+  }));
+
+  beforeEach(inject(function($rootScope, _$compile_, $httpBackend, FilesystemService, BroadcastService){
     $compile = _$compile_;
     scope = $rootScope.$new();
     rootScope = $rootScope;
     httpBackend = $httpBackend;
     filesystemservice = FilesystemService;
+    mockBroadcastService = BroadcastService;
 
-    httpBackend.whenGET('/filebrowser/filetree/a/dir').respond(function(){
-      return [200, dirs];
-    });
     scope.$apply();
     var el = angular.element('<div sandstone-filetree tree-data="ctrl.treeData" leaf-level="file" selection-desc="ctrl.sd"></div>');
     element = $compile(el)(scope);
     scope.$digest();
-    httpBackend.flush();
 
     // Get isolate scope
     isolateScope = element.isolateScope();
+    isolateScope.treeData.filetreeContents = dirs;
   }));
 
   describe('Filetreedirective controller tests', function(){
     it('should be initialized properly', function(){
       // Create spies
       spyOn(isolateScope, 'updateFiletree');
-      spyOn(isolateScope, 'deletedFile');
-      spyOn(isolateScope, 'pastedFiles');
 
       expect(isolateScope.leafLevel).toBe("file");
       expect(isolateScope.selectionDesc.noSelections).toBeTruthy();
@@ -121,18 +132,13 @@ describe('Filetree directive', function(){
       // Refresh
       rootScope.$emit('refreshFiletree');
       expect(isolateScope.updateFiletree).toHaveBeenCalled();
-      // Deleted File
-      rootScope.$emit('deletedFile', dirs[0]);
-      expect(isolateScope.deletedFile).toHaveBeenCalled();
-      // Pasted File
-      rootScope.$emit('pastedFiles', dirs[0].filepath);
-      expect(isolateScope.pastedFiles).toHaveBeenCalled();
     });
 
     it('should be able to get files for a folder', function(){
-      spyOn(filesystemservice, 'getFiles');
-      isolateScope.getDirContents(dirs[0], true);
-      expect(filesystemservice.getFiles).toHaveBeenCalled();
+        spyOn(isolateScope, 'populatetreeContents')
+        isolateScope.getDirContents(dirs[0], true);
+        // expect(isolateScope.populatetreeContents).toHaveBeenCalled();
+        expect(isolateScope.populatetreeContents).toHaveBeenCalledWith(files, dirs[0])
     });
 
     it('should return the node given a filepath', function() {
@@ -153,11 +159,7 @@ describe('Filetree directive', function(){
     });
 
     it('should return file paths for a given directory', function(){
-      httpBackend.expectGET(/\/filebrowser\/filetree\/a\/dir\?dirpath=.*/).respond(function(){
-        return [200, files];
-      });
       isolateScope.getDirContents(isolateScope.treeData.filetreeContents[0], true);
-      httpBackend.flush();
       var node = isolateScope.getNodeFromPath(isolateScope.treeData.filetreeContents[0].filepath, isolateScope.treeData.filetreeContents);
       expect(node.children.length).toBe(3);
     });

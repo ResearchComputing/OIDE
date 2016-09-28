@@ -9,7 +9,7 @@ angular.module('sandstone.filetreedirective', [])
       leafLevel: '@'
     },
     templateUrl: '/static/core/components/filetreedirective/templates/filetree.html',
-    controller: ['$scope', '$document', '$element', '$timeout', 'FilesystemService', '$rootScope', function($scope, $document, $element, $timeout, FilesystemService, $rootScope) {
+    controller: ['$scope', '$document', '$element', '$timeout', 'FilesystemService', '$rootScope', 'BroadcastService', function($scope, $document, $element, $timeout, FilesystemService, $rootScope, BroadcastService) {
       var self = $scope;
 
       self.treeData = {
@@ -34,19 +34,56 @@ angular.module('sandstone.filetreedirective', [])
       };
 
       self.initializeFiletree = function () {
-        if(self.leafLevel == "file") {
-          FilesystemService.getFiles('', self.populateTreeData);
-        } else if(self.leafLevel == "dir") {
-          FilesystemService.getFolders({filepath: ''}, self.populateTreeData);
-        }
+        $rootScope.$on('filetree:root_dirs', function(e, data) {
+            self.$apply(function(){
+                self.populateTreeData(data.root_dirs);
+            });
+        });
+        var message = {
+            key: 'filetree:init',
+            data: {}
+        };
+        BroadcastService.sendMessage(message);
         $rootScope.$on('refreshFiletree', function() {
           self.updateFiletree();
         });
-        $rootScope.$on('deletedFile', function(e, data, status, headers, config, node){
-          self.deletedFile(data, status, headers, config, node);
+        $rootScope.$on('filetree:got_contents', function(e, data) {
+            self.$apply(function(){
+                self.populatetreeContents(data.contents, data.node);
+            });
         });
-        $rootScope.$on('pastedFiles', function(e, newDirPath){
-          self.pastedFiles(newDirPath);
+        $rootScope.$on('filetree:created_file', function(e, data) {
+            self.updateFiletree();
+        });
+        $rootScope.$on('filetree:created_new_dir', function(e, data) {
+            self.updateFiletree();
+        });
+        $rootScope.$on('filetree:files_deleted', function(e, data) {
+            self.updateFiletree();
+        });
+        $rootScope.$on('filetree:file_renamed', function(e, data) {
+            self.updateFiletree();
+        });
+        $rootScope.$on('filetree:files_pasted', function(e, data) {
+            self.updateFiletree();
+        });
+        $rootScope.$on('filetree:next_untitled_dir', function(e, data) {
+            var message = {
+                key: 'filetree:create_new_dir',
+                data: {
+                    dirpath: data.dirpath
+                }
+            };
+            BroadcastService.sendMessage(message);
+        });
+        $rootScope.$on('filetree:next_untitled_file', function(e, data) {
+            var message = {
+                key: 'filetree:create_new_file',
+                data: {
+                    'filepath': data.filepath
+                }
+            };
+            BroadcastService.sendMessage(message);
         });
         $rootScope.$on('filetree:created_file', function(e, data) {
             self.updateFiletree();
@@ -120,14 +157,6 @@ angular.module('sandstone.filetreedirective', [])
         return false;
       };
 
-      self.pastedFiles = function(newDirPath) {
-        if (!self.isExpanded(newDirPath)) {
-          var node = self.getNodeFromPath(newDirPath,self.treeData.filetreeContents);
-          self.treeData.expandedNodes.push(node);
-        }
-        self.updateFiletree();
-      };
-
       self.isDisplayed = function (filepath) {
         for (var i=0;i<self.treeData.filetreeContents.length;i++) {
           if (self.treeData.filetreeContents[i].filepath === filepath) {
@@ -137,7 +166,8 @@ angular.module('sandstone.filetreedirective', [])
         return false;
       };
 
-      self.populatetreeContents = function(data, status, headers, config, node) {
+      self.populatetreeContents = function(data, node) {
+          var existingNode = self.getNodeFromPath(node.filepath, self.treeData.filetreeContents);
           var matchedNode;
           var currContents = self.getFilepathsForDir(node.filepath);
           for (var i=0;i<data.length;i++) {
@@ -149,7 +179,7 @@ angular.module('sandstone.filetreedirective', [])
               currContents.splice(currContents.indexOf(data[i].filepath), 1);
             } else {
               data[i].children = [];
-              node.children.push(data[i]);
+              existingNode.children.push(data[i]);
             }
           }
           var index;
@@ -164,36 +194,6 @@ angular.module('sandstone.filetreedirective', [])
         for (var i=0;i<self.treeData.expandedNodes.length;i++) {
           self.getDirContents(self.treeData.expandedNodes[i], true);
         }
-      };
-
-      // Callback for invocation to FilesystemService renameFile method
-      self.fileRenamed = function(data, status, headers, config, node) {
-        $rootScope.$emit('fileRenamed', node.filepath, data.result);
-        self.removeNodeFromFiletree(node);
-        self.updateFiletree();
-        $log.debug('POST: ', data.result);
-      };
-
-      // Callback for invocation to FilesystemService deleteFile method
-      self.deletedFile = function(data, status, headers, config, node) {
-        // $log.debug('DELETE: ', data.result);
-        var node = self.getNodeFromPath(data.filepath,self.treeData.filetreeContents);
-        self.removeNodeFromFiletree(node);
-        $rootScope.$emit('fileDeleted', data.filepath);
-        self.updateFiletree();
-      };
-
-      // Callback for getting a new untitled directory name from FilesystemService
-      self.gotNewUntitledDir = function(data, status, headers, config) {
-        $log.debug('GET: ', data);
-        var newDirPath = data.result;
-        FilesystemService.createNewDir(newDirPath, self.createdNewDir);
-      };
-
-      // Callback for creating new directory
-      self.createdNewDir = function(data, status, headers, config) {
-        $log.debug('POST: ', data);
-        self.updateFiletree();
       };
 
       self.multiSelection = false;
@@ -239,9 +239,23 @@ angular.module('sandstone.filetreedirective', [])
       self.getDirContents = function (node, expanded) {
         if(expanded) {
           if(self.leafLevel == "dir") {
-            FilesystemService.getFolders(node, self.populatetreeContents);
+            var message = {
+                key: 'filetree:expanded',
+                data: {
+                    node: node,
+                    dirs: true,
+                }
+            };
+            BroadcastService.sendMessage(message);
           } else if(self.leafLevel == "file") {
-            FilesystemService.getFiles(node, self.populatetreeContents);
+            var message = {
+                key: 'filetree:expanded',
+                data: {
+                    node: node,
+                    dirs: false
+                }
+            };
+            BroadcastService.sendMessage(message);
           }
         }
       };

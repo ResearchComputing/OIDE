@@ -79,8 +79,26 @@ describe('filetree', function(){
   beforeEach(module('sandstone.templates'));
   beforeEach(module('sandstone.filetreedirective'));
   beforeEach(module('ui.bootstrap'));
+  beforeEach(module('sandstone.broadcastservice'));
 
-  beforeEach(inject(function($controller, $rootScope, $log, $document, $httpBackend, _$compile_, FilesystemService, EditorService, _$modal_){
+  var mockBroadcastService;
+  beforeEach(module(function($provide) {
+      $provide.service('BroadcastService', function() {
+          this.sendMessage = function(message) {
+              if(message.key == 'filetree:expanded') {
+                  rootScope.$emit('filetree:got_contents', {
+                      contents: files,
+                      node: dirs[0]
+                  })
+              } else if(message.key == 'filetree:delete_files') {
+                  scope.ctrl.treeData.filetreeContents.splice(0, 1);
+                  rootScope.$emit('filetree:files_deleted', {});
+              }
+          }
+      });
+  }));
+
+  beforeEach(inject(function($controller, $rootScope, $log, $document, $httpBackend, _$compile_, FilesystemService, EditorService, _$modal_, BroadcastService){
     scope = $rootScope.$new();
     rootScope = $rootScope;
     $compile = _$compile_;
@@ -88,21 +106,20 @@ describe('filetree', function(){
     filesystemService = FilesystemService;
     editorService = EditorService;
     modal = _$modal_;
-    httpBackend.whenGET('/filebrowser/filetree/a/dir').respond(function(){
-      return [200, dirs];
-    });
+    mockBroadcastService = BroadcastService;
     controller = $controller;
     controller = $controller('FiletreeCtrl', {
       $scope: scope,
       $document: $document,
       $log: $log,
+      BroadcastService: mockBroadcastService
     });
     scope.ctrl = controller;
     scope.$apply();
     var element = angular.element('<div sandstone-filetree tree-data="ctrl.treeData" leaf-level="file" selection-desc="ctrl.sd"></div>');
     el = $compile(element)(scope);
     scope.$digest();
-    httpBackend.flush();
+    scope.ctrl.treeData.filetreeContents = dirs;
   }));
 
   describe('Whether the filetree is working as expected or not', function(){
@@ -127,10 +144,7 @@ describe('filetree', function(){
       scope.ctrl.treeData.selectedNodes = [files[0], files[1]];
       scope.ctrl.copyFiles();
       scope.ctrl.treeData.selectedNodes = [dirs[0]]
-      spyOn(filesystemService, 'pasteFile');
       scope.ctrl.pasteFiles();
-      // Expect pasteFile method of FilesystemService to have been called
-      expect(filesystemService.pasteFile).toHaveBeenCalled();
       // Expect clipboard length to be zero
       expect(scope.ctrl.clipboard.length).toBe(0);
     });
@@ -152,11 +166,10 @@ describe('filetree', function(){
       spyOn(modal, "open").and.callFake(function(){
         return mockModal;
       });
-      spyOn(filesystemService, 'deleteFile');
-      scope.ctrl.treeData.selectedNodes = [files[0]];
+      scope.ctrl.treeData.selectedNodes = [dirs[0]];
       scope.ctrl.deleteFiles();
       scope.ctrl.deleteModalInstance.close();
-      expect(filesystemService.deleteFile).toHaveBeenCalled();
+      expect(scope.ctrl.treeData.filetreeContents.length).toBe(2);
     });
   });
 

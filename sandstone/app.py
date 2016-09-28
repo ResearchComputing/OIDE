@@ -19,7 +19,6 @@ from sandstone.urls import URL_SCHEMA
 
 
 
-
 class SandstoneApplication(tornado.web.Application):
     def __init__(self, *args, **kwargs):
         app_static_handlers = []

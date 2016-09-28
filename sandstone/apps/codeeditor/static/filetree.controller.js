@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('sandstone.editor')
-.controller('FiletreeCtrl', ['$modal', '$log', 'EditorService', '$rootScope', 'FilesystemService', function($modal,$log, EditorService, $rootScope, FilesystemService){
+.controller('FiletreeCtrl', ['$modal', '$log', 'EditorService', '$rootScope', 'FilesystemService', 'BroadcastService', function($modal,$log, EditorService, $rootScope, FilesystemService, BroadcastService){
   var self = this;
   self.treeData = {
     filetreeContents: [
@@ -44,22 +44,6 @@ angular.module('sandstone.editor')
     $rootScope.$emit('refreshFiletree');
   };
 
-  // Callback of invocation to FilesystemService to get the next Untitled FIle
-  // Invoke the FilesystemService to create the new file
-  self.gotNewUntitledFile = function(data, status, headers, config) {
-    $log.debug('GET: ', data);
-    var newFilePath = data.result;
-    // Post back new file to backend
-    FilesystemService.createNewFile(newFilePath, self.createFileCallback);
-  };
-
-  // Callback for getting the next duplicated file for selected file
-  self.gotNextDuplicateFile = function(data, status, headers, config) {
-    $log.debug('GET: ', data);
-     var newFilePath = data.result;
-     FilesystemService.duplicateFile(data.originalFile, newFilePath, self.duplicatedFile);
-  };
-
   // Callback for duplicating a file
   self.duplicatedFile = function(data, status, headers, config) {
     $log.debug('Copied: ', data.result);
@@ -69,11 +53,24 @@ angular.module('sandstone.editor')
   self.createNewFile = function () {
     //Invokes filesystem service to create a new file
     var selectedDir = self.treeData.selectedNodes[0].filepath;
-    FilesystemService.getNextUntitledFile(selectedDir, self.gotNewUntitledFile);
+    var message = {
+        'key': 'filetree:get_untitled_file',
+        'data': {
+            'filepath': selectedDir
+        }
+    };
+    BroadcastService.sendMessage(message);
   };
   self.createNewDir = function () {
     var selectedDir = self.treeData.selectedNodes[0].filepath;
-    FilesystemService.getNextUntitledDir(selectedDir, self.gotNewUntitledDir);
+    // FilesystemService.getNextUntitledDir(selectedDir, self.gotNewUntitledDir);
+    var message = {
+        'key': 'filetree:get_untitled_dir',
+        'data': {
+            'dirpath': selectedDir
+        }
+    };
+    BroadcastService.sendMessage(message);
   };
   self.createDuplicate = function () {
     var selectedFile = self.treeData.selectedNodes[0].filepath;
@@ -106,12 +103,18 @@ angular.module('sandstone.editor')
     });
 
     self.deleteModalInstance.result.then(function () {
-      $log.debug('Files deleted at: ' + new Date());
-      for (var i=0;i<self.treeData.selectedNodes.length;i++) {
-        var filepath = self.treeData.selectedNodes[i].filepath;
-        FilesystemService.deleteFile(filepath, self.deletedFile);
-        self.deleteModalInstance = null;
-      }
+        $log.debug('Files deleted at: ' + new Date());
+        var selectedFiles = [];
+        self.treeData.selectedNodes.forEach(function(node) {
+            selectedFiles.push(node.filepath);
+        });
+        var message = {
+            key: 'filetree:delete_files',
+            data: {
+                files: selectedFiles
+            }
+        };
+        BroadcastService.sendMessage(message);
     }, function () {
       $log.debug('Modal dismissed at: ' + new Date());
       self.deleteModalInstance = null;
@@ -129,25 +132,22 @@ angular.module('sandstone.editor')
     $log.debug('Copied ', i, ' files to clipboard: ', self.clipboard);
   };
 
-  // Callback for invocation to FilesystemService pasteFile method
-  self.pastedFiles = function(data, status, headers, config, node){
-    $log.debug('POST: ', data.result);
-  };
-
   self.pasteFiles = function () {
     var i;
     var newDirPath = self.treeData.selectedNodes[0].filepath;
-    for (i=0;i<self.clipboard.length;i++) {
-      FilesystemService.pasteFile(self.clipboard[i].filepath, newDirPath + self.clipboard[i].filename, self.pastedFiles);
-    }
+    var copiedNodes = [];
+    self.clipboard.forEach(function(node) {
+        copiedNodes.push(node);
+    });
+    var message = {
+        key: 'filetree:paste_files',
+        data: {
+            nodes: copiedNodes,
+            newDirPath: newDirPath
+        }
+    };
+    BroadcastService.sendMessage(message);
     self.clipboard = [];
-    $rootScope.$emit('pastedFiles', newDirPath);
-  };
-
-  self.fileRenamed = function(data, status, headers, config, node) {
-    $rootScope.$emit('fileRenamed', node.filepath, data.result);
-    self.updateFiletree();
-    $log.debug('POST: ', data.result);
   };
 
   self.renameFile = function () {
@@ -166,7 +166,14 @@ angular.module('sandstone.editor')
     renameModalInstance.result.then(function (newFileName) {
       $log.debug('Files renamed at: ' + new Date());
       var node = self.treeData.selectedNodes[0];
-      FilesystemService.renameFile(newFileName, node, self.fileRenamed);
+      var message = {
+          key: 'filetree:rename',
+          data: {
+              newFileName: newFileName,
+              filepath: node.filepath
+          }
+      };
+      BroadcastService.sendMessage(message);
     }, function () {
       $log.debug('Modal dismissed at: ' + new Date());
     });
