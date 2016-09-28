@@ -7,7 +7,7 @@ angular.module('sandstone.editor', ['ui.ace','treeControl'])
         // Dummy Method
     }
 )
-.config(['$stateProvider', '$urlRouterProvider' ,function($stateProvider, $urlRouterProvider){
+.config(['$stateProvider', '$urlRouterProvider', '$provide', function($stateProvider, $urlRouterProvider, $provide){
   $stateProvider
     .state('editor', {
       url: '/editor',
@@ -37,5 +37,17 @@ angular.module('sandstone.editor', ['ui.ace','treeControl'])
           controller: 'FiletreeCtrl as ctrl'
         }
       }
+    });
+    $provide.provider('editorService', function() {
+        this.$get = ['EditorService', 'FilebrowserAPIService', function(EditorService, FilebrowserAPIService) {
+            FilebrowserAPIService.registerFilebrowserAction({
+                id: 'editor:openDocument',
+                description: 'Open Document in Editor',
+                callback: function(filepath) {
+                    window.location = '#/editor';
+                    EditorService.openDocument(filepath);
+                }
+            });
+        }];
     });
 }]);

@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('sandstone.editor')
-.controller('FiletreeCtrl', ['$modal', '$log', 'EditorService', '$rootScope', 'FilesystemService', function($modal,$log, EditorService, $rootScope, FilesystemService){
+.controller('FiletreeCtrl', ['$modal', '$log', 'EditorService', '$rootScope', 'FilesystemService', 'editorService',function($modal,$log, EditorService, $rootScope, FilesystemService, editorService){
   var self = this;
   self.treeData = {
     filetreeContents: [

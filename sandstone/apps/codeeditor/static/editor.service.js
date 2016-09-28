@@ -9,7 +9,7 @@
  */
 angular.module('sandstone.editor')
 
-.factory('EditorService', ['$window', '$http', '$log', 'AceModeService','$rootScope', function ($window, $http,$log,AceModeService, $rootScope) {
+.factory('EditorService', ['$window', '$http', '$log', 'AceModeService','$rootScope', 'FilebrowserAPIService',function ($window, $http,$log,AceModeService, $rootScope, FilebrowserAPIService) {
   var editor = {};
 
   // clipboard will hold all copy/paste text for editor
@@ -37,6 +37,19 @@ angular.module('sandstone.editor')
     wordWrap: false
   };
 
+  var registerActions = function() {
+      FilebrowserAPIService.registerFilebrowserAction({
+          id: 'editor:openDocument',
+          description: 'Open Document in Editor',
+          callback: function(filepath) {
+              window.location = '#/editor';
+              openDocument(filepath);
+          }
+      });
+  };
+
+  registerActions();
+
   var applySettings = function () {
     editor.setShowInvisibles(editorSettings.showInvisibles);
     editor.getSession().setUseSoftTabs(editorSettings.useSoftTabs);
@@ -45,11 +58,6 @@ angular.module('sandstone.editor')
     editor.setDisplayIndentGuides(editorSettings.showIndentGuides);
     editor.getSession().setUseWrapMode(editorSettings.wordWrap);
   };
-
-  $rootScope.$on('editor:openDocument', function(event, data) {
-      console.log(data);
-      openDocument(data.filename);
-  });
 
   // Called when the contents of the current session have changed. Bound directly to
   // an EditSession.

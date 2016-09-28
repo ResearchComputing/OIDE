@@ -157,8 +157,24 @@
             </table>
           </div>
 
-          <div class="col-sm-6 col-sm-offset-6 file-detail">
-            <div class="btn-group btn-group-sm dir-controls pull-right" role="group">
+          <div class="col-sm-6">
+              <div ng-hide="ctrl.selectedFile.type === 'dir'" class="btn-group btn-group-sm actions-list" role="group" dropdown>
+                <button id="actions" type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" dropdown-toggle>
+                  Action <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu actions-dropdown" role="menu">
+                    <li ng-repeat="action in ctrl.actions">
+                        <a
+                          class="btn fc-dropdown-link"
+                          ng-click="action.callback(ctrl.selectedFile.filepath)">
+                          {{ action.description }}
+                        </a>
+                    </li>
+                </ul>
+              </div>
+          </div>
+
+          <div class="col-sm-6 file-detail" ng-class="{'col-sm-offset-6':ctrl.selectedFile.type === 'dir'}">
               <div class="btn-group btn-group-sm" role="group">
                 <button id="copy-file-btn" type="button" ng-click="ctrl.copyFile()" tooltip="Copy" class="btn btn-default filedetails-bottom-actions">
                   <i class="fa fa-files-o dir-option" style="font-size:18px;"></i>
@@ -172,7 +188,7 @@
             </div>
           </div>
         </div>
-          <button type="button" class="btn btn-primary" ng-click="ctrl.openFileInEditor()">Open in Editor</button>  
+          <!-- <button type="button" class="btn btn-primary" ng-click="ctrl.openFileInEditor()">Open in Editor</button>   -->
       </div>
     </div>
   </div>

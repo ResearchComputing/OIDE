@@ -15,6 +15,7 @@ APP_SPECIFICATION = {
         'file.service.js',
         'filetree.controller.js',
         'filebrowser.controller.js',
+        'filebrowser.api.service.js'
     ),
 }
 

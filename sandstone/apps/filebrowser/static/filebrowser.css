@@ -150,3 +150,22 @@ input.upload {
   margin-top: 30px;
   margin-bottom: 0;
 }
+
+#actions {
+    min-height: 40px;
+}
+
+.actions-list {
+    margin-top: 20px;
+}
+
+.actions-dropdown {
+    color: white;
+    background-color: #3e3f3a;
+    border: 1px solid #3e3f3a;
+}
+
+.actions-dropdown > li > a:hover {
+    color: white;
+    background-color: #3e3f3a;    
+}

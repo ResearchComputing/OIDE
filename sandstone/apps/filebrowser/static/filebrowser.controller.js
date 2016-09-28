@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('sandstone.filebrowser')
-.controller('FilebrowserController', ['$rootScope', 'FileService', '$scope', 'FilesystemService', '$modal', 'BroadcastService', function($rootScope, FileService, $scope, FilesystemService, $modal, BroadcastService){
+.controller('FilebrowserController', ['$rootScope', 'FileService', '$scope', 'FilesystemService', '$modal', 'BroadcastService', 'FilebrowserAPIService', function($rootScope, FileService, $scope, FilesystemService, $modal, BroadcastService, FilebrowserAPIService){
   var self = this;
 
   self.treeData = {
@@ -20,6 +20,12 @@ angular.module('sandstone.filebrowser')
     }, function (newValue) {
     self.fileData = newValue;
     self.displayData = [].concat(self.fileData);
+  });
+
+  $scope.$watch(function() {
+      return FilebrowserAPIService.getActions();
+  }, function(newValue) {
+      self.actions = newValue;
   });
 
   $scope.$watch(function(){
@@ -70,17 +76,6 @@ angular.module('sandstone.filebrowser')
   self.copyFile = function() {
     self.copiedFile = self.selectedFile;
     self.isCopied = true;
-  };
-
-  self.openFileInEditor = function() {
-      window.location.href = '#/editor';
-      var message = {
-          key: 'editor:openDocument',
-          data: {
-              filename: self.selectedFile.filepath
-          }
-      };
-      BroadcastService.sendMessage(message);
   };
 
   self.gotFiles = function(data, status, headers, config) {
