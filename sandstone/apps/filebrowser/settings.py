@@ -19,6 +19,6 @@ APP_SPECIFICATION = {
 }
 
 FILESYSTEM_ROOT_DIRECTORIES = (
-    os.path.join('$HOME', ''),
-    '/tmp/',
+    os.path.join('$HOME'),
+    '/tmp',
     )

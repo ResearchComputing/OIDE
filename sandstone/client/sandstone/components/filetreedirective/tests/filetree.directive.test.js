@@ -9,6 +9,7 @@ describe('sandstone.filetree', function() {
     var dirs = [{
           "filepath": "/home/user/dir1",
           "filename": "dir1",
+          "dirname": '/home/user',
           "group": "saurabh",
           "is_accessible": true,
           "perm": "-rw-rw-r--",
@@ -19,6 +20,7 @@ describe('sandstone.filetree', function() {
         }, {
           "filepath": "/home/user/dir2",
           "filename": "dir2",
+          "dirname": '/home/user',
           "group": "root",
           "is_accessible": false,
           "perm": "-rw-r--r--",
@@ -30,6 +32,7 @@ describe('sandstone.filetree', function() {
         {
           "filepath": "/home/user/dir3",
           "filename": "dir3",
+          "dirname": '/home/user',
           "group": "saurabh",
           "is_accessible": true,
           "perm": "-rw-rw-r--",
@@ -41,6 +44,7 @@ describe('sandstone.filetree', function() {
         {
           "filepath": "/home/user/dir4",
           "filename": "dir4",
+          "dirname": '/home/user',
           "group": "saurabh",
           "is_accessible": true,
           "perm": "-rw-rw-r--",
@@ -54,18 +58,21 @@ describe('sandstone.filetree', function() {
           {
               'type': 'dir',
               'filename': 'user',
-              'filepath': '/home/user'
+              'filepath': '/home/user',
+              'dirname': '/home'
           },
           {
               'type': 'dir',
               'filename': 'tmp',
-              'filepath': '/tmp'
+              'filepath': '/tmp',
+              'dirname': '/tmp'
           }
       ];
 
       var files = [{
             "filepath": "/home/user/dir1",
             "filename": "dir1",
+            "dirname": '/home/user',
             "group": "saurabh",
             "is_accessible": true,
             "perm": "-rw-rw-r--",
@@ -75,6 +82,7 @@ describe('sandstone.filetree', function() {
           }, {
             "filepath": "/home/user/dir2",
             "filename": "dir2",
+            "dirname": '/home/user',
             "group": "root",
             "is_accessible": false,
             "perm": "-rw-r--r--",
@@ -85,6 +93,7 @@ describe('sandstone.filetree', function() {
           {
             "filepath": "/home/user/file1",
             "filename": "file1",
+            "dirname": '/home/user',
             "group": "root",
             "is_accessible": false,
             "perm": "-rw-r--r--",
@@ -260,6 +269,57 @@ describe('sandstone.filetree', function() {
                 dest_filepath: '/home/user/some_new_file'
             });
             expect(isolateScope.updateFiletree).toHaveBeenCalled();
+        });
+        it('addNode', function() {
+            isolateScope.describeSelection(isolateScope.treeData.filetreeContents[0], true);
+            isolateScope.getDirContents(isolateScope.treeData.filetreeContents[0], true);
+
+            var node_1 = {
+                'filepath': '/home/user/dir1/file1',
+                'filename': 'file1',
+                'dirname': '/home/user/dir1',
+                'type': 'file'
+            };
+            var node_2 = {
+                'filepath': '/home/user/dir1/file2',
+                'filename': 'file2',
+                'dirname': '/home/user/dir1',
+                'type': 'file'
+            };
+
+            isolateScope.addNode(node_1);
+            isolateScope.addNode(node_2);
+            expect(isolateScope.treeData.filetreeContents[0].children[0].children.length).toBe(2);
+
+        });
+        it('removeNode', function() {
+            isolateScope.describeSelection(isolateScope.treeData.filetreeContents[0], true);
+            isolateScope.getDirContents(isolateScope.treeData.filetreeContents[0], true);
+
+            var node_1 = {
+                'filepath': '/home/user/dir1',
+                'filename': 'dir1',
+                'dirname': '/home/user',
+                'type': 'dir'
+            };
+            var node_2 = {
+                'filepath': '/home/user/file1',
+                'filename': 'file1',
+                'dirname': '/home/user',
+                'type': 'file'
+            };
+
+            var nonexistentNode = {
+                'filepath': '/home/user/file12',
+                'filename': 'file12',
+                'dirname': '/home/user',
+                'type': 'file'
+            }
+
+            isolateScope.removeNode(node_1);
+            isolateScope.removeNode(node_2)
+            isolateScope.removeNode(nonexistentNode);
+            expect(isolateScope.treeData.filetreeContents[0].children.length).toBe(0);
         });
       });
       describe('directive', function() {

@@ -51,7 +51,8 @@ class FilewatcherTestCase(unittest.TestCase):
 
         key = 'filetree:created_file'
         data = {
-            'filepath': filepath
+            'filepath': filepath,
+            'type': 'file'
         }
         self.assertTrue(mock_broadcast.called)
         broadcast_call_msg = mock_broadcast.call_args[0][0]
@@ -72,7 +73,8 @@ class FilewatcherTestCase(unittest.TestCase):
 
         key = 'filetree:deleted_file'
         data = {
-            'filepath': filepath
+            'filepath': filepath,
+            'type': 'file'
         }
         self.assertTrue(mock_broadcast.called)
         broadcast_call_msg = mock_broadcast.call_args[0][0]
@@ -95,7 +97,8 @@ class FilewatcherTestCase(unittest.TestCase):
         key = 'filetree:moved_file'
         data = {
             'src_filepath': filepath,
-            'dest_filepath': new_path
+            'dest_filepath': new_path,
+            'type': 'file'
         }
         self.assertTrue(mock_broadcast.called)
         broadcast_call_msg = mock_broadcast.call_args[0][0]

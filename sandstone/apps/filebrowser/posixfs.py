@@ -145,7 +145,8 @@ class PosixFS():
                     'owner': parts[3],
                     'group': parts[4],
                     'filepath': filepath,
-                    'filename': parts[-1]
+                    'filename': parts[-1],
+                    'dirname': os.path.dirname(filepath)
                     })
         return dir_contents
 
@@ -155,10 +156,6 @@ class PosixFS():
         for i in os.listdir(dirpath):
             filepath = os.path.join(dirpath,i)
             is_dir = os.path.isdir(filepath)
-            if is_dir:
-                filepath = filepath + '/'
-            else:
-                continue
             contents.append( ( i,filepath,is_dir ) )
         contents.sort(key=lambda tup: tup[1])
         return contents
