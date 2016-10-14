@@ -28,11 +28,19 @@ angular.module('sandstone.filebrowser')
     if(!self.multiSelection) {
       if(!self.treeData.selectedNodes.length == 0) {
         // Set the current directory
-        FileService.setCurrentDirectory(node[0].filepath);
-        // Get the list of files from FilesystemService
-        FilesystemService.getFiles(node[0], self.gotFiles);
+        if(node[0].type === 'volume') {
+            FileService.setCurrentDirectory(node[0].name);
+            // Get the list of files from FilesystemService
+            FilesystemService.getFiles(node[0], self.gotFiles);
+            FilesystemService.getVolumeInfo(node[0].name, self.gotVolumeInfo);
+        } else {
+            FileService.setCurrentDirectory(node[0].filepath);
+            // Get the list of files from FilesystemService
+            FilesystemService.getFiles(node[0], self.gotFiles);
+            FilesystemService.getVolumeInfo(node[0].filepath, self.gotVolumeInfo);                   
+        }
         // Get Root Directory
-        FilesystemService.getRootDirectory(node[0].filepath, self.gotRootDirectory);
+        // FilesystemService.getRootDirectory(node[0].filepath, self.gotRootDirectory);
         FilesystemService.getVolumeInfo(node[0].filepath, self.gotVolumeInfo);
       }
     }

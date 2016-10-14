@@ -276,8 +276,8 @@ angular.module('sandstone.filebrowser')
     // Delete selected files by invoking the FilesystemService deleteFile method
     deleteFiles: function () {
       for (var i=0;i<treeData.selectedNodes.length;i++) {
-        var filepath = treeData.selectedNodes[i].filepath;
-        FilesystemService.deleteFile(filepath, deletedFile);
+        var node = treeData.selectedNodes[i];
+        FilesystemService.deleteFile(node, deletedFile);
       }
     },
     copyFiles: function () {

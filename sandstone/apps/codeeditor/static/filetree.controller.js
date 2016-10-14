@@ -108,8 +108,8 @@ angular.module('sandstone.editor')
     self.deleteModalInstance.result.then(function () {
       $log.debug('Files deleted at: ' + new Date());
       for (var i=0;i<self.treeData.selectedNodes.length;i++) {
-        var filepath = self.treeData.selectedNodes[i].filepath;
-        FilesystemService.deleteFile(filepath, self.deletedFile);
+        var node = self.treeData.selectedNodes[i];
+        FilesystemService.deleteFile(node, self.deletedFile);
         self.deleteModalInstance = null;
       }
     }, function () {
@@ -120,11 +120,8 @@ angular.module('sandstone.editor')
   self.copyFiles = function () {
     var node, i;
     for (i=0;i<self.treeData.selectedNodes.length;i++) {
-      node = self.treeData.selectedNodes[i]
-      self.clipboard.push({
-        'filename': node.filename,
-        'filepath': node.filepath
-      });
+        node = self.treeData.selectedNodes[i];
+        self.clipboard.push(node);
     }
     $log.debug('Copied ', i, ' files to clipboard: ', self.clipboard);
   };
@@ -138,7 +135,7 @@ angular.module('sandstone.editor')
     var i;
     var newDirPath = self.treeData.selectedNodes[0].filepath;
     for (i=0;i<self.clipboard.length;i++) {
-      FilesystemService.pasteFile(self.clipboard[i].filepath, newDirPath + self.clipboard[i].filename, self.pastedFiles);
+      FilesystemService.pasteFile(self.clipboard[i], newDirPath + '/' + self.clipboard[i].name, self.pastedFiles);
     }
     self.clipboard = [];
     $rootScope.$emit('pastedFiles', newDirPath);
