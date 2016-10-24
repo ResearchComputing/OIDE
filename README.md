@@ -1,4 +1,4 @@
-Sandstone IDE - [sandstonehpc.github.io](http://sandstonehpc.github.io/)
+Sandstone IDE - [sandstonehpc.github.io](https://sandstonehpc.github.io/)
 ====
 
 Sandstone IDE is a consolidated set of web-based, visual utilities that facilitate access to HPC resources.
