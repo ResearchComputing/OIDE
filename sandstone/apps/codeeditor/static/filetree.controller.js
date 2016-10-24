@@ -44,6 +44,13 @@ angular.module('sandstone.editor')
     $rootScope.$emit('refreshFiletree');
   };
 
+  // Callback for invoking the FilesystemService to create a new folder
+  // Update the filetree to show the new folder
+  self.createFolderCallback = function(data, status, headers, config) {
+      $log.debug('POST: ', data);
+      $rootScope.$emit('refreshFiletree');
+  }
+
   // Callback of invocation to FilesystemService to get the next Untitled FIle
   // Invoke the FilesystemService to create the new file
   self.gotNewUntitledFile = function(data, status, headers, config) {
@@ -59,6 +66,12 @@ angular.module('sandstone.editor')
      var newFilePath = data.result;
      FilesystemService.duplicateFile(data.originalFile, newFilePath, self.duplicatedFile);
   };
+
+  // Callback for getting the next duplicate folder name
+  self.gotNewUntitledDir = function(data) {
+      var newFolderPath = data.result;
+      FilesystemService.createNewDir(newFolderPath, self.createFolderCallback);
+  }
 
   // Callback for duplicating a file
   self.duplicatedFile = function(data, status, headers, config) {
