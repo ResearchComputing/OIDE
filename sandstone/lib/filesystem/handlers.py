@@ -9,43 +9,27 @@ from sandstone.lib.filesystem.mixins import FSMixin
 
 
 
-class VolumeHandler(BaseHandler,FSMixin):
+class FilesystemHandler(BaseHandler,FSMixin):
     """
-    This handler implements the volume resource for the
+    This handler implements the root filesystem resource for the
     filesystem REST API.
     """
 
     @sandstone.lib.decorators.authenticated
-    def get(self, volume_path=None):
+    def get(self):
         """
-        If a volume path is passed, then return details for that volume.
-        Otherwise, return a list of configured volumes.
+        Return details for the filesystem, including configured volumes.
         """
-        # Volume specified
-        if volume_path:
-            if volume_path not in self.volume_paths:
-                raise tornado.web.HTTPError(404)
-            res = self.fs.get_volume_details(volume_path)
-            res = res.to_dict()
-        # Otherwise list volumes
-        else:
-            res = []
-            for vp in self.volume_paths:
-                vd = self.fs.get_volume_details(vp)
-                res.append(vd.to_dict())
-
-        self.write({'data': res})
+        res = self.fs.get_filesystem_details()
+        res = res.to_dict()
+        self.write(res)
 
     @sandstone.lib.decorators.authenticated
-    def put(self, volume_path=None):
+    def put(self):
         """
         Provides move, copy, and rename functionality. An action must be
         specified when calling this method.
         """
-        if not volume_path:
-            raise tornado.web.HTTPError(400)
-        elif volume_path not in self.volume_paths:
-            raise tornado.web.HTTPError(404)
 
         action = self.get_argument('action',None)
         action = tornado.escape.json_decode(action)
@@ -77,7 +61,7 @@ class FileHandler(BaseHandler,FSMixin):
     """
 
     @sandstone.lib.decorators.authenticated
-    def get(self, volume_path, filepath):
+    def get(self, filepath):
         """
         Get file details for the specified file.
         """
@@ -89,7 +73,7 @@ class FileHandler(BaseHandler,FSMixin):
         self.write(res)
 
     @sandstone.lib.decorators.authenticated
-    def post(self, volume_path, filepath):
+    def post(self, filepath):
         """
         Create a new file at the specified path.
         """
@@ -97,7 +81,7 @@ class FileHandler(BaseHandler,FSMixin):
         self.write({'msg':'File created at {}'.format(filepath)})
 
     @sandstone.lib.decorators.authenticated
-    def put(self, volume_path, filepath):
+    def put(self, filepath):
         """
         Change the group or permissions of the specified file. Action
         must be specified when calling this method.
@@ -120,7 +104,7 @@ class FileHandler(BaseHandler,FSMixin):
             self.write({'msg':'Updated permissions for {}'.format(filepath)})
 
     @sandstone.lib.decorators.authenticated
-    def delete(self, volume_path, filepath):
+    def delete(self, filepath):
         """
         Delete the specified file.
         """
@@ -138,7 +122,7 @@ class DirectoryHandler(BaseHandler,FSMixin):
     """
 
     @sandstone.lib.decorators.authenticated
-    def get(self, volume_path, filepath):
+    def get(self, filepath):
         """
         Get directory details for the specified file. If contents is
         set to True (default) then the directory contents will be sent
@@ -157,7 +141,7 @@ class DirectoryHandler(BaseHandler,FSMixin):
         self.write(res)
 
     @sandstone.lib.decorators.authenticated
-    def post(self, volume_path, filepath):
+    def post(self, filepath):
         """
         Create a new directory at the specified path.
         """
@@ -165,7 +149,7 @@ class DirectoryHandler(BaseHandler,FSMixin):
         self.write({'msg':'Directory created at {}'.format(filepath)})
 
     @sandstone.lib.decorators.authenticated
-    def put(self, volume_path, filepath):
+    def put(self, filepath):
         """
         Change the group or permissions of the specified directory. Action
         must be specified when calling this method.
@@ -188,7 +172,7 @@ class DirectoryHandler(BaseHandler,FSMixin):
             self.write({'msg':'Updated permissions for {}'.format(filepath)})
 
     @sandstone.lib.decorators.authenticated
-    def delete(self, volume_path, filepath):
+    def delete(self, filepath):
         """
         Delete the specified directory.
         """
@@ -204,7 +188,7 @@ class FileContentsHandler(BaseHandler, FSMixin):
     """
 
     @sandstone.lib.decorators.authenticated
-    def get(self, volume_path, filepath):
+    def get(self, filepath):
         """
         Get the contents of the specified file.
         """
@@ -215,7 +199,7 @@ class FileContentsHandler(BaseHandler, FSMixin):
         self.write({'filepath':filepath,'contents': contents})
 
     @sandstone.lib.decorators.authenticated
-    def post(self, volume_path, filepath):
+    def post(self, filepath):
         """
         Write the given contents to the specified file. This is not
         an append, all file contents will be replaced by the contents

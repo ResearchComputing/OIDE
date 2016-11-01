@@ -7,48 +7,59 @@ import logging
 from sandstone import settings
 import grp
 import subprocess
-from sandstone.lib.filesystem.interfaces.base import FilesystemBaseClass
-from sandstone.lib.filesystem.schemas import VolumeObject
 from sandstone.lib.filesystem.schemas import FilesystemObject
-from sandstone.lib.filesystem.manager import VolumeManager
+from sandstone.lib.filesystem.schemas import VolumeObject
+from sandstone.lib.filesystem.schemas import FileObject
 
 
 
-class PosixFS(FilesystemBaseClass):
+class PosixFS:
     """
     Interface for a Posix filesystem.
     """
 
-    fs_type = 'posix'
+    def _format_volume_paths(self):
+        volume_patterns = settings.VOLUMES
+        formatted_patterns = []
+        for patt in volume_patterns:
+            fmt = os.path.expandvars(patt)
+            formatted_patterns.append(fmt)
+        return formatted_patterns
 
-    # Extra methods
-
-    # Base methods
-    def get_volume_details(self, volume_path):
+    def get_filesystem_details(self):
         details = {
-            'type': 'volume',
-            'name': volume_path,
-            'fs_type': self.fs_type
+            'type': 'filesystem'
         }
-        # get usage details
-        p = subprocess.Popen(['df', '-h', volume_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        out, err = p.communicate()
-        size, used, avail, used_pct = out.split()[-5:-1]
+        # get volume details
+        volumes = []
+        for volume_path in self._format_volume_paths():
+            vd = {
+                'type': 'volume',
+                'name': volume_path
+            }
+            p = subprocess.Popen(['df', '-h', volume_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            out, err = p.communicate()
+            size, used, avail, used_pct = out.split()[-5:-1]
+            vd.update({
+                'used': used,
+                'available': avail,
+                'used_pct': float(used_pct.strip('%')),
+                'size': size
+            })
+            vol = VolumeObject(**vd)
+            volumes.append(vol)
         details.update({
-            'used': used,
-            'available': avail,
-            'used_pct': float(used_pct.strip('%')),
-            'size': size
+            'volumes': volumes
         })
         # get groups
-        groups = self.get_groups(volume_path)
+        groups = self.get_groups()
         details.update({
             'groups': groups
         })
-        volume = VolumeObject(**details)
-        return volume
+        fs = FilesystemObject(**details)
+        return fs
 
-    def get_groups(self, volume_path):
+    def get_groups(self):
         groups = subprocess.check_output(["id", "--name", "-G"]).strip().split()
         return groups
 
@@ -77,10 +88,8 @@ class PosixFS(FilesystemBaseClass):
         filepath = os.path.abspath(filepath)
         if not self.exists(filepath):
             raise OSError('File not found')
-        volpath = VolumeManager.get_volume_from_path(filepath)
         dirname, name = os.path.split(filepath)
         details = {
-            'volume': volpath,
             'filepath': filepath,
             'dirpath': dirname,
             'name': name
@@ -89,7 +98,7 @@ class PosixFS(FilesystemBaseClass):
         out, err = p.communicate()
         ls_det = self._parse_ls_line(out)
         details.update(ls_det)
-        file_details = FilesystemObject(**details)
+        file_details = FileObject(**details)
         return file_details
 
     def get_directory_details(self, filepath, contents=True, dir_sizes=False):
@@ -97,10 +106,8 @@ class PosixFS(FilesystemBaseClass):
         if not self.exists(filepath):
             raise OSError('File not found')
         dirname, name = os.path.split(filepath)
-        volpath = VolumeManager.get_volume_from_path(filepath)
         details = {
             'filepath': filepath,
-            'volume': volpath,
             'dirpath': dirname,
             'name': name
         }
@@ -109,7 +116,7 @@ class PosixFS(FilesystemBaseClass):
             out, err = p.communicate()
             ls_det = self._parse_ls_line(out)
             details.update(ls_det)
-            dir_details = FilesystemObject(**details)
+            dir_details = FileObject(**details)
             return dir_details
         else:
             # Otherwise, get dir contents
@@ -128,17 +135,16 @@ class PosixFS(FilesystemBaseClass):
                 line_details.update({
                     'name': name,
                     'dirpath': filepath,
-                    'volume': volpath,
                     'filepath': fp
                 })
                 if dir_sizes and line_details['type'] == 'directory':
                     line_details['size'] = self.get_size(fp)
-                file_details = FilesystemObject(**line_details)
+                file_details = FileObject(**line_details)
                 contents.append(file_details)
 
             details['contents'] = contents
 
-        dir_details = FilesystemObject(**details)
+        dir_details = FileObject(**details)
         return dir_details
 
     def exists(self, filepath):

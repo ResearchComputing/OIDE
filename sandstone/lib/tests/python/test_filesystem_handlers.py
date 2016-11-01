@@ -10,24 +10,24 @@ import subprocess
 from sandstone.lib.handlers.base import BaseHandler
 from sandstone.lib.test_utils import TestHandlerBase
 
-from sandstone.lib.filesystem.handlers import VolumeHandler
+from sandstone.lib.filesystem.handlers import FilesystemHandler
 
 
 
 EXEC_USER = pwd.getpwuid(os.getuid())[0]
 
-class VolumeHandlerTestCase(TestHandlerBase):
+class FilesystemHandlerTestCase(TestHandlerBase):
     def setUp(self,*args,**kwargs):
         self.test_dir = tempfile.mkdtemp()
-        super(VolumeHandlerTestCase,self).setUp(*args,**kwargs)
+        super(FilesystemHandlerTestCase,self).setUp(*args,**kwargs)
 
     def tearDown(self,*args,**kwargs):
         shutil.rmtree(self.test_dir)
-        super(VolumeHandlerTestCase,self).tearDown(*args,**kwargs)
+        super(FilesystemHandlerTestCase,self).tearDown(*args,**kwargs)
 
     def test_get_unauthed(self):
         response = self.fetch(
-            '/a/filesystem/volumes/',
+            '/a/filesystem/',
             method='GET',
             follow_redirects=False)
 

@@ -17,8 +17,3 @@ APP_SPECIFICATION = {
         'filebrowser.controller.js',
     ),
 }
-
-FILESYSTEM_ROOT_DIRECTORIES = (
-    os.path.join('$HOME', ''),
-    '/tmp/',
-    )

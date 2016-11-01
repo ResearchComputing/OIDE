@@ -6,9 +6,10 @@ import mock
 from stat import *
 import pwd
 
-from sandstone.lib.filesystem.interfaces.posixfs import PosixFS
-from sandstone.lib.filesystem.schemas import VolumeObject
+from sandstone.lib.filesystem.interfaces import PosixFS
 from sandstone.lib.filesystem.schemas import FilesystemObject
+from sandstone.lib.filesystem.schemas import VolumeObject
+from sandstone.lib.filesystem.schemas import FileObject
 
 
 
@@ -20,18 +21,21 @@ class PosixFSTestCase(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(self.test_dir)
 
-    def test_get_volume_details(self):
-        with mock.patch('sandstone.lib.filesystem.manager.VolumeManager.volumes',[self.test_dir]):
-            volume_details = self.posix_fs.get_volume_details(self.test_dir)
+    def test_get_filesystem_details(self):
+        with mock.patch('sandstone.settings.VOLUMES',[self.test_dir]):
+            fs_details = self.posix_fs.get_filesystem_details()
+            self.assertTrue(isinstance(fs_details,FilesystemObject))
+            self.assertEqual(fs_details.type,'filesystem')
+            self.assertEqual(type(fs_details.groups),type([]))
+            self.assertEqual(len(fs_details.volumes), 1)
+            volume_details = fs_details.volumes[0]
             self.assertTrue(isinstance(volume_details,VolumeObject))
             self.assertEqual(volume_details.name,self.test_dir)
-            self.assertEqual(volume_details.fs_type,'posix')
             self.assertEqual(volume_details.type,'volume')
 
     def test_get_groups(self):
-        with mock.patch('sandstone.lib.filesystem.manager.VolumeManager.volumes',[self.test_dir]):
-            groups = self.posix_fs.get_groups(self.test_dir)
-            self.assertEqual(type(groups),type([]))
+        groups = self.posix_fs.get_groups()
+        self.assertEqual(type(groups),type([]))
 
     def test__parse_ls_line(self):
         line = '4.0K drwxrwxr-x 5 testuser testgrp 4.0K Jun 22 12:03 apps'
@@ -61,50 +65,47 @@ class PosixFSTestCase(unittest.TestCase):
         self.assertEqual(parsed['size'],'653b')
 
     def test_get_file_details(self):
-        with mock.patch('sandstone.lib.filesystem.manager.VolumeManager.volumes',[self.test_dir]):
-            fp = os.path.join(self.test_dir,'testfile.txt')
-            open(fp,'w').close()
+        fp = os.path.join(self.test_dir,'testfile.txt')
+        open(fp,'w').close()
 
-            file_details = self.posix_fs.get_file_details(fp)
-            self.assertTrue(isinstance(file_details,FilesystemObject))
-            self.assertTrue(file_details.type,'file')
-            self.assertTrue(file_details.volume,self.test_dir)
-            self.assertTrue(file_details.dirpath,self.test_dir)
-            self.assertTrue(file_details.filepath,fp)
-            self.assertTrue(file_details.name,'testfile.txt')
+        file_details = self.posix_fs.get_file_details(fp)
+        self.assertTrue(isinstance(file_details,FileObject))
+        self.assertTrue(file_details.type,'file')
+        self.assertTrue(file_details.dirpath,self.test_dir)
+        self.assertTrue(file_details.filepath,fp)
+        self.assertTrue(file_details.name,'testfile.txt')
 
-            self.assertRaises(OSError,self.posix_fs.get_file_details,'/fake/fp')
+        self.assertRaises(OSError,self.posix_fs.get_file_details,'/fake/fp')
 
     def test_get_directory_details(self):
-        with mock.patch('sandstone.lib.filesystem.manager.VolumeManager.volumes',[self.test_dir]):
-            dp = os.path.join(self.test_dir,'testDir')
-            hp = os.path.join(self.test_dir,'.testDir')
-            fp = os.path.join(self.test_dir,'atestfile.txt')
-            fake_fp = '/does/not/exist'
-            os.mkdir(dp)
-            os.mkdir(hp)
-            open(fp,'w').close()
+        dp = os.path.join(self.test_dir,'testDir')
+        hp = os.path.join(self.test_dir,'.testDir')
+        fp = os.path.join(self.test_dir,'atestfile.txt')
+        fake_fp = '/does/not/exist'
+        os.mkdir(dp)
+        os.mkdir(hp)
+        open(fp,'w').close()
 
-            self.assertRaises(OSError,self.posix_fs.get_directory_details,fake_fp)
+        self.assertRaises(OSError,self.posix_fs.get_directory_details,fake_fp)
 
-            dir_details = self.posix_fs.get_directory_details(self.test_dir,contents=False)
-            self.assertTrue(isinstance(dir_details,FilesystemObject))
-            self.assertEqual(dir_details.filepath,self.test_dir)
-            self.assertFalse(hasattr(dir_details,'contents'))
+        dir_details = self.posix_fs.get_directory_details(self.test_dir,contents=False)
+        self.assertTrue(isinstance(dir_details,FileObject))
+        self.assertEqual(dir_details.filepath,self.test_dir)
+        self.assertFalse(hasattr(dir_details,'contents'))
 
-            dir_details = self.posix_fs.get_directory_details(self.test_dir)
-            self.assertTrue(isinstance(dir_details,FilesystemObject))
-            self.assertEqual(dir_details.filepath,self.test_dir)
-            self.assertTrue(hasattr(dir_details,'contents'))
-            self.assertTrue(isinstance(dir_details.contents[0],FilesystemObject))
-            self.assertEqual(dir_details.contents[0].filepath,dp)
-            self.assertEqual(dir_details.contents[1].filepath,hp)
-            self.assertEqual(dir_details.contents[2].filepath,fp)
+        dir_details = self.posix_fs.get_directory_details(self.test_dir)
+        self.assertTrue(isinstance(dir_details,FileObject))
+        self.assertEqual(dir_details.filepath,self.test_dir)
+        self.assertTrue(hasattr(dir_details,'contents'))
+        self.assertTrue(isinstance(dir_details.contents[0],FileObject))
+        self.assertEqual(dir_details.contents[0].filepath,dp)
+        self.assertEqual(dir_details.contents[1].filepath,hp)
+        self.assertEqual(dir_details.contents[2].filepath,fp)
 
-            dir_details = self.posix_fs.get_directory_details(self.test_dir,dir_sizes=True)
-            self.assertTrue(isinstance(dir_details,FilesystemObject))
-            self.assertEqual(dir_details.filepath,self.test_dir)
-            self.assertTrue(hasattr(dir_details,'contents'))
+        dir_details = self.posix_fs.get_directory_details(self.test_dir,dir_sizes=True)
+        self.assertTrue(isinstance(dir_details,FileObject))
+        self.assertEqual(dir_details.filepath,self.test_dir)
+        self.assertTrue(hasattr(dir_details,'contents'))
 
     def test_exists(self):
         abs_dp = os.path.join(self.test_dir,'testDir')
@@ -329,19 +330,18 @@ class PosixFSTestCase(unittest.TestCase):
         self.assertRaises(OSError,self.posix_fs.update_permissions,*['/fake/fp','rwxrwxrwx'])
 
     def test_update_group(self):
-        with mock.patch('sandstone.lib.filesystem.manager.VolumeManager.volumes',[self.test_dir]):
-            fp = os.path.join(self.test_dir,'testfile.txt')
-            open(fp,'w').close()
+        fp = os.path.join(self.test_dir,'testfile.txt')
+        open(fp,'w').close()
 
-            groups = self.posix_fs.get_groups(self.test_dir)
-            current_grp = groups[0]
-            newgrp = groups[1]
+        groups = self.posix_fs.get_groups()
+        current_grp = groups[0]
+        newgrp = groups[1]
 
-            file_details = self.posix_fs.get_file_details(fp)
-            self.assertEqual(file_details.group,current_grp)
+        file_details = self.posix_fs.get_file_details(fp)
+        self.assertEqual(file_details.group,current_grp)
 
-            self.posix_fs.update_group(fp,newgrp)
-            file_details = self.posix_fs.get_file_details(fp)
-            self.assertEqual(file_details.group,newgrp)
+        self.posix_fs.update_group(fp,newgrp)
+        file_details = self.posix_fs.get_file_details(fp)
+        self.assertEqual(file_details.group,newgrp)
 
-            self.assertRaises(OSError,self.posix_fs.update_group,*['/fake/fp','testgrp'])
+        self.assertRaises(OSError,self.posix_fs.update_group,*['/fake/fp','testgrp'])

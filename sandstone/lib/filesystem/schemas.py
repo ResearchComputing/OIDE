@@ -11,7 +11,7 @@ def extend_schema(addenda):
 
 class BaseObject:
     """
-    Base object subclassed by all filesystem volume and object representations.
+    Base object subclassed by all filesystem representations.
     Uses cerberus for data validation. Provides serializaiton and deserialization
     methods.
     """
@@ -22,14 +22,7 @@ class BaseObject:
     schema = {
         'type': {
             'type': 'string',
-            'allowed': ['volume','file','directory']
-        },
-        'name': {
-            'type': 'string'
-        },
-        'size': {
-            'type': 'string',
-            'regex': '^([\d]+(.[\d]+)?[bKMGT])$'
+            'allowed': ['filesystem','volume','file','directory']
         },
     }
 
@@ -52,6 +45,25 @@ class BaseObject:
         del d['validator']
         return tornado.escape.json_encode(d)
 
+class FilesystemObject(BaseObject):
+    """
+    This object standardizes the representation of the filesystem handled by
+    the filesystem REST API.
+    """
+
+    schema = extend_schema({
+        'type': {
+            'type': 'string',
+            'allowed': ['filesystem']
+        },
+        'available_groups': {
+            'type': 'list'
+        },
+        'volumes': {
+            'type': 'list'
+        },
+    })
+
 class VolumeObject(BaseObject):
     """
     This object standardizes the representation of filesystem volumes handled by
@@ -63,11 +75,12 @@ class VolumeObject(BaseObject):
             'type': 'string',
             'allowed': ['volume']
         },
-        'available_groups': {
-            'type': 'list'
-        },
-        'fs_type': {
+        'name': {
             'type': 'string'
+        },
+        'size': {
+            'type': 'string',
+            'regex': '^([\d]+(.[\d]+)?[bKMGT])$'
         },
         'used': {
             'type': 'string',
@@ -84,9 +97,9 @@ class VolumeObject(BaseObject):
         }
     })
 
-class FilesystemObject(BaseObject):
+class FileObject(BaseObject):
     """
-    This object standardizes the representation of filesystem objects handled by
+    This object standardizes the representation of file and directory objects handled by
     the filesystem REST API.
     """
 
@@ -95,13 +108,13 @@ class FilesystemObject(BaseObject):
             'type': 'string',
             'allowed': ['file','directory']
         },
+        'name': {
+            'type': 'string'
+        },
         'dirpath': {
             'type': 'string'
         },
         'filepath': {
-            'type': 'string'
-        },
-        'volume': {
             'type': 'string'
         },
         'owner': {
@@ -113,7 +126,11 @@ class FilesystemObject(BaseObject):
         'permissions': {
             'type': 'string',
             'regex': '^([r-][w-][x-]){3}$'
-        }
+        },
+        'size': {
+            'type': 'string',
+            'regex': '^([\d]+(.[\d]+)?[bKMGT])$'
+        },
     })
 
     def to_dict(self):
