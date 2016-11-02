@@ -71,9 +71,7 @@ class PosixFSTestCase(unittest.TestCase):
         file_details = self.posix_fs.get_file_details(fp)
         self.assertTrue(isinstance(file_details,FileObject))
         self.assertTrue(file_details.type,'file')
-        self.assertTrue(file_details.dirpath,self.test_dir)
         self.assertTrue(file_details.filepath,fp)
-        self.assertTrue(file_details.name,'testfile.txt')
 
         self.assertRaises(OSError,self.posix_fs.get_file_details,'/fake/fp')
 

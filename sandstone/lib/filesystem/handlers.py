@@ -132,9 +132,17 @@ class DirectoryHandler(BaseHandler,FSMixin):
         """
         if not self.fs.exists(filepath):
             raise tornado.web.HTTPError(404)
-
-        contents = self.get_argument('contents', True)
+        
+        contents = self.get_argument('contents', False)
+        if contents == u'true':
+            contents = True
+        else:
+            contents = False
         dir_sizes = self.get_argument('dir_sizes', False)
+        if dir_sizes == u'true':
+            dir_sizes = True
+        else:
+            dir_sizes = False
 
         res = self.fs.get_directory_details(filepath,contents=contents,dir_sizes=dir_sizes)
         res = res.to_dict()

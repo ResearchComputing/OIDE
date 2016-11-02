@@ -88,14 +88,14 @@ class PosixFS:
         filepath = os.path.abspath(filepath)
         if not self.exists(filepath):
             raise OSError('File not found')
-        dirname, name = os.path.split(filepath)
         details = {
-            'filepath': filepath,
-            'dirpath': dirname,
-            'name': name
+            'filepath': filepath
         }
-        p = subprocess.Popen(['ls', '-lsah', filepath], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        p = subprocess.Popen(['ls', '-lsahd', filepath], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = p.communicate()
+        lines = out.split('\n')
+        if lines[0] == '':
+            out = lines[1]
         ls_det = self._parse_ls_line(out)
         details.update(ls_det)
         file_details = FileObject(**details)
@@ -105,11 +105,8 @@ class PosixFS:
         filepath = os.path.abspath(filepath)
         if not self.exists(filepath):
             raise OSError('File not found')
-        dirname, name = os.path.split(filepath)
         details = {
-            'filepath': filepath,
-            'dirpath': dirname,
-            'name': name
+            'filepath': filepath
         }
         if not contents:
             p = subprocess.Popen(['ls', '-lsahd', filepath], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -133,8 +130,6 @@ class PosixFS:
                 name = line.split()[-1]
                 fp = os.path.join(filepath,name)
                 line_details.update({
-                    'name': name,
-                    'dirpath': filepath,
                     'filepath': fp
                 })
                 if dir_sizes and line_details['type'] == 'directory':

@@ -8,6 +8,6 @@ from sandstone.lib.filesystem.handlers import DirectoryHandler
 URL_SCHEMA = [
             (r"/a/filesystem/", FilesystemHandler),
             (r"/a/filesystem/directories/(.*)/", DirectoryHandler),
-            (r"/a/filesystem/files/(.*)/", FileHandler),
-            (r"/a/filesystem/files/(.*)/contents/", FileContentsHandler),
+            (r"/a/filesystem/files/([^\/]*)/", FileHandler),
+            (r"/a/filesystem/files/([^\/]*)/contents/", FileContentsHandler),
         ]

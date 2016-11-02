@@ -64,6 +64,19 @@ class FilesystemObject(BaseObject):
         },
     })
 
+    def to_dict(self):
+        volumes = []
+        for v in self.volumes:
+            volumes.append(v.to_dict())
+        d = vars(self)
+        del d['validator']
+        d['volumes'] = volumes
+        return d
+
+    def to_json_string(self):
+        d = self.to_dict()
+        return tornado.escape.json_encode(d)
+
 class VolumeObject(BaseObject):
     """
     This object standardizes the representation of filesystem volumes handled by
@@ -107,12 +120,6 @@ class FileObject(BaseObject):
         'type': {
             'type': 'string',
             'allowed': ['file','directory']
-        },
-        'name': {
-            'type': 'string'
-        },
-        'dirpath': {
-            'type': 'string'
         },
         'filepath': {
             'type': 'string'
