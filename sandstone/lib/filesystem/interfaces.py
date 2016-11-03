@@ -218,6 +218,7 @@ class PosixFS:
         dirname, name = os.path.split(origpath)
         newpath = os.path.join(dirname,newname)
         os.rename(origpath,newpath)
+        return newpath
 
     def _permissions_to_octal(self, perm_string):
         try:

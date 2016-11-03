@@ -30,34 +30,50 @@ class FilesystemHandler(BaseHandler,FSMixin):
         Provides move, copy, and rename functionality. An action must be
         specified when calling this method.
         """
-
-        action = self.get_argument('action',None)
+        fp = self.get_argument('filepath')
+        action = self.get_argument('action')
         action = tornado.escape.json_decode(action)
-        if not action:
-            raise tornado.web.HTTPError(400)
 
-        fp = action['data']['filepath']
+        ptype = self.fs.get_type_from_path(fp)
+        if ptype == 'directory':
+            handler_name = 'filesystem:directories-details'
+        else:
+            handler_name = 'filesystem:files-details'
 
         if action['action'] == 'move':
-            newpath = action['data']['newpath']
-            self.fs.move(fp,newpath)
-            self.write({'msg':'File moved to {}'.format(newpath)})
+            newpath = action['newpath']
+            try:
+                self.fs.move(fp,newpath)
+            except OSError:
+                raise tornado.web.HTTPError(404)
+            encoded_filepath = tornado.escape.url_escape(newpath,plus=True)
+            resource_uri = self.reverse_url(handler_name,encoded_filepath)
+            self.write({'uri':resource_uri})
         elif action['action'] == 'copy':
-            newpath = action['data']['newpath']
-            self.fs.copy(fp,newpath)
-            self.write({'msg':'File copied to {}'.format(newpath)})
+            copypath = action['copypath']
+            try:
+                self.fs.copy(fp,copypath)
+            except OSError:
+                raise tornado.web.HTTPError(404)
+            encoded_filepath = tornado.escape.url_escape(copypath,plus=True)
+            resource_uri = self.reverse_url(handler_name,encoded_filepath)
+            self.write({'uri':resource_uri})
         elif action['action'] == 'rename':
-            newname = action['data']['newname']
-            self.fs.rename(fp,newname)
-            self.write({'msg':'File renamed to {}'.format(newname)})
+            newname = action['newname']
+            try:
+                newpath = self.fs.rename(fp,newname)
+            except OSError:
+                raise tornado.web.HTTPError(404)
+            encoded_filepath = tornado.escape.url_escape(newpath,plus=True)
+            resource_uri = self.reverse_url(handler_name,encoded_filepath)
+            self.write({'uri':resource_uri})
         else:
             raise tornado.web.HTTPError(400)
 
 class FileHandler(BaseHandler,FSMixin):
     """
     This handler implements the file resource for the
-    filesystem REST API. This resource resides under the
-    volume resource.
+    filesystem REST API.
     """
 
     @sandstone.lib.decorators.authenticated
@@ -73,14 +89,6 @@ class FileHandler(BaseHandler,FSMixin):
         self.write(res)
 
     @sandstone.lib.decorators.authenticated
-    def post(self, filepath):
-        """
-        Create a new file at the specified path.
-        """
-        self.fs.create_file(filepath)
-        self.write({'msg':'File created at {}'.format(filepath)})
-
-    @sandstone.lib.decorators.authenticated
     def put(self, filepath):
         """
         Change the group or permissions of the specified file. Action
@@ -89,17 +97,15 @@ class FileHandler(BaseHandler,FSMixin):
         if not self.fs.exists(filepath):
             raise tornado.web.HTTPError(404)
 
-        action = self.get_argument('action',None)
+        action = self.get_argument('action')
         action = tornado.escape.json_decode(action)
-        if not action:
-            raise tornado.web.HTTPError(400)
 
         if action['action'] == 'update_group':
-            newgrp = action['data']['group']
+            newgrp = action['group']
             self.fs.update_group(filepath,newgrp)
             self.write({'msg':'Updated group for {}'.format(filepath)})
         elif action['action'] == 'update_permissions':
-            newperms = action['data']['permissions']
+            newperms = action['permissions']
             self.fs.update_permissions(filepath,newperms)
             self.write({'msg':'Updated permissions for {}'.format(filepath)})
 
@@ -114,11 +120,28 @@ class FileHandler(BaseHandler,FSMixin):
         self.fs.delete(filepath)
         self.write({'msg':'File deleted at {}'.format(filepath)})
 
-class DirectoryHandler(BaseHandler,FSMixin):
+class FileCreateHandler(BaseHandler,FSMixin):
+    """
+    This handler implements the file create resource for the
+    filesystem REST API. Returns the resource URI if successfully
+    created.
+    """
+
+    @sandstone.lib.decorators.authenticated
+    def post(self):
+        """
+        Create a new file at the specified path.
+        """
+        filepath = self.get_argument('filepath')
+
+        encoded_filepath = tornado.escape.url_escape(filepath,plus=True)
+        resource_uri = self.reverse_url('filesystem:files-details', encoded_filepath)
+        self.write({'uri':resource_uri})
+
+class DirectoryHandler(FileHandler):
     """
     This handler implements the directory resource for the
-    filesystem REST API. This resource resides under the
-    volume resource.
+    filesystem REST API.
     """
 
     @sandstone.lib.decorators.authenticated
@@ -132,7 +155,7 @@ class DirectoryHandler(BaseHandler,FSMixin):
         """
         if not self.fs.exists(filepath):
             raise tornado.web.HTTPError(404)
-        
+
         contents = self.get_argument('contents', False)
         if contents == u'true':
             contents = True
@@ -148,47 +171,25 @@ class DirectoryHandler(BaseHandler,FSMixin):
         res = res.to_dict()
         self.write(res)
 
+class DirectoryCreateHandler(BaseHandler,FSMixin):
+    """
+    This handler implements the directory create resource for the
+    filesystem REST API. Returns the resource URI if successfully
+    created.
+    """
+
     @sandstone.lib.decorators.authenticated
-    def post(self, filepath):
+    def post(self):
         """
         Create a new directory at the specified path.
         """
+        filepath = self.get_argument('filepath')
+
         self.fs.create_directory(filepath)
-        self.write({'msg':'Directory created at {}'.format(filepath)})
 
-    @sandstone.lib.decorators.authenticated
-    def put(self, filepath):
-        """
-        Change the group or permissions of the specified directory. Action
-        must be specified when calling this method.
-        """
-        if not self.fs.exists(filepath):
-            raise tornado.web.HTTPError(404)
-
-        action = self.get_argument('action',None)
-        action = tornado.escape.json_decode(action)
-        if not action:
-            raise tornado.web.HTTPError(400)
-
-        if action['action'] == 'update_group':
-            newgrp = action['data']['group']
-            self.fs.update_group(filepath,newgrp)
-            self.write({'msg':'Updated group for {}'.format(filepath)})
-        elif action['action'] == 'update_permissions':
-            newperms = action['data']['permissions']
-            self.fs.update_permissions(filepath,newperms)
-            self.write({'msg':'Updated permissions for {}'.format(filepath)})
-
-    @sandstone.lib.decorators.authenticated
-    def delete(self, filepath):
-        """
-        Delete the specified directory.
-        """
-        if not self.fs.exists(filepath):
-            raise tornado.web.HTTPError(404)
-
-        self.fs.delete(filepath)
-        self.write({'msg':'Directory deleted at {}'.format(filepath)})
+        encoded_filepath = tornado.escape.url_escape(filepath,plus=True)
+        resource_uri = self.reverse_url('filesystem:directories-details', encoded_filepath)
+        self.write({'uri':resource_uri})
 
 class FileContentsHandler(BaseHandler, FSMixin):
     """
