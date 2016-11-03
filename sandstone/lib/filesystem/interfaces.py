@@ -35,7 +35,7 @@ class PosixFS:
         for volume_path in self._format_volume_paths():
             vd = {
                 'type': 'volume',
-                'name': volume_path
+                'filepath': volume_path
             }
             p = subprocess.Popen(['df', '-h', volume_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             out, err = p.communicate()

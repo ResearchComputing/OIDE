@@ -14,7 +14,7 @@
     "angular-bootstrap": "0.13.x",
     "angular-ui-ace": "",
     "ng-context-menu": "",
-    "angular-tree-control": "",
+    "angular-tree-control": "https://github.com/SandstoneHPC/angular-tree-control.git#0.2.28",
     "term.js": "",
     "angular-file-upload": "https://github.com/SandstoneHPC/angular-file-upload.git#2.2.1",
     "angular-smart-table": "~2.1.6"

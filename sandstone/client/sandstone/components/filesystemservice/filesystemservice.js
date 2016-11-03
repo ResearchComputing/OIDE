@@ -16,10 +16,40 @@ angular.module('sandstone.filesystemservice', [])
   };
 
   // FS object constructors
+  self.Volume = function(filepath,size,used,available,usedPercent) {
+    var filepathRegex = /^(\/(?:[^\/]+\/)*)+([^\/]+)[\/]?$/;
+    var filepathMatches = filepath.match(filepathRegex);
+
+    if (filepathMatches === null) {
+      var errMsg = "Invalid filepath specified: " + filepath;
+      throw errMsg;
+    }
+
+    this.type = 'volume';
+    this.filepath = filepathMatches[0];
+    this.dirpath = filepathMatches[1];
+    this.name = filepathMatches[2];
+    this.size = size;
+    this.used = used;
+    this.available = available;
+    this.usedPercent = usedPercent;
+  };
+
   self.Filesystem = function(availableGroups,volumes) {
     this.type = 'filesystem';
     this.groups = availableGroups;
-    this.volumes = volumes;
+    this.volumes = [];
+    for (var i=0;i<volumes.length;i++) {
+      var v = volumes[i];
+      var volume = new self.Volume(
+        v.filepath,
+        v.size,
+        v.used,
+        v.available,
+        v.used_pct
+      );
+      this.volumes.push(volume);
+    }
   };
 
   self.File = function(type,filepath,owner,group,permissions,size,contents) {

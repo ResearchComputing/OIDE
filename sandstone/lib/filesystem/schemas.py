@@ -88,7 +88,7 @@ class VolumeObject(BaseObject):
             'type': 'string',
             'allowed': ['volume']
         },
-        'name': {
+        'filepath': {
             'type': 'string'
         },
         'size': {

@@ -30,7 +30,7 @@ class PosixFSTestCase(unittest.TestCase):
             self.assertEqual(len(fs_details.volumes), 1)
             volume_details = fs_details.volumes[0]
             self.assertTrue(isinstance(volume_details,VolumeObject))
-            self.assertEqual(volume_details.name,self.test_dir)
+            self.assertEqual(volume_details.filepath,self.test_dir)
             self.assertEqual(volume_details.type,'volume')
 
     def test_get_groups(self):

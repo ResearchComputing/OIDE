@@ -1,13 +1,13 @@
 <div class="filetree-container">
   <treecontrol
     class="tree-sandstone"
-    tree-model="treeData.filetreeContents"
-    options="treeOptions"
+    tree-model="treeData.contents"
+    options="options"
     order-by="type+filename"
-    selected-nodes="treeData.selectedNodes"
-    expanded-nodes="treeData.expandedNodes"
-    on-selection="describeSelection(node, selected)"
-    on-node-toggle="getDirContents(node,expanded)">
+    selected-nodes="treeData.selected"
+    expanded-nodes="treeData.expanded"
+    on-selection="onSelect(node,selected)"
+    on-node-toggle="onToggle(node,expanded)">
     {{node.filename}}
     <span class="filetree-permissions">{{node.permissions}}</span>
   </treecontrol>
