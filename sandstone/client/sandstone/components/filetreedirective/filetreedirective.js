@@ -60,6 +60,7 @@ angular.module('sandstone.filetreedirective', [])
         }
 
         if (!self.isExpanded(node.filepath)) {
+          FilesystemService.deleteFilewatcher(node.filepath, function() {});
           return;
         }
 
@@ -69,6 +70,8 @@ angular.module('sandstone.filetreedirective', [])
             node.children.push(directory.contents[i]);
           }
         });
+
+        FilesystemService.createFilewatcher(node.filepath, function() {});
       };
     }
   ]};

@@ -6,6 +6,7 @@ angular.module('sandstone.filesystemservice', [])
   var self = this;
   // Private
   var _fsUrl = '/a/filesystem/';
+  var _watcherUrl = '/a/filesystem/watchers/';
   var _fsDirUrl = '/a/filesystem/directories/';
   var _fsFileUrl = '/a/filesystem/files/';
 
@@ -352,4 +353,44 @@ angular.module('sandstone.filesystemservice', [])
       err(data,status);
     });
   };
+
+  self.createFilewatcher = function(filepath,success,error) {
+    var err = error || _error;
+    var requestUrl = _watcherUrl;
+
+    var req = $http({
+      url: requestUrl,
+      method: 'POST',
+      params: {
+        _xsrf: getCookie('_xsrf'),
+        filepath: filepath
+      }
+    });
+    req.success(function(data) {
+      success();
+    });
+    req.error(function(data,status) {
+      err(data,status);
+    });
+  };
+
+  self.deleteFilewatcher = function(filepath,success,error) {
+    var err = error || _error;
+    var requestUrl = _watcherUrl + encodeURIComponent(filepath) + '/';
+
+    var req = $http({
+      url: requestUrl,
+      method: 'DELETE',
+      params: {
+        _xsrf: getCookie('_xsrf')
+      }
+    });
+    req.success(function(data) {
+      success();
+    });
+    req.error(function(data,status) {
+      err(data,status);
+    });
+  };
+
 }]);

@@ -4,44 +4,43 @@ angular.module('sandstone.editor')
 .controller('FiletreeCtrl', ['$modal', '$log', 'EditorService', '$rootScope', 'FilesystemService', function($modal,$log, EditorService, $rootScope, FilesystemService){
   var self = this;
   self.treeData = {
-    contents: [
-      // { "type": "dir", "filepath": "/tmp/", "filename" : "tmp", "children" : []}
-    ]
+    contents: [],
+    selected: [],
+    expanded: []
   };
 
   self.sd = {
-    noSelections: true,
-    multipleSelections: false,
-    dirSelected: false
+    noSelections: function() {
+      return (self.treeData.selected.length == 0);
+    },
+    multipleSelections: function() {
+      return (self.treeData.selected.length > 1);
+    },
+    dirSelected: function() {
+      var td = self.treeData.selected;
+      for (var i=0;i<td.length;i++) {
+        if (td[i].type === 'directory') {
+          return true;
+        }
+      }
+      return false;
+    }
   };
 
   self.fcDropdown = false;
+
   self.clipboard = [];
   self.clipboardEmpty = function(){
     return self.clipboard.length === 0;
   };
 
-  self.updateFiletree = function () {
-    // for (var i=0;i<self.treeData.expandedNodes.length;i++) {
-    //   self.getDirContents(self.treeData.expandedNodes[i]);
-    // }
-    $rootScope.$emit('refreshFiletree');
-  };
-
   self.openFilesInEditor = function () {
     //FiletreeService.openFilesInEditor();
-    var treeData = self.treeData.selectedNodes;
+    var treeData = self.treeData.selected;
     for(var i = 0; i < treeData.length; i++) {
       EditorService.openDocument(treeData[i].filepath);
       $log.debug('Opened document: ', treeData[i].filepath);
     }
-  };
-
-  // Callback of invocation to FilesystemService to create a file
-  // Update the filetree to show the new file
-  self.createFileCallback = function(data, status, headers, config){
-    $log.debug('POST: ', data);
-    $rootScope.$emit('refreshFiletree');
   };
 
   // Callback of invocation to FilesystemService to get the next Untitled FIle
@@ -60,12 +59,6 @@ angular.module('sandstone.editor')
      FilesystemService.duplicateFile(data.originalFile, newFilePath, self.duplicatedFile);
   };
 
-  // Callback for duplicating a file
-  self.duplicatedFile = function(data, status, headers, config) {
-    $log.debug('Copied: ', data.result);
-    self.updateFiletree();
-  };
-
   self.createNewFile = function () {
     //Invokes filesystem service to create a new file
     var selectedDir = self.treeData.selectedNodes[0].filepath;
@@ -78,18 +71,6 @@ angular.module('sandstone.editor')
   self.createDuplicate = function () {
     var selectedFile = self.treeData.selectedNodes[0].filepath;
     FilesystemService.getNextDuplicate(selectedFile, self.gotNextDuplicateFile);
-  };
-
-  $rootScope.$on('fileRenamed',function(event, oldPath, newPath){
-    EditorService.fileRenamed(oldPath, newPath);
-  });
-
-  $rootScope.$on('fileDeleted', function(event, path){
-    EditorService.fileDeleted(path);
-  });
-
-  self.deletedFile = function(data, status, headers, config, node) {
-    $rootScope.$emit('deletedFile', data, status, headers, config, node);
   };
 
   self.deleteFiles = function () {
@@ -129,11 +110,6 @@ angular.module('sandstone.editor')
     $log.debug('Copied ', i, ' files to clipboard: ', self.clipboard);
   };
 
-  // Callback for invocation to FilesystemService pasteFile method
-  self.pastedFiles = function(data, status, headers, config, node){
-    $log.debug('POST: ', data.result);
-  };
-
   self.pasteFiles = function () {
     var i;
     var newDirPath = self.treeData.selectedNodes[0].filepath;
@@ -144,12 +120,6 @@ angular.module('sandstone.editor')
     $rootScope.$emit('pastedFiles', newDirPath);
   };
 
-  self.fileRenamed = function(data, status, headers, config, node) {
-    $rootScope.$emit('fileRenamed', node.filepath, data.result);
-    self.updateFiletree();
-    $log.debug('POST: ', data.result);
-  };
-
   self.renameFile = function () {
     var renameModalInstance = $modal.open({
       templateUrl: '/static/editor/templates/rename-modal.html',
@@ -158,14 +128,14 @@ angular.module('sandstone.editor')
       controller: 'RenameModalCtrl as ctrl',
       resolve: {
         files: function () {
-          return self.treeData.selectedNodes;
+          return self.treeData.selected;
         }
       }
     });
 
     renameModalInstance.result.then(function (newFileName) {
       $log.debug('Files renamed at: ' + new Date());
-      var node = self.treeData.selectedNodes[0];
+      var node = self.treeData.selected[0];
       FilesystemService.renameFile(newFileName, node, self.fileRenamed);
     }, function () {
       $log.debug('Modal dismissed at: ' + new Date());

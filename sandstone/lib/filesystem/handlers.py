@@ -6,6 +6,7 @@ import sandstone.lib.decorators
 from sandstone import settings
 from sandstone.lib.handlers.base import BaseHandler
 from sandstone.lib.filesystem.mixins import FSMixin
+from sandstone.lib.filesystem.filewatcher import Filewatcher
 
 
 
@@ -69,6 +70,40 @@ class FilesystemHandler(BaseHandler,FSMixin):
             self.write({'uri':resource_uri})
         else:
             raise tornado.web.HTTPError(400)
+
+class FilewatcherHandler(BaseHandler,FSMixin):
+    """
+    This handlers implements the filewatcher REST API.
+    """
+
+    @sandstone.lib.decorators.authenticated
+    def get(self, *args):
+        """
+        Get list of active filewatchers.
+        """
+        pass
+
+    @sandstone.lib.decorators.authenticated
+    def post(self, *args):
+        """
+        Start a new filewatcher at the specified path.
+        """
+        filepath = self.get_argument('filepath', None)
+        if filepath == None:
+            raise tornado.web.HTTPError(400)
+        Filewatcher.add_directory_to_watch(filepath)
+        self.write({'msg':'Watcher added for {}'.format(filepath)})
+
+    @sandstone.lib.decorators.authenticated
+    def delete(self, filepath):
+        """
+        Stop and delete the specified filewatcher.
+        """
+        if filepath == None:
+            raise tornado.web.HTTPError(400)
+        Filewatcher.remove_directory_to_watch(filepath)
+        self.write({'msg':'Watcher deleted for {}'.format(filepath)})
+
 
 class FileHandler(BaseHandler,FSMixin):
     """
