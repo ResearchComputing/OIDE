@@ -132,7 +132,7 @@ class FileObject(BaseObject):
         },
         'permissions': {
             'type': 'string',
-            'regex': '^([r-][w-][x-]){3}$'
+            'regex': '^([r-][w-][xt-]){3}$'
         },
         'size': {
             'type': 'string',
