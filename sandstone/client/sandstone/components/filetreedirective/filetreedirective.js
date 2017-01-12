@@ -12,21 +12,15 @@ angular.module('sandstone.filetreedirective', [])
     templateUrl: '/static/core/components/filetreedirective/templates/filetree.html',
     controller: ['$scope', '$element', '$rootScope', 'FilesystemService', function($scope, $element, $rootScope, FilesystemService) {
       var self = $scope;
-      if (!self.treeData) {
-        self.treeData = {
-          contents: [],
-          expanded: [],
-          selected: []
-        };
-        FilesystemService.getFilesystemDetails(function(filesystem) {
-          for (var i=0;i<filesystem.volumes.length;i++) {
-            self.treeData.contents.push(filesystem.volumes[i]);
-          }
-        });
-      }
+      FilesystemService.getFilesystemDetails(function(filesystem) {
+        for (var i=0;i<filesystem.volumes.length;i++) {
+          filesystem.volumes[i].name = filesystem.volumes[i].filepath;
+          self.treeData.contents.push(filesystem.volumes[i]);
+        }
+      });
 
       // Options
-      var options = {
+      self.options = {
         multiSelection: true,
         isLeaf: function(node) {
           return node.type === 'file';
@@ -55,14 +49,14 @@ angular.module('sandstone.filetreedirective', [])
       };
 
       self.onSelect = function(node,selected) {
-        if (extraOnSelect) {
-          extraOnSelect(node, selected);
+        if (self.extraOnSelect) {
+          self.extraOnSelect(node, selected);
         }
       };
 
       self.onToggle = function(node,expanded) {
-        if (extraOnToggle) {
-          extraOnToggle(node, expanded);
+        if (self.extraOnToggle) {
+          self.extraOnToggle(node, expanded);
         }
 
         if (!self.isExpanded(node.filepath)) {
@@ -70,6 +64,7 @@ angular.module('sandstone.filetreedirective', [])
         }
 
         FilesystemService.getDirectoryDetails(node.filepath, {}, function(directory) {
+          node.children = [];
           for (var i=0;i<directory.contents.length;i++) {
             node.children.push(directory.contents[i]);
           }

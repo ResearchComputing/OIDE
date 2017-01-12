@@ -4,7 +4,7 @@ angular.module('sandstone.editor')
 .controller('FiletreeCtrl', ['$modal', '$log', 'EditorService', '$rootScope', 'FilesystemService', function($modal,$log, EditorService, $rootScope, FilesystemService){
   var self = this;
   self.treeData = {
-    filetreeContents: [
+    contents: [
       // { "type": "dir", "filepath": "/tmp/", "filename" : "tmp", "children" : []}
     ]
   };
