@@ -1,6 +1,7 @@
 from watchdog.observers import Observer
 from sandstone.lib.broadcast.manager import BroadcastManager
 from sandstone.lib.broadcast.message import BroadcastMessage
+import os
 import watchdog
 
 class FilesystemEventHandler(watchdog.events.FileSystemEventHandler):
@@ -12,10 +13,16 @@ class FilesystemEventHandler(watchdog.events.FileSystemEventHandler):
         """
         Event Handler when a file is created
         """
-        key = 'filetree:created_file'
+        key = 'filesystem:file_created'
+
         data = {
-            'filepath': event.src_path
+            'filepath': event.src_path,
+            'is_directory': event.is_directory
         }
+
+        if not event.is_directory:
+            data['dirpath'] = os.path.join(os.path.dirname(event.src_path),'')
+
         bmsg = BroadcastMessage(key=key, data=data)
         BroadcastManager.broadcast(bmsg)
 
@@ -23,10 +30,15 @@ class FilesystemEventHandler(watchdog.events.FileSystemEventHandler):
         """
         Event Handler when a file is deleted
         """
-        key = 'filetree:deleted_file'
+        key = 'filesystem:file_deleted'
         data = {
-            'filepath': event.src_path
+            'filepath': event.src_path,
+            'is_directory': event.is_directory
         }
+
+        if not event.is_directory:
+            data['dirpath'] = os.path.join(os.path.dirname(event.src_path),'')
+
         bmsg = BroadcastMessage(key=key, data=data)
         BroadcastManager.broadcast(bmsg)
 
@@ -34,11 +46,17 @@ class FilesystemEventHandler(watchdog.events.FileSystemEventHandler):
         """
         Event Handler when a file is moved
         """
-        key = 'filetree:moved_file'
+        key = 'filesystem:file_moved'
         data = {
             'src_filepath': event.src_path,
-            'dest_filepath': event.dest_path
+            'dest_filepath': event.dest_path,
+            'is_directory': event.is_directory
         }
+
+        if not event.is_directory:
+            data['src_dirpath'] = os.path.join(os.path.dirname(event.src_path),'')
+            data['dest_dirpath'] = os.path.join(os.path.dirname(event.dest_path),'')
+
         bmsg = BroadcastMessage(key=key, data=data)
         BroadcastManager.broadcast(bmsg)
 

@@ -54,6 +54,57 @@ angular.module('sandstone.filetreedirective', [])
         }
       };
 
+      var loadDirectoryContents = function(node) {
+        FilesystemService.getDirectoryDetails(node.filepath, {}, function(directory) {
+          node.children = [];
+          for (var i=0;i<directory.contents.length;i++) {
+            node.children.push(directory.contents[i]);
+          }
+        });
+      };
+
+      var updateDirectoryContents = function(filepath) {
+        for (var i=0;i<self.treeData.expanded.length;i++) {
+          if (self.treeData.expanded[i].filepath === filepath) {
+            loadDirectoryContents(self.treeData.expanded[i]);
+            break;
+          }
+        }
+      };
+
+      $rootScope.$on('filesystem:file_created', function(event, data) {
+        var nodePath;
+        if (data.is_directory) {
+          nodePath = data.filepath;
+        } else {
+          nodePath = data.dirpath;
+        }
+        updateDirectoryContents(nodePath);
+      });
+
+      $rootScope.$on('filesystem:file_deleted', function(event, data) {
+        var nodePath;
+        if (data.is_directory) {
+          nodePath = data.filepath;
+        } else {
+          nodePath = data.dirpath;
+        }
+        updateDirectoryContents(nodePath);
+      });
+
+      $rootScope.$on('filesystem:file_deleted', function(event, data) {
+        var srcNodePath,destNodePath;
+        if (data.is_directory) {
+          srcNodePath = data.src_path;
+          destNodePath = data.dest_path;
+        } else {
+          srcNodePath = data.src_dirpath;
+          destNodePath = data.dest_dirpath;
+        }
+        updateDirectoryContents(srcNodePath);
+        updateDirectoryContents(destNodePath);
+      });
+
       self.onToggle = function(node,expanded) {
         if (self.extraOnToggle) {
           self.extraOnToggle(node, expanded);
@@ -64,13 +115,7 @@ angular.module('sandstone.filetreedirective', [])
           return;
         }
 
-        FilesystemService.getDirectoryDetails(node.filepath, {}, function(directory) {
-          node.children = [];
-          for (var i=0;i<directory.contents.length;i++) {
-            node.children.push(directory.contents[i]);
-          }
-        });
-
+        loadDirectoryContents(node);
         FilesystemService.createFilewatcher(node.filepath, function() {});
       };
     }
