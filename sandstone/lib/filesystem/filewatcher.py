@@ -57,14 +57,22 @@ class Filewatcher(object):
         if directory not in cls._watches:
             # Add the watcher
             watch = cls._observer.schedule(cls._event_handler, directory, recursive=False)
-            # add observer to list of observers
-            cls._watches[directory] = watch
+            count = 1
+            # add client count and observer to list of observers
+            cls._watches[directory] = (count,watch)
+        else:
+            count, watch = cls._watches[directory]
+            count += 1
+            cls._watches[directory] = (count,watch)
 
     @classmethod
     def remove_directory_to_watch(cls, directory):
         if directory in cls._watches:
             # get the watch from the _watches dict and remove it
-            watch = cls._watches.pop(directory, None)
-            if watch:
-                # unschedule the watch
+            count, watch = cls._watches[directory]
+            count -= 1
+            if count < 1:
                 cls._observer.unschedule(watch)
+                del cls._watches[directory]
+            else:
+                cls._watches[directory] = (count,watch)
