@@ -73,7 +73,7 @@ angular.module('sandstone.editor')
     FilesystemService.getNextDuplicate(selectedFile, self.gotNextDuplicateFile);
   };
 
-  self.deleteFiles = function () {
+  self.delete = function () {
     self.deleteModalInstance = $modal.open({
       templateUrl: '/static/editor/templates/delete-modal.html',
       backdrop: 'static',
@@ -81,46 +81,43 @@ angular.module('sandstone.editor')
       controller: 'DeleteModalCtrl as ctrl',
       resolve: {
         files: function () {
-          return self.treeData.selectedNodes;
+          return self.treeData.selected;
         }
       }
     });
 
     self.deleteModalInstance.result.then(function () {
-      $log.debug('Files deleted at: ' + new Date());
-      for (var i=0;i<self.treeData.selectedNodes.length;i++) {
-        var filepath = self.treeData.selectedNodes[i].filepath;
-        FilesystemService.deleteFile(filepath, self.deletedFile);
+      for (var i=0;i<self.treeData.selected.length;i++) {
+        var filepath = self.treeData.selected[i].filepath;
+        FilesystemService.delete(filepath,function(){
+          $log.debug('Deleted file: ',filepath);
+        });
         self.deleteModalInstance = null;
       }
     }, function () {
-      $log.debug('Modal dismissed at: ' + new Date());
       self.deleteModalInstance = null;
     });
   };
-  self.copyFiles = function () {
+  self.copy = function () {
     var node, i;
-    for (i=0;i<self.treeData.selectedNodes.length;i++) {
-      node = self.treeData.selectedNodes[i]
-      self.clipboard.push({
-        'filename': node.filename,
-        'filepath': node.filepath
-      });
+    for (i=0;i<self.treeData.selected.length;i++) {
+      node = self.treeData.selected[i]
+      self.clipboard.push(node);
     }
     $log.debug('Copied ', i, ' files to clipboard: ', self.clipboard);
   };
 
-  self.pasteFiles = function () {
-    var i;
-    var newDirPath = self.treeData.selectedNodes[0].filepath;
-    for (i=0;i<self.clipboard.length;i++) {
-      FilesystemService.pasteFile(self.clipboard[i].filepath, newDirPath + self.clipboard[i].filename, self.pastedFiles);
+  self.paste = function () {
+    var node;
+    var i = 0;
+    var newDirPath = self.treeData.selected[0].filepath;
+    while (self.clipboard.length > 0) {
+      node = self.clipboard.shift();
+      FilesystemService.copy(node.filepath,newDirPath+node.filename,function() {});
     }
-    self.clipboard = [];
-    $rootScope.$emit('pastedFiles', newDirPath);
   };
 
-  self.renameFile = function () {
+  self.rename = function () {
     var renameModalInstance = $modal.open({
       templateUrl: '/static/editor/templates/rename-modal.html',
       backdrop: 'static',
@@ -134,9 +131,9 @@ angular.module('sandstone.editor')
     });
 
     renameModalInstance.result.then(function (newFileName) {
-      $log.debug('Files renamed at: ' + new Date());
+      $log.debug('File renamed at: ' + new Date());
       var node = self.treeData.selected[0];
-      FilesystemService.renameFile(newFileName, node, self.fileRenamed);
+      FilesystemService.rename(node.filepath,newFileName,function(){});
     }, function () {
       $log.debug('Modal dismissed at: ' + new Date());
     });

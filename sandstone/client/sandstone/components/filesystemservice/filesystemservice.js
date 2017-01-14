@@ -216,6 +216,20 @@ angular.module('sandstone.filesystemservice', [])
     });
   };
 
+  // self.createUntitledDirectory = function(dirpath,success,error) {
+  //   var err = error || _error;
+  //   var requestUrl = _fsDirUrl;
+  //
+  //   var req = $http({
+  //     url: requestUrl,
+  //     method: 'POST',
+  //     params: {
+  //       _xsrf: getCookie('_xsrf'),
+  //       filepath: filepath
+  //     }
+  //   });
+  // }
+
   // General methods
   self.delete = function(filepath,success,error) {
     var err = error || _error;
