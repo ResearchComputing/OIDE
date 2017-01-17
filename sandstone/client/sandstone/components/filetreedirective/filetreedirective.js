@@ -82,7 +82,7 @@ angular.module('sandstone.filetreedirective', [])
         updateDirectoryContents(data.dirpath);
       });
 
-      $rootScope.$on('filesystem:file_deleted', function(event, data) {
+      $rootScope.$on('filesystem:file_moved', function(event, data) {
         updateDirectoryContents(data.src_dirpath);
         updateDirectoryContents(data.dest_dirpath);
       });

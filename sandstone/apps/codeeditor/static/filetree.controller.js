@@ -19,7 +19,7 @@ angular.module('sandstone.editor')
     dirSelected: function() {
       var td = self.treeData.selected;
       for (var i=0;i<td.length;i++) {
-        if (td[i].type === 'directory') {
+        if ( (td[i].type === 'directory') || (td[i].type === 'volume') ) {
           return true;
         }
       }
@@ -41,22 +41,6 @@ angular.module('sandstone.editor')
       EditorService.openDocument(treeData[i].filepath);
       $log.debug('Opened document: ', treeData[i].filepath);
     }
-  };
-
-  // Callback of invocation to FilesystemService to get the next Untitled FIle
-  // Invoke the FilesystemService to create the new file
-  self.gotNewUntitledFile = function(data, status, headers, config) {
-    $log.debug('GET: ', data);
-    var newFilePath = data.result;
-    // Post back new file to backend
-    FilesystemService.createNewFile(newFilePath, self.createFileCallback);
-  };
-
-  // Callback for getting the next duplicated file for selected file
-  self.gotNextDuplicateFile = function(data, status, headers, config) {
-    $log.debug('GET: ', data);
-     var newFilePath = data.result;
-     FilesystemService.duplicateFile(data.originalFile, newFilePath, self.duplicatedFile);
   };
 
   self.createNewFile = function () {
@@ -124,8 +108,42 @@ angular.module('sandstone.editor')
     });
   };
   self.createDuplicate = function () {
-    var selectedFile = self.treeData.selectedNodes[0].filepath;
-    FilesystemService.getNextDuplicate(selectedFile, self.gotNextDuplicateFile);
+    var selectedFile = self.treeData.selected[0];
+    var createModalInstance = $modal.open({
+      templateUrl: '/static/editor/templates/create-modal.html',
+      backdrop: 'static',
+      keyboard: false,
+      controller: 'CreateModalCtrl as ctrl',
+      resolve: {
+        action: function () {
+          return {
+            type: selectedFile.type,
+            baseDirectory: selectedFile.dirpath,
+            filename: selectedFile.name
+          };
+        }
+      }
+    });
+
+    createModalInstance.result.then(function (newFileName) {
+      var newPath;
+      if (selectedFile.dirpath.slice(-1) !== '/') {
+        newPath = selectedFile.dirpath + '/' + newFileName;
+      } else {
+        newPath = selectedFile.dirpath + newFileName;
+      }
+      if (selectedFile.type === 'directory') {
+        FilesystemService.createDirectory(newPath,function(uri){
+          $log.debug('Directory duplicated at: ' + newPath);
+        });
+      } else if (selectedFile.type === 'file') {
+        FilesystemService.createFile(newPath,function(uri){
+          $log.debug('File duplicated at: ' + newPath);
+        });
+      }
+    }, function () {
+      $log.debug('Modal dismissed at: ' + new Date());
+    });
   };
 
   self.delete = function () {
@@ -155,6 +173,7 @@ angular.module('sandstone.editor')
   };
   self.copy = function () {
     var node, i;
+    self.clipboard = [];
     for (i=0;i<self.treeData.selected.length;i++) {
       node = self.treeData.selected[i]
       self.clipboard.push(node);
@@ -166,9 +185,12 @@ angular.module('sandstone.editor')
     var node;
     var i = 0;
     var newDirPath = self.treeData.selected[0].filepath;
+    if (newDirPath.slice(-1) !== '/') {
+      newDirPath += '/';
+    }
     while (self.clipboard.length > 0) {
       node = self.clipboard.shift();
-      FilesystemService.copy(node.filepath,newDirPath+node.filename,function() {});
+      FilesystemService.copy(node.filepath,newDirPath+node.name,function() {});
     }
   };
 
