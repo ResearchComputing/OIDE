@@ -1,21 +1,24 @@
 <div class="modal-header">
-    <h3 class="modal-title">Create New {{ctrl.type}}</h3>
+    <h3 class="modal-title" ng-if="ctrl.action !== 'duplicate'">Create New {{ctrl.type}}</h3>
+    <h3 class="modal-title" ng-if="ctrl.action === 'duplicate'">Duplicate {{ctrl.type}}</h3>
 </div>
 <div class="modal-body">
-  <span class="modal-body-message">Please enter the name for the {{ctrl.type}} to be created in:</span>
-    <ul>
+  <span class="modal-body-message" ng-if="ctrl.action !== 'duplicate'">Please enter the name for the {{ctrl.type}} to be created in:</span>
+  <span class="modal-body-message" ng-if="ctrl.action === 'duplicate'">Please enter the new name for this {{ctrl.type}}.</span>
+    <ul ng-if="ctrl.action !== 'duplicate'">
       <li>
         {{ ctrl.baseDirectory.filepath }}
       </li>
     </ul>
     <form class="form">
       <div class="form-group">
-        <label for="new-file-name">New {{ctrl.type}} Name</label>
+        <label for="new-file-name" ng-if="ctrl.action !== 'duplicate'">New {{ctrl.type}} Name</label>
         <input type="text" class="form-control" id="new-file-name" ng-model="ctrl.newFileName">
       </div>
     </form>
 </div>
 <div class="modal-footer">
-  <button class="btn btn-success" ng-click="ctrl.create()">Create {{ctrl.type}}</button>
+  <button class="btn btn-success" ng-click="ctrl.create()" ng-if="ctrl.action !== 'duplicate'">Create {{ctrl.type}}</button>
+  <button class="btn btn-success" ng-click="ctrl.create()" ng-if="ctrl.action === 'duplicate'">Duplicate {{ctrl.type}}</button>
   <button class="btn btn-danger" ng-click="ctrl.cancel()">Cancel</button>
 </div>

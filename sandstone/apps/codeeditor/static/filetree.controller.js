@@ -119,7 +119,8 @@ angular.module('sandstone.editor')
           return {
             type: selectedFile.type,
             baseDirectory: selectedFile.dirpath,
-            filename: selectedFile.name
+            filename: selectedFile.name,
+            action: 'duplicate'
           };
         }
       }
@@ -220,6 +221,7 @@ angular.module('sandstone.editor')
 }])
 .controller('CreateModalCtrl', function ($modalInstance, action) {
   var self = this;
+  self.action = action.action;
   self.type = action.type;
   self.baseDirectory = action.baseDirectory;
   if (action.hasOwnProperty('filename')) {
