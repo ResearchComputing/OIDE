@@ -60,13 +60,68 @@ angular.module('sandstone.editor')
   };
 
   self.createNewFile = function () {
-    //Invokes filesystem service to create a new file
-    var selectedDir = self.treeData.selectedNodes[0].filepath;
-    FilesystemService.getNextUntitledFile(selectedDir, self.gotNewUntitledFile);
+    var selectedDir = self.treeData.selected[0];
+    var createModalInstance = $modal.open({
+      templateUrl: '/static/editor/templates/create-modal.html',
+      backdrop: 'static',
+      keyboard: false,
+      controller: 'CreateModalCtrl as ctrl',
+      resolve: {
+        action: function () {
+          return {
+            type: 'File',
+            baseDirectory: selectedDir,
+            filename: 'Untitled'
+          };
+        }
+      }
+    });
+
+    createModalInstance.result.then(function (newFileName) {
+      var newPath;
+      if (selectedDir.filepath.slice(-1) !== '/') {
+        newPath = selectedDir.filepath + '/' + newFileName;
+      } else {
+        newPath = selectedDir.filepath + newFileName;
+      }
+      FilesystemService.createFile(newPath,function(uri){
+        $log.debug('File created at: ' + newPath);
+      });
+    }, function () {
+      $log.debug('Modal dismissed at: ' + new Date());
+    });
   };
   self.createNewDir = function () {
-    var selectedDir = self.treeData.selectedNodes[0].filepath;
-    FilesystemService.getNextUntitledDir(selectedDir, self.gotNewUntitledDir);
+    var selectedDir = self.treeData.selected[0];
+    var createModalInstance = $modal.open({
+      templateUrl: '/static/editor/templates/create-modal.html',
+      backdrop: 'static',
+      keyboard: false,
+      controller: 'CreateModalCtrl as ctrl',
+      resolve: {
+        action: function () {
+          return {
+            type: 'Directory',
+            baseDirectory: selectedDir,
+            filename: 'UntitledDir'
+          };
+        }
+      }
+    });
+
+    createModalInstance.result.then(function (newFileName) {
+      var newPath;
+      if (selectedDir.filepath.slice(-1) !== '/') {
+        newPath = selectedDir.filepath + '/' + newFileName;
+      } else {
+        newPath = selectedDir.filepath + newFileName;
+      }
+      FilesystemService.createDirectory(newPath,function(uri){
+        $log.debug('Directory created at: ' + newPath);
+      });
+    }, function () {
+      $log.debug('Modal dismissed at: ' + new Date());
+    });
   };
   self.createDuplicate = function () {
     var selectedFile = self.treeData.selectedNodes[0].filepath;
@@ -141,6 +196,24 @@ angular.module('sandstone.editor')
 
 
 }])
+.controller('CreateModalCtrl', function ($modalInstance, action) {
+  var self = this;
+  self.type = action.type;
+  self.baseDirectory = action.baseDirectory;
+  if (action.hasOwnProperty('filename')) {
+    self.newFileName = action.filename;
+  } else {
+    self.newFileName = 'Untitled';
+  }
+
+  self.create = function () {
+    $modalInstance.close(self.newFileName);
+  };
+
+  self.cancel = function () {
+    $modalInstance.dismiss('cancel');
+  };
+})
 .controller('RenameModalCtrl', function ($modalInstance, files) {
   var self = this;
   self.files = files;

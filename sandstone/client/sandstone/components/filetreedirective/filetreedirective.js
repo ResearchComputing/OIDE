@@ -64,8 +64,10 @@ angular.module('sandstone.filetreedirective', [])
       };
 
       var updateDirectoryContents = function(filepath) {
+        var node;
         for (var i=0;i<self.treeData.expanded.length;i++) {
-          if (self.treeData.expanded[i].filepath === filepath) {
+          node = self.treeData.expanded[i];
+          if ( (node.filepath === filepath) || (node.filepath + '/' === filepath) ) {
             loadDirectoryContents(self.treeData.expanded[i]);
             break;
           }
@@ -73,36 +75,16 @@ angular.module('sandstone.filetreedirective', [])
       };
 
       $rootScope.$on('filesystem:file_created', function(event, data) {
-        var nodePath;
-        if (data.is_directory) {
-          nodePath = data.filepath;
-        } else {
-          nodePath = data.dirpath;
-        }
-        updateDirectoryContents(nodePath);
+        updateDirectoryContents(data.dirpath);
       });
 
       $rootScope.$on('filesystem:file_deleted', function(event, data) {
-        var nodePath;
-        if (data.is_directory) {
-          nodePath = data.filepath;
-        } else {
-          nodePath = data.dirpath;
-        }
-        updateDirectoryContents(nodePath);
+        updateDirectoryContents(data.dirpath);
       });
 
       $rootScope.$on('filesystem:file_deleted', function(event, data) {
-        var srcNodePath,destNodePath;
-        if (data.is_directory) {
-          srcNodePath = data.src_path;
-          destNodePath = data.dest_path;
-        } else {
-          srcNodePath = data.src_dirpath;
-          destNodePath = data.dest_dirpath;
-        }
-        updateDirectoryContents(srcNodePath);
-        updateDirectoryContents(destNodePath);
+        updateDirectoryContents(data.src_dirpath);
+        updateDirectoryContents(data.dest_dirpath);
       });
 
       self.onToggle = function(node,expanded) {

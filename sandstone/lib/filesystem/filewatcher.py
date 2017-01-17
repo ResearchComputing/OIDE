@@ -17,11 +17,9 @@ class FilesystemEventHandler(watchdog.events.FileSystemEventHandler):
 
         data = {
             'filepath': event.src_path,
-            'is_directory': event.is_directory
+            'is_directory': event.is_directory,
+            'dirpath': os.path.dirname(event.src_path)
         }
-
-        if not event.is_directory:
-            data['dirpath'] = os.path.join(os.path.dirname(event.src_path),'')
 
         bmsg = BroadcastMessage(key=key, data=data)
         BroadcastManager.broadcast(bmsg)
@@ -33,11 +31,9 @@ class FilesystemEventHandler(watchdog.events.FileSystemEventHandler):
         key = 'filesystem:file_deleted'
         data = {
             'filepath': event.src_path,
-            'is_directory': event.is_directory
+            'is_directory': event.is_directory,
+            'dirpath': os.path.dirname(event.src_path)
         }
-
-        if not event.is_directory:
-            data['dirpath'] = os.path.join(os.path.dirname(event.src_path),'')
 
         bmsg = BroadcastMessage(key=key, data=data)
         BroadcastManager.broadcast(bmsg)
@@ -50,12 +46,10 @@ class FilesystemEventHandler(watchdog.events.FileSystemEventHandler):
         data = {
             'src_filepath': event.src_path,
             'dest_filepath': event.dest_path,
-            'is_directory': event.is_directory
+            'is_directory': event.is_directory,
+            'src_dirpath': os.path.dirname(event.src_path),
+            'dest_dirpath': os.path.dirname(event.dest_path)
         }
-
-        if not event.is_directory:
-            data['src_dirpath'] = os.path.join(os.path.dirname(event.src_path),'')
-            data['dest_dirpath'] = os.path.join(os.path.dirname(event.dest_path),'')
 
         bmsg = BroadcastMessage(key=key, data=data)
         BroadcastManager.broadcast(bmsg)

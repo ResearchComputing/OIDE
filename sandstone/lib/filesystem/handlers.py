@@ -169,6 +169,11 @@ class FileCreateHandler(BaseHandler,FSMixin):
         """
         filepath = self.get_argument('filepath')
 
+        try:
+            self.fs.create_file(filepath)
+        except OSError, IOError:
+            raise tornado.web.HTTPError(400)
+
         encoded_filepath = tornado.escape.url_escape(filepath,plus=True)
         resource_uri = self.reverse_url('filesystem:files-details', encoded_filepath)
         self.write({'uri':resource_uri})
