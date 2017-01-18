@@ -262,5 +262,5 @@ class FileContentsHandler(BaseHandler, FSMixin):
         except:
             raise tornado.web.HTTPError(400)
 
-        self.fs.write_file(filepath, contents)
+        self.fs.write_file(filepath, content)
         self.write({'msg': 'Updated file at {}'.format(filepath)})

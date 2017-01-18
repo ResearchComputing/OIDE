@@ -127,6 +127,29 @@ angular.module('sandstone.filesystemservice', [])
     });
   };
 
+  self.writeFileContents = function(filepath,content,success,error) {
+    var err = error || _error;
+    var requestUrl = _fsFileUrl + encodeURIComponent(filepath) + '/contents/';
+
+    var req = $http({
+      url: requestUrl,
+      method: 'POST',
+      params: {
+        _xsrf: getCookie('_xsrf'),
+        filepath: filepath
+      },
+      data: {
+        content: content
+      }
+    });
+    req.success(function(data) {
+      success(data.msg);
+    });
+    req.error(function(data,status) {
+      err(data,status);
+    });
+  };
+
   self.createFile = function(filepath,success,error) {
     var err = error || _error;
     var requestUrl = _fsFileUrl;
