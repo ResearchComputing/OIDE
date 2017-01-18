@@ -1,17 +1,51 @@
 'use strict';
 
 angular.module('sandstone.editor')
-.controller('FiletreeCtrl', ['$modal', '$log', 'EditorService', '$rootScope', 'FilesystemService', function($modal,$log, EditorService, $rootScope, FilesystemService){
+.controller('FiletreeCtrl', ['$modal', '$log', '$scope', '$document', 'EditorService', '$rootScope', 'FilesystemService', function($modal, $log, $scope, $document, EditorService, $rootScope, FilesystemService){
   var self = this;
   self.treeData = {
     contents: [],
     selected: [],
     expanded: []
   };
+  self.treeOptions = {
+    multiSelection: true
+  };
+
+  // Workaround since toggling multiSelection in Filetree creates a
+  // condition where treeData.selected becomes disused.
+  var multiSelection = false;
+  var filetreeKeydown = function(event) {
+    if (event.key === 'Meta' || event.key === 'Control') {
+      multiSelection = true;
+    }
+  };
+  var filetreeKeyup = function(event) {
+    if (event.key === 'Meta' || event.key === 'Control') {
+      multiSelection = false;
+    }
+  };
+  $document.on('keydown',filetreeKeydown);
+  $document.on('keyup',filetreeKeyup);
+  $scope.$on('$destroy', function () {
+    $document.off('keydown',filetreeKeydown);
+  });
+  $scope.$on('$destroy', function () {
+    $document.off('keyup',filetreeKeyup);
+  });
+
+  self.treeOnSelect = function(node,selected) {
+    if (!multiSelection && selected) {
+      self.treeData.selected = [node];
+    } else if (!multiSelection && !selected) {
+      self.treeData.selected = [];
+    }
+  };
+  // End of multiselection code
 
   self.sd = {
     noSelections: function() {
-      return (self.treeData.selected.length == 0);
+      return (self.treeData.selected.length === 0);
     },
     multipleSelections: function() {
       return (self.treeData.selected.length > 1);

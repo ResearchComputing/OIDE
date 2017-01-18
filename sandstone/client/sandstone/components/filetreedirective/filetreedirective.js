@@ -21,7 +21,7 @@ angular.module('sandstone.filetreedirective', [])
 
       // Options
       self.options = {
-        multiSelection: true,
+        multiSelection: false,
         isLeaf: function(node) {
           return node.type === 'file';
         },
@@ -50,7 +50,7 @@ angular.module('sandstone.filetreedirective', [])
 
       self.onSelect = function(node,selected) {
         if (self.extraOnSelect) {
-          self.extraOnSelect(node, selected);
+          self.extraOnSelect({node: node, selected: selected});
         }
       };
 
@@ -89,7 +89,7 @@ angular.module('sandstone.filetreedirective', [])
 
       self.onToggle = function(node,expanded) {
         if (self.extraOnToggle) {
-          self.extraOnToggle(node, expanded);
+          self.extraOnToggle({node: node, expanded: expanded});
         }
 
         if (!self.isExpanded(node.filepath)) {
