@@ -59,14 +59,19 @@ angular.module('sandstone.editor')
         controllerAs: 'ctrl',
         resolve: {
           file: function () {
-            return tab;
+            var dirpath = tab.filepath.replace(tab.filename,'');
+            var file = {
+              name: tab.filename,
+              dirpath: dirpath
+            };
+            return file;
           }
         }
       });
 
-      self.saveAsModalInstance.result.then(function (newFile) {
-        EditorService.fileRenamed(newFile.oldFilepath,newFile.filepath);
-        EditorService.saveDocument(newFile.filepath);
+      self.saveAsModalInstance.result.then(function (filepath) {
+        EditorService.fileRenamed(tab.filepath,filepath);
+        EditorService.saveDocument(filepath);
         $log.debug('Saved files at: ' + new Date());
         self.saveAsModalInstance = null;
       }, function () {
@@ -121,108 +126,46 @@ angular.module('sandstone.editor')
 
   }])
 .controller('SaveAsModalCtrl', function ($scope, $modalInstance, $http, file) {
-  $scope.treeData = {
-    filetreeContents: [],
-    selectedNodes: []
+  var self = this;
+  self.treeData = {
+    contents: [],
+    selected: [],
+    expanded: []
   };
 
-  $scope.sd = {
-    noSelections: true,
-    multipleSelections: false,
-    dirSelected: false
-  };
-
-  $scope.$watch(function(){
-    return $scope.treeData.selectedNodes;
-  }, function(newValue){
-    if(newValue.length > 0) {
-      $scope.newFile.filepath = newValue[0].filepath;
-      $scope.invalidFilepath = false;
-    } else {
-      $scope.invalidFilepath = true;
-    }
-  });
-
-  $scope.sd = {
-    noSelections: true,
-    multipleSelections: false,
-    dirSelected: false
-  };
-  var initialContents = $http
-    .get('/filebrowser/filetree/a/dir')
-    .success(function(data, status, headers, config) {
-      for (var i=0;i<data.length;i++) {
-        data[i].children = [];
+  self.filetreeOnSelect = function(node,selected) {
+    if (selected) {
+      if ( (node.type === 'directory') || (node.type === 'volume') ) {
+        self.newFile.dirpath = node.filepath;
+      } else {
+        self.newFile.dirpath = node.dirpath;
+        self.newFile.name = node.name;
       }
-      $scope.treeData.filetreeContents = data;
-    }).
-    error(function(data, status, headers, config) {
-      $log.error('Failed to initialize filetree.');
-    });
-    $scope.getDirContents = function (node,expanded) {
-      $http
-        .get('/filebrowser/filetree/a/dir', {
-          params: {
-            dirpath: node.filepath
-          }
-        }).
-        success(function(data, status, headers, config) {
-          for (var i=0;i<data.length;i++) {
-            if (!data[i].hasOwnProperty('children')) {
-              data[i].children = [];
-            }
-          }
-          node.children = data;
-        }).
-        error(function(data, status, headers, config) {
-          $log.error('Failed to grab dir contents from ',node.filepath);
-        });
-  };
-  $scope.newFile = {};
-  $scope.invalidFilepath = false;
-  if (file.filepath.substring(0,1) === '-') {
-    $scope.newFile.filepath = '-/';
-    $scope.invalidFilepath = true;
-  } else {
-    var index = file.filepath.lastIndexOf('/')+1;
-    var filepath = file.filepath.substring(0,index);
-    $scope.newFile.filepath = filepath;
-    $scope.invalidFilepath = false;
-  }
-  $scope.newFile.filename = file.filename;
-  $scope.newFile.oldFilename = file.filename;
-  $scope.newFile.oldFilepath = file.filepath;
-  // $scope.updateSaveName = function (node, selected) {
-  //   $scope.invalidFilepath = false;
-  //   if (node.type === 'dir') {
-  //     $scope.newFile.filepath = node.filepath;
-  //   } else {
-  //     var index = node.filepath.lastIndexOf('/')+1;
-  //     var filepath = node.filepath.substring(0,index);
-  //     var filename = node.filepath.substring(index,node.filepath.length);
-  //     $scope.newFile.filepath = filepath;
-  //     $scope.newFile.filename = filename;
-  //   }
-  // };
-
-  $scope.treeOptions = {
-    multiSelection: false,
-    isLeaf: function(node) {
-      return node.type !== 'dir';
-    },
-    injectClasses: {
-      iExpanded: "filetree-icon fa fa-folder-open",
-      iCollapsed: "filetree-icon fa fa-folder",
-      iLeaf: "filetree-icon fa fa-file",
     }
   };
 
-  $scope.saveAs = function () {
-    $scope.newFile.filepath = $scope.newFile.filepath+$scope.newFile.filename;
-    $modalInstance.close($scope.newFile);
+  self.newFile = {
+    name: file.name,
+    dirpath: file.dirpath
   };
 
-  $scope.cancel = function () {
+  self.validFilepath = function() {
+    var valid = (self.newFile.name.length > 0 && self.newFile.dirpath.length > 0);
+    valid = valid && (self.newFile.dirpath.substring(0,1) !== '-');
+    return valid;
+  };
+
+  self.saveAs = function () {
+    var filepath;
+    var dirpath = self.newFile.dirpath;
+    if (dirpath.slice(-1) !== '/') {
+      dirpath += '/';
+    }
+    filepath = dirpath + self.newFile.name;
+    $modalInstance.close(filepath);
+  };
+
+  self.cancel = function () {
     $modalInstance.dismiss('cancel');
   };
 })
