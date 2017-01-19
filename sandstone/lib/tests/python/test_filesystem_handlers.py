@@ -33,3 +33,40 @@ class FilesystemHandlerTestCase(TestHandlerBase):
 
         self.assertEqual(response.code, 302)
         self.assertTrue(response.headers['Location'].startswith('/auth/login?next=%2F'))
+
+    @mock.patch.object(BaseHandler,'get_secure_cookie',return_value=EXEC_USER)
+    def test_get(self,m):
+        with mock.patch('sandstone.settings.VOLUMES',[self.test_dir]):
+            response = self.fetch(
+                '/a/filesystem/',
+                method='GET',
+                follow_redirects=False)
+
+            self.assertEqual(response.code, 200)
+            res = json.loads(response.body)
+            self.assertEqual(res['type'],u'filesystem')
+            self.assertEqual(res['volumes'][0]['filepath'],self.test_dir)
+
+    @mock.patch.object(BaseHandler,'get_secure_cookie',return_value=EXEC_USER)
+    def test_put(self,m):
+        fp = os.path.join(self.test_dir,'testfile.txt')
+        newpath = os.path.join(self.test_dir,'testfile2.txt')
+        open(fp,'w').close()
+
+        # Move file
+        args = {
+            'filepath': fp,
+            'action': {
+                'action': 'move',
+                'newpath': newpath
+            }
+        }
+        response = self.fetch(
+            '/a/filesystem/?'+urllib.urlencode(args),
+            method='PUT',
+            body='',
+            follow_redirects=False)
+
+        self.assertEqual(response.code, 200)
+        res = json.loads(response.body)
+        print res

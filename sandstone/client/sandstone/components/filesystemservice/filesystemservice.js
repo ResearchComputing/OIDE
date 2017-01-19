@@ -214,8 +214,9 @@ angular.module('sandstone.filesystemservice', [])
     var req = $http({
       url: requestUrl,
       method: 'POST',
+      xsrfHeaderName: 'X-XSRFToken',
+      xsrfCookieName: '_xsrf',
       params: {
-        _xsrf: getCookie('_xsrf'),
         filepath: filepath
       },
       data: {
@@ -237,8 +238,9 @@ angular.module('sandstone.filesystemservice', [])
     var req = $http({
       url: requestUrl,
       method: 'POST',
+      xsrfHeaderName: 'X-XSRFToken',
+      xsrfCookieName: '_xsrf',
       params: {
-        _xsrf: getCookie('_xsrf'),
         filepath: filepath
       }
     });
@@ -306,8 +308,9 @@ angular.module('sandstone.filesystemservice', [])
     var req = $http({
       url: requestUrl,
       method: 'POST',
+      xsrfHeaderName: 'X-XSRFToken',
+      xsrfCookieName: '_xsrf',
       params: {
-        _xsrf: getCookie('_xsrf'),
         filepath: filepath
       }
     });
@@ -327,9 +330,8 @@ angular.module('sandstone.filesystemservice', [])
     var req = $http({
       url: requestUrl,
       method: 'DELETE',
-      params: {
-        _xsrf: getCookie('_xsrf')
-      }
+      xsrfHeaderName: 'X-XSRFToken',
+      xsrfCookieName: '_xsrf'
     });
     req.success(function(data) {
       success();
@@ -346,8 +348,9 @@ angular.module('sandstone.filesystemservice', [])
     var req = $http({
       url: requestUrl,
       method: 'PUT',
+      xsrfHeaderName: 'X-XSRFToken',
+      xsrfCookieName: '_xsrf',
       params: {
-        _xsrf: getCookie('_xsrf'),
         action: {
           action: 'change_group',
           group: newGroup
@@ -369,8 +372,9 @@ angular.module('sandstone.filesystemservice', [])
     var req = $http({
       url: requestUrl,
       method: 'PUT',
+      xsrfHeaderName: 'X-XSRFToken',
+      xsrfCookieName: '_xsrf',
       params: {
-        _xsrf: getCookie('_xsrf'),
         action: {
           action: 'change_permissions',
           permissions: newPermissions
@@ -392,8 +396,9 @@ angular.module('sandstone.filesystemservice', [])
     var req = $http({
       url: requestUrl,
       method: 'PUT',
+      xsrfHeaderName: 'X-XSRFToken',
+      xsrfCookieName: '_xsrf',
       params: {
-        _xsrf: getCookie('_xsrf'),
         filepath: filepath,
         action: {
           action: 'rename',
@@ -416,8 +421,9 @@ angular.module('sandstone.filesystemservice', [])
     var req = $http({
       url: requestUrl,
       method: 'PUT',
+      xsrfHeaderName: 'X-XSRFToken',
+      xsrfCookieName: '_xsrf',
       params: {
-        _xsrf: getCookie('_xsrf'),
         filepath: filepath,
         action: {
           action: 'move',
@@ -440,8 +446,9 @@ angular.module('sandstone.filesystemservice', [])
     var req = $http({
       url: requestUrl,
       method: 'PUT',
+      xsrfHeaderName: 'X-XSRFToken',
+      xsrfCookieName: '_xsrf',
       params: {
-        _xsrf: getCookie('_xsrf'),
         filepath: filepath,
         action: {
           action: 'copy',
@@ -464,8 +471,9 @@ angular.module('sandstone.filesystemservice', [])
     var req = $http({
       url: requestUrl,
       method: 'POST',
+      xsrfHeaderName: 'X-XSRFToken',
+      xsrfCookieName: '_xsrf',
       params: {
-        _xsrf: getCookie('_xsrf'),
         filepath: filepath
       }
     });
@@ -484,9 +492,8 @@ angular.module('sandstone.filesystemservice', [])
     var req = $http({
       url: requestUrl,
       method: 'DELETE',
-      params: {
-        _xsrf: getCookie('_xsrf')
-      }
+      xsrfHeaderName: 'X-XSRFToken',
+      xsrfCookieName: '_xsrf'
     });
     req.success(function(data) {
       success();

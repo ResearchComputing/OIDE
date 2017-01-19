@@ -16,6 +16,46 @@ class FilesystemHandler(BaseHandler,FSMixin):
     filesystem REST API.
     """
 
+    def _move(self):
+        """
+        Called during a PUT request where the action specifies
+        a move operation. Returns resource URI of the destination file.
+        """
+        newpath = self.action['newpath']
+        try:
+            self.fs.move(self.fp,newpath)
+        except OSError:
+            raise tornado.web.HTTPError(404)
+        encoded_filepath = tornado.escape.url_escape(newpath,plus=True)
+        resource_uri = self.reverse_url(handler_name,encoded_filepath)
+        return resource_uri
+
+    def _copy(self):
+        """
+        Called during a PUT request where the action specifies
+        a copy operation. Returns resource URI of the new file.
+        """
+        copypath = self.action['copypath']
+        try:
+            self.fs.copy(self.fp,copypath)
+        except OSError:
+            raise tornado.web.HTTPError(404)
+        encoded_filepath = tornado.escape.url_escape(copypath,plus=True)
+        resource_uri = self.reverse_url(handler_name,encoded_filepath)
+
+    def _rename(self):
+        """
+        Called during a PUT request where the action specifies
+        a rename operation. Returns resource URI of the renamed file.
+        """
+        newname = self.action['newname']
+        try:
+            newpath = self.fs.rename(self.fp,newname)
+        except OSError:
+            raise tornado.web.HTTPError(404)
+        encoded_filepath = tornado.escape.url_escape(newpath,plus=True)
+        resource_uri = self.reverse_url(handler_name,encoded_filepath)
+
     @sandstone.lib.decorators.authenticated
     def get(self):
         """
@@ -31,42 +71,24 @@ class FilesystemHandler(BaseHandler,FSMixin):
         Provides move, copy, and rename functionality. An action must be
         specified when calling this method.
         """
-        fp = self.get_argument('filepath')
+        self.fp = self.get_argument('filepath')
         action = self.get_argument('action')
-        action = tornado.escape.json_decode(action)
+        self.action = tornado.escape.json_decode(action)
 
-        ptype = self.fs.get_type_from_path(fp)
+        ptype = self.fs.get_type_from_path(self.fp)
         if ptype == 'directory':
             handler_name = 'filesystem:directories-details'
         else:
             handler_name = 'filesystem:files-details'
 
         if action['action'] == 'move':
-            newpath = action['newpath']
-            try:
-                self.fs.move(fp,newpath)
-            except OSError:
-                raise tornado.web.HTTPError(404)
-            encoded_filepath = tornado.escape.url_escape(newpath,plus=True)
-            resource_uri = self.reverse_url(handler_name,encoded_filepath)
+            resource_uri = self._move()
             self.write({'uri':resource_uri})
         elif action['action'] == 'copy':
-            copypath = action['copypath']
-            try:
-                self.fs.copy(fp,copypath)
-            except OSError:
-                raise tornado.web.HTTPError(404)
-            encoded_filepath = tornado.escape.url_escape(copypath,plus=True)
-            resource_uri = self.reverse_url(handler_name,encoded_filepath)
+            resource_uri = self._copy()
             self.write({'uri':resource_uri})
         elif action['action'] == 'rename':
-            newname = action['newname']
-            try:
-                newpath = self.fs.rename(fp,newname)
-            except OSError:
-                raise tornado.web.HTTPError(404)
-            encoded_filepath = tornado.escape.url_escape(newpath,plus=True)
-            resource_uri = self.reverse_url(handler_name,encoded_filepath)
+            resource_uri = self._rename()
             self.write({'uri':resource_uri})
         else:
             raise tornado.web.HTTPError(400)

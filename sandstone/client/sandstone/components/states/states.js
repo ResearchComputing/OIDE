@@ -7,9 +7,8 @@ angular.module('sandstone.states', [])
     $http({
       url: '/a/state',
       method: 'POST',
-      params: {
-        _xsrf: getCookie('_xsrf')
-      },
+      xsrfHeaderName: 'X-XSRFToken',
+      xsrfCookieName: '_xsrf',
       data: JSON.stringify(state)
     })
     .success(function (data, status, headers, config) {
