@@ -75,6 +75,78 @@ angular.module('sandstone.filesystemservice', [])
     }
   };
 
+  // Common filepath manipulations
+  self.basename = function(filepath) {
+    return filepath.slice(filepath.lastIndexOf('/') + 1);
+  };
+
+  self.dirname = function(filepath) {
+    var index = filepath.lastIndexOf('/');
+    if (index === -1) {
+      return '.';
+    }
+    while (index >= 0 && filepath[index] === '/') {
+      --index;
+    }
+    return filepath.slice(0, index + 1);
+  };
+
+  self.join = function() {
+    var filepath;
+    var paths = [];
+    var subpath;
+    for (var i = 0; i < arguments.length; i++) {
+      subpath = arguments[i];
+      if (subpath.length === 0) {
+        continue;
+      } else if (subpath[0] === '/') {
+        paths = [subpath];
+      } else {
+        paths.push(subpath);
+      }
+    }
+    filepath = paths.join('/');
+    filepath = filepath.replace('//','/');
+    return filepath;
+  };
+
+  self.normalize = function(filepath) {
+    var stack = [];
+    var absolute;
+    if (filepath.length >= 0 && filepath[0] === '/') {
+      absolute = true;
+    } else {
+      absolute = false;
+    }
+    filepath.split('/').forEach(function(v) {
+      switch (v) {
+      case '':  case '.':
+        break;
+      case '..':
+        if (stack.length === 0) {
+          if (absolute) {
+            throw new Error('Invalid path');
+          } else {
+            stack.push('..');
+          }
+        } else {
+          if (stack[stack.length - 1] === '..') {
+            stack.push('..');
+          } else {
+            stack.pop();
+          }
+        }
+        break;
+      default:
+        stack.push(v);
+      }
+    });
+    var string = stack.join('/');
+    console.log(absolute);
+    console.log(string);
+    return absolute ? '/' + string : string;
+  };
+
   // Filesystem methods
   self.getFilesystemDetails = function(success,error) {
     var err = error || _error;
