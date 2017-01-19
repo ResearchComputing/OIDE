@@ -33,9 +33,16 @@ class FilewatcherTestCase(unittest.TestCase):
         Filewatcher.add_directory_to_watch(temp_dir_1)
         Filewatcher.add_directory_to_watch(temp_dir_2)
         self.assertEqual(len(Filewatcher._watches), 3)
+        # Check for handling of redundant watches
+        Filewatcher.add_directory_to_watch(temp_dir_2)
+        self.assertEqual(len(Filewatcher._watches), 3)
+        self.assertEqual(Filewatcher._watches[temp_dir_2][0],2)
 
     def test_remove_directory_to_watch(self):
         Filewatcher.add_directory_to_watch(self.test_dir)
+        Filewatcher.add_directory_to_watch(self.test_dir)
+        Filewatcher.remove_directory_to_watch(self.test_dir)
+        self.assertEqual(len(Filewatcher._watches), 1)
         Filewatcher.remove_directory_to_watch(self.test_dir)
         self.assertEqual(len(Filewatcher._watches), 0)
 
@@ -49,9 +56,11 @@ class FilewatcherTestCase(unittest.TestCase):
         # introduce a small delay for Filewatcher events to trigger
         time.sleep(1)
 
-        key = 'filetree:created_file'
+        key = 'filesystem:file_created'
         data = {
-            'filepath': filepath
+            'filepath': filepath,
+            'is_directory': False,
+            'dirpath': os.path.dirname(filepath)
         }
         self.assertTrue(mock_broadcast.called)
         broadcast_call_msg = mock_broadcast.call_args[0][0]
@@ -70,9 +79,11 @@ class FilewatcherTestCase(unittest.TestCase):
         # introduce a small delay for Filewatcher events to trigger
         time.sleep(1)
 
-        key = 'filetree:deleted_file'
+        key = 'filesystem:file_deleted'
         data = {
-            'filepath': filepath
+            'filepath': filepath,
+            'is_directory': False,
+            'dirpath': os.path.dirname(filepath)
         }
         self.assertTrue(mock_broadcast.called)
         broadcast_call_msg = mock_broadcast.call_args[0][0]
@@ -87,15 +98,18 @@ class FilewatcherTestCase(unittest.TestCase):
         fd.close()
         # watch the directory
         Filewatcher.add_directory_to_watch(self.test_dir)
-        new_path = os.path.join(self.test_dir, 'new_temp.txt');
+        newpath = os.path.join(self.test_dir, 'new_temp.txt');
         # move the file
-        shutil.move(filepath, new_path)
+        shutil.move(filepath, newpath)
         time.sleep(1)
 
-        key = 'filetree:moved_file'
+        key = 'filesystem:file_moved'
         data = {
             'src_filepath': filepath,
-            'dest_filepath': new_path
+            'dest_filepath': newpath,
+            'is_directory': False,
+            'src_dirpath': os.path.dirname(filepath),
+            'dest_dirpath': os.path.dirname(newpath)
         }
         self.assertTrue(mock_broadcast.called)
         broadcast_call_msg = mock_broadcast.call_args[0][0]
