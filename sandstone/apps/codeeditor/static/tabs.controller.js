@@ -2,8 +2,8 @@
 
 angular.module('sandstone.editor')
 
-.controller('EditorTabsCtrl', ['$scope', '$modal', '$log', 'EditorService', '$rootScope', '$document',
-  function ($scope, $modal, $log, EditorService, $rootScope, $document) {
+.controller('EditorTabsCtrl', ['$scope', '$modal', '$log', 'EditorService', 'FilesystemService', '$rootScope', '$document',
+  function ($scope, $modal, $log, EditorService, FilesystemService, $rootScope, $document) {
     var self = this;
     self.getOpenDocs = function() {
       return EditorService.getOpenDocs();
@@ -29,7 +29,7 @@ angular.module('sandstone.editor')
 
         self.unsavedModalInstance.result.then(function (file) {
           if (file.saveFile) {
-            if (tab.filepath.substring(0,2) !== '-/') {
+            if (FilesystemService.isAbsolute(tab.filepath)) {
               EditorService.saveDocument(file.filepath);
               $log.debug('Saved files at: ' + new Date());
               EditorService.closeDocument(file.filepath);
@@ -59,7 +59,7 @@ angular.module('sandstone.editor')
         controllerAs: 'ctrl',
         resolve: {
           file: function () {
-            var dirpath = tab.filepath.replace(tab.filename,'');
+            var dirpath = FilesystemService.dirname(tab.filepath);
             var file = {
               name: tab.filename,
               dirpath: dirpath
@@ -80,7 +80,7 @@ angular.module('sandstone.editor')
       });
     };
     self.saveDocument = function (tab) {
-      if(tab.filepath.substring(0,2) == '-/') {
+      if(!FilesystemService.isAbsolute(tab.filepath)) {
         self.saveDocumentAs(tab);
       } else {
         EditorService.saveDocument(tab.filepath);
@@ -150,18 +150,16 @@ angular.module('sandstone.editor')
   };
 
   self.validFilepath = function() {
-    var valid = (self.newFile.name.length > 0 && self.newFile.dirpath.length > 0);
-    valid = valid && (self.newFile.dirpath.substring(0,1) !== '-');
+    var valid = (self.newFile.name.length && self.newFile.dirpath.length);
+    valid = valid && (FilesystemService.isAbsolute(self.newFile.dirpath));
     return valid;
   };
 
   self.saveAs = function () {
     var filepath;
-    var dirpath = self.newFile.dirpath;
-    if (dirpath.slice(-1) !== '/') {
-      dirpath += '/';
-    }
-    filepath = dirpath + self.newFile.name;
+    var dirpath = FilesystemService.normalize(self.newFile.dirpath);
+
+    filepath = FilesystemService.join(dirpath,self.newFile.name);
     $modalInstance.close(filepath);
   };
 

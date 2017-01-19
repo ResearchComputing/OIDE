@@ -64,11 +64,13 @@ angular.module('sandstone.filetreedirective', [])
       };
 
       var updateDirectoryContents = function(filepath) {
-        var node;
+        var node, nodeNormPath;
+        var normPath = FilesystemService.normalize(filepath);
         for (var i=0;i<self.treeData.expanded.length;i++) {
           node = self.treeData.expanded[i];
-          if ( (node.filepath === filepath) || (node.filepath + '/' === filepath) ) {
-            loadDirectoryContents(self.treeData.expanded[i]);
+          nodeNormPath = FilesystemService.normalize(node.filepath);
+          if (nodeNormPath === normPath) {
+            loadDirectoryContents(node);
             break;
           }
         }

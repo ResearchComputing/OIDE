@@ -96,12 +96,9 @@ angular.module('sandstone.editor')
     });
 
     createModalInstance.result.then(function (newFileName) {
-      var newPath;
-      if (selectedDir.filepath.slice(-1) !== '/') {
-        newPath = selectedDir.filepath + '/' + newFileName;
-      } else {
-        newPath = selectedDir.filepath + newFileName;
-      }
+      var newPath, normDirpath;
+      normDirpath = FilesystemService.normalize(selectedDir.filepath);
+      newPath = FilesystemService.join(normDirpath,newFileName);
       FilesystemService.createFile(newPath,function(uri){
         $log.debug('File created at: ' + newPath);
       });
@@ -128,12 +125,10 @@ angular.module('sandstone.editor')
     });
 
     createModalInstance.result.then(function (newFileName) {
-      var newPath;
-      if (selectedDir.filepath.slice(-1) !== '/') {
-        newPath = selectedDir.filepath + '/' + newFileName;
-      } else {
-        newPath = selectedDir.filepath + newFileName;
-      }
+      var newPath, normDirpath;
+      normDirpath = FilesystemService.normalize(selectedDir.filepath);
+      newPath = FilesystemService.join(normDirpath,newFileName);
+
       FilesystemService.createDirectory(newPath,function(uri){
         $log.debug('Directory created at: ' + newPath);
       });
@@ -161,12 +156,10 @@ angular.module('sandstone.editor')
     });
 
     createModalInstance.result.then(function (newFileName) {
-      var newPath;
-      if (selectedFile.dirpath.slice(-1) !== '/') {
-        newPath = selectedFile.dirpath + '/' + newFileName;
-      } else {
-        newPath = selectedFile.dirpath + newFileName;
-      }
+      var newPath, normDirpath;
+      normDirpath = FilesystemService.normalize(selectedFile.dirpath);
+      newPath = FilesystemService.join(normDirpath,newFileName);
+
       if (selectedFile.type === 'directory') {
         FilesystemService.createDirectory(newPath,function(uri){
           $log.debug('Directory duplicated at: ' + newPath);
@@ -217,15 +210,14 @@ angular.module('sandstone.editor')
   };
 
   self.paste = function () {
-    var node;
+    var node, destPath;
     var i = 0;
-    var newDirPath = self.treeData.selected[0].filepath;
-    if (newDirPath.slice(-1) !== '/') {
-      newDirPath += '/';
-    }
+    var newDirPath = FilesystemService.normalize(self.treeData.selected[0].filepath);
+    
     while (self.clipboard.length > 0) {
       node = self.clipboard.shift();
-      FilesystemService.copy(node.filepath,newDirPath+node.name,function() {});
+      destPath = FilesystemService.join(newDirPath,node.name);
+      FilesystemService.copy(node.filepath,destPath,function() {});
     }
   };
 

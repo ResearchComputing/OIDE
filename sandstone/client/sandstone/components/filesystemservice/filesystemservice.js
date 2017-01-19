@@ -110,6 +110,14 @@ angular.module('sandstone.filesystemservice', [])
     return filepath;
   };
 
+  self.split = function(filepath) {
+    return filepath.split("/");
+  };
+
+  self.isAbsolute = function(filepath) {
+    return filepath.length && filepath[0] == "/";
+  };
+
   self.normalize = function(filepath) {
     var stack = [];
     var absolute;

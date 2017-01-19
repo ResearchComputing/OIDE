@@ -58,15 +58,6 @@ angular.module('sandstone.editor')
     openDocs[filepath].unsaved = true;
   };
 
-  // Given a filepath, this function will return a filename
-  var getFilenameFromPath = function(filepath) {
-    var filename = filepath.substring(
-      filepath.lastIndexOf('/')+1,
-      filepath.length
-    );
-    return filename;
-  };
-
   // Returns the next available filepath enumeration for untitled documents
   var getNextUntitledFilepath = function() {
     var docExists = true;
@@ -134,7 +125,7 @@ angular.module('sandstone.editor')
 
     openDocs[filepath] = {
       filepath: filepath,
-      filename: getFilenameFromPath(filepath),
+      filename: FilesystemService.basename(filepath),
       unsaved: false,
       active: false
     };
@@ -299,7 +290,7 @@ angular.module('sandstone.editor')
       if (oldpath in openDocs) {
         openDocs[newpath] = {
           filepath: newpath,
-          filename: getFilenameFromPath(newpath),
+          filename: FilesystemService.basename(newpath),
           unsaved: openDocs[oldpath].unsaved,
           active: openDocs[oldpath].active,
           session: openDocs[oldpath].session
