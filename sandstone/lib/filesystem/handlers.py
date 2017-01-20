@@ -280,6 +280,7 @@ class FileContentsHandler(BaseHandler, FSMixin):
             raise tornado.web.HTTPError(404)
 
         try:
+            import pdb;pdb.set_trace()
             content = tornado.escape.json_decode(self.request.body)['content']
         except:
             raise tornado.web.HTTPError(400)

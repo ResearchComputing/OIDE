@@ -211,18 +211,12 @@ angular.module('sandstone.filesystemservice', [])
     var err = error || _error;
     var requestUrl = _fsFileUrl + encodeURIComponent(filepath) + '/contents/';
 
-    var req = $http({
-      url: requestUrl,
-      method: 'POST',
-      xsrfHeaderName: 'X-XSRFToken',
-      xsrfCookieName: '_xsrf',
-      params: {
-        filepath: filepath
-      },
-      data: {
+    var req = $http.post(
+      requestUrl,
+      {
         content: content
       }
-    });
+    );
     req.success(function(data) {
       success(data.msg);
     });
@@ -235,15 +229,12 @@ angular.module('sandstone.filesystemservice', [])
     var err = error || _error;
     var requestUrl = _fsFileUrl;
 
-    var req = $http({
-      url: requestUrl,
-      method: 'POST',
-      xsrfHeaderName: 'X-XSRFToken',
-      xsrfCookieName: '_xsrf',
-      params: {
+    var req = $http.post(
+      requestUrl,
+      {
         filepath: filepath
       }
-    });
+    );
     req.success(function(data) {
       success(data.uri);
     });
@@ -305,15 +296,12 @@ angular.module('sandstone.filesystemservice', [])
     var err = error || _error;
     var requestUrl = _fsDirUrl;
 
-    var req = $http({
-      url: requestUrl,
-      method: 'POST',
-      xsrfHeaderName: 'X-XSRFToken',
-      xsrfCookieName: '_xsrf',
-      params: {
+    var req = $http.post(
+      requestUrl,
+      {
         filepath: filepath
       }
-    });
+    );
     req.success(function(data) {
       success(data.uri);
     });
@@ -327,12 +315,7 @@ angular.module('sandstone.filesystemservice', [])
     var err = error || _error;
     var requestUrl = _fsFileUrl + encodeURIComponent(filepath) + '/';
 
-    var req = $http({
-      url: requestUrl,
-      method: 'DELETE',
-      xsrfHeaderName: 'X-XSRFToken',
-      xsrfCookieName: '_xsrf'
-    });
+    var req = $http.delete(requestUrl);
     req.success(function(data) {
       success();
     });
@@ -345,18 +328,15 @@ angular.module('sandstone.filesystemservice', [])
     var err = error || _error;
     var requestUrl = _fsFileUrl + encodeURIComponent(filepath) + '/';
 
-    var req = $http({
-      url: requestUrl,
-      method: 'PUT',
-      xsrfHeaderName: 'X-XSRFToken',
-      xsrfCookieName: '_xsrf',
-      params: {
+    var req = $http.put(
+      requestUrl,
+      {
         action: {
           action: 'change_group',
           group: newGroup
         }
       }
-    });
+    );
     req.success(function(data) {
       success();
     });
@@ -369,18 +349,15 @@ angular.module('sandstone.filesystemservice', [])
     var err = error || _error;
     var requestUrl = _fsFileUrl + encodeURIComponent(filepath) + '/';
 
-    var req = $http({
-      url: requestUrl,
-      method: 'PUT',
-      xsrfHeaderName: 'X-XSRFToken',
-      xsrfCookieName: '_xsrf',
-      params: {
+    var req = $http.put(
+      requestUrl,
+      {
         action: {
           action: 'change_permissions',
           permissions: newPermissions
         }
       }
-    });
+    );
     req.success(function(data) {
       success();
     });
@@ -393,19 +370,16 @@ angular.module('sandstone.filesystemservice', [])
     var err = error || _error;
     var requestUrl = _fsUrl;
 
-    var req = $http({
-      url: requestUrl,
-      method: 'PUT',
-      xsrfHeaderName: 'X-XSRFToken',
-      xsrfCookieName: '_xsrf',
-      params: {
+    var req = $http.put(
+      requestUrl,
+      {
         filepath: filepath,
         action: {
           action: 'rename',
           newname: newName
         }
       }
-    });
+    );
     req.success(function(data) {
       success(data.uri);
     });
@@ -418,19 +392,16 @@ angular.module('sandstone.filesystemservice', [])
     var err = error || _error;
     var requestUrl = _fsUrl;
 
-    var req = $http({
-      url: requestUrl,
-      method: 'PUT',
-      xsrfHeaderName: 'X-XSRFToken',
-      xsrfCookieName: '_xsrf',
-      params: {
+    var req = $http.put(
+      requestUrl,
+      {
         filepath: filepath,
         action: {
           action: 'move',
           newpath: newPath
         }
       }
-    });
+    );
     req.success(function(data) {
       success(data.uri);
     });
@@ -443,19 +414,16 @@ angular.module('sandstone.filesystemservice', [])
     var err = error || _error;
     var requestUrl = _fsUrl;
 
-    var req = $http({
-      url: requestUrl,
-      method: 'PUT',
-      xsrfHeaderName: 'X-XSRFToken',
-      xsrfCookieName: '_xsrf',
-      params: {
+    var req = $http.put(
+      requestUrl,
+      {
         filepath: filepath,
         action: {
           action: 'copy',
           copypath: copyPath
         }
       }
-    });
+    );
     req.success(function(data) {
       success(data.uri);
     });
@@ -468,15 +436,12 @@ angular.module('sandstone.filesystemservice', [])
     var err = error || _error;
     var requestUrl = _watcherUrl;
 
-    var req = $http({
-      url: requestUrl,
-      method: 'POST',
-      xsrfHeaderName: 'X-XSRFToken',
-      xsrfCookieName: '_xsrf',
-      params: {
+    var req = $http.post(
+      requestUrl,
+      {
         filepath: filepath
       }
-    });
+    );
     req.success(function(data) {
       success();
     });
@@ -489,12 +454,7 @@ angular.module('sandstone.filesystemservice', [])
     var err = error || _error;
     var requestUrl = _watcherUrl + encodeURIComponent(filepath) + '/';
 
-    var req = $http({
-      url: requestUrl,
-      method: 'DELETE',
-      xsrfHeaderName: 'X-XSRFToken',
-      xsrfCookieName: '_xsrf'
-    });
+    var req = $http.delete(requestUrl);
     req.success(function(data) {
       success();
     });
