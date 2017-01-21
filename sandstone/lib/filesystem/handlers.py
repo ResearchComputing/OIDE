@@ -5,12 +5,13 @@ import tornado.escape
 import sandstone.lib.decorators
 from sandstone import settings
 from sandstone.lib.handlers.base import BaseHandler
+from sandstone.lib.handlers.rest import JSONHandler
 from sandstone.lib.filesystem.mixins import FSMixin
 from sandstone.lib.filesystem.filewatcher import Filewatcher
 
 
 
-class FilesystemHandler(BaseHandler,FSMixin):
+class FilesystemHandler(JSONHandler,FSMixin):
     """
     This handler implements the root filesystem resource for the
     filesystem REST API.
@@ -25,9 +26,9 @@ class FilesystemHandler(BaseHandler,FSMixin):
         try:
             self.fs.move(self.fp,newpath)
         except OSError:
-            raise tornado.web.HTTPError(404)
+            raise tornado.web.HTTPError(400)
         encoded_filepath = tornado.escape.url_escape(newpath,plus=True)
-        resource_uri = self.reverse_url(handler_name,encoded_filepath)
+        resource_uri = self.reverse_url(self.handler_name,encoded_filepath)
         return resource_uri
 
     def _copy(self):
@@ -39,9 +40,9 @@ class FilesystemHandler(BaseHandler,FSMixin):
         try:
             self.fs.copy(self.fp,copypath)
         except OSError:
-            raise tornado.web.HTTPError(404)
+            raise tornado.web.HTTPError(400)
         encoded_filepath = tornado.escape.url_escape(copypath,plus=True)
-        resource_uri = self.reverse_url(handler_name,encoded_filepath)
+        resource_uri = self.reverse_url(self.handler_name,encoded_filepath)
 
     def _rename(self):
         """
@@ -52,9 +53,9 @@ class FilesystemHandler(BaseHandler,FSMixin):
         try:
             newpath = self.fs.rename(self.fp,newname)
         except OSError:
-            raise tornado.web.HTTPError(404)
+            raise tornado.web.HTTPError(400)
         encoded_filepath = tornado.escape.url_escape(newpath,plus=True)
-        resource_uri = self.reverse_url(handler_name,encoded_filepath)
+        resource_uri = self.reverse_url(self.handler_name,encoded_filepath)
 
     @sandstone.lib.decorators.authenticated
     def get(self):
@@ -71,63 +72,61 @@ class FilesystemHandler(BaseHandler,FSMixin):
         Provides move, copy, and rename functionality. An action must be
         specified when calling this method.
         """
-        self.fp = self.get_argument('filepath')
-        action = self.get_argument('action')
-        self.action = tornado.escape.json_decode(action)
+        self.fp = self.get_body_argument('filepath')
+        self.action = self.get_body_argument('action')
 
-        ptype = self.fs.get_type_from_path(self.fp)
+        try:
+            ptype = self.fs.get_type_from_path(self.fp)
+        except OSError:
+            raise tornado.web.HTTPError(404)
         if ptype == 'directory':
-            handler_name = 'filesystem:directories-details'
+            self.handler_name = 'filesystem:directories-details'
         else:
-            handler_name = 'filesystem:files-details'
+            self.handler_name = 'filesystem:files-details'
 
-        if action['action'] == 'move':
+        if self.action['action'] == 'move':
             resource_uri = self._move()
             self.write({'uri':resource_uri})
-        elif action['action'] == 'copy':
+        elif self.action['action'] == 'copy':
             resource_uri = self._copy()
             self.write({'uri':resource_uri})
-        elif action['action'] == 'rename':
+        elif self.action['action'] == 'rename':
             resource_uri = self._rename()
             self.write({'uri':resource_uri})
         else:
             raise tornado.web.HTTPError(400)
 
-class FilewatcherHandler(BaseHandler,FSMixin):
+class FilewatcherCreateHandler(JSONHandler,FSMixin):
     """
-    This handlers implements the filewatcher REST API.
+    This handlers implements the filewatcher create REST API.
     """
-
-    @sandstone.lib.decorators.authenticated
-    def get(self, *args):
-        """
-        Get list of active filewatchers.
-        """
-        pass
 
     @sandstone.lib.decorators.authenticated
     def post(self, *args):
         """
         Start a new filewatcher at the specified path.
         """
-        filepath = self.get_argument('filepath', None)
-        if filepath == None:
-            raise tornado.web.HTTPError(400)
+        filepath = self.get_body_argument('filepath')
+        if not self.fs.exists(filepath):
+            raise tornado.web.HTTPError(404)
+
         Filewatcher.add_directory_to_watch(filepath)
         self.write({'msg':'Watcher added for {}'.format(filepath)})
 
+class FilewatcherDeleteHandler(JSONHandler,FSMixin):
+    """
+    This handlers implements the filewatcher delete REST API.
+    """
     @sandstone.lib.decorators.authenticated
     def delete(self, filepath):
         """
         Stop and delete the specified filewatcher.
         """
-        if filepath == None:
-            raise tornado.web.HTTPError(400)
         Filewatcher.remove_directory_to_watch(filepath)
         self.write({'msg':'Watcher deleted for {}'.format(filepath)})
 
 
-class FileHandler(BaseHandler,FSMixin):
+class FileHandler(JSONHandler,FSMixin):
     """
     This handler implements the file resource for the
     filesystem REST API.
@@ -154,8 +153,7 @@ class FileHandler(BaseHandler,FSMixin):
         if not self.fs.exists(filepath):
             raise tornado.web.HTTPError(404)
 
-        action = self.get_argument('action')
-        action = tornado.escape.json_decode(action)
+        action = self.get_body_argument('action')
 
         if action['action'] == 'update_group':
             newgrp = action['group']
@@ -177,7 +175,7 @@ class FileHandler(BaseHandler,FSMixin):
         self.fs.delete(filepath)
         self.write({'msg':'File deleted at {}'.format(filepath)})
 
-class FileCreateHandler(BaseHandler,FSMixin):
+class FileCreateHandler(JSONHandler,FSMixin):
     """
     This handler implements the file create resource for the
     filesystem REST API. Returns the resource URI if successfully
@@ -189,7 +187,7 @@ class FileCreateHandler(BaseHandler,FSMixin):
         """
         Create a new file at the specified path.
         """
-        filepath = self.get_argument('filepath')
+        filepath = self.get_body_argument('filepath')
 
         try:
             self.fs.create_file(filepath)
@@ -233,7 +231,7 @@ class DirectoryHandler(FileHandler):
         res = res.to_dict()
         self.write(res)
 
-class DirectoryCreateHandler(BaseHandler,FSMixin):
+class DirectoryCreateHandler(JSONHandler,FSMixin):
     """
     This handler implements the directory create resource for the
     filesystem REST API. Returns the resource URI if successfully
@@ -245,7 +243,7 @@ class DirectoryCreateHandler(BaseHandler,FSMixin):
         """
         Create a new directory at the specified path.
         """
-        filepath = self.get_argument('filepath')
+        filepath = self.get_body_argument('filepath')
 
         self.fs.create_directory(filepath)
 
@@ -253,7 +251,7 @@ class DirectoryCreateHandler(BaseHandler,FSMixin):
         resource_uri = self.reverse_url('filesystem:directories-details', encoded_filepath)
         self.write({'uri':resource_uri})
 
-class FileContentsHandler(BaseHandler, FSMixin):
+class FileContentsHandler(JSONHandler, FSMixin):
     """
     This handler provides read and write functionality for file contents.
     """
@@ -279,11 +277,7 @@ class FileContentsHandler(BaseHandler, FSMixin):
         if not self.fs.exists(filepath):
             raise tornado.web.HTTPError(404)
 
-        try:
-            import pdb;pdb.set_trace()
-            content = tornado.escape.json_decode(self.request.body)['content']
-        except:
-            raise tornado.web.HTTPError(400)
+        content = self.get_body_argument('content')
 
         self.fs.write_file(filepath, content)
         self.write({'msg': 'Updated file at {}'.format(filepath)})
