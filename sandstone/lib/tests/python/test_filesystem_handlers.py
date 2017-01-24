@@ -227,7 +227,6 @@ class FilewatcherDeleteHandlerTestCase(TestHandlerBase):
                 '/a/filesystem/watchers/{}/'.format(escaped_path),
                 method='DELETE',
                 headers=self.json_headers,
-                body='',
                 follow_redirects=False
             )
 
@@ -235,3 +234,125 @@ class FilewatcherDeleteHandlerTestCase(TestHandlerBase):
             res = json.loads(response.body)
 
             mfw.assert_called_with(self.test_dir)
+
+class FileHandlerTestCase(TestHandlerBase):
+    def setUp(self,*args,**kwargs):
+        self.test_dir = tempfile.mkdtemp()
+        self.json_headers = {
+            'Content-Type': 'application/json;charset=UTF-8'
+        }
+        super(FileHandlerTestCase,self).setUp(*args,**kwargs)
+
+    def tearDown(self,*args,**kwargs):
+        shutil.rmtree(self.test_dir)
+        super(FileHandlerTestCase,self).tearDown(*args,**kwargs)
+
+    @mock.patch.object(BaseHandler,'get_secure_cookie',return_value=EXEC_USER)
+    def test_get(self,m):
+        fp = os.path.join(self.test_dir,'testfile.txt')
+        fakep = os.path.join(self.test_dir,'fake.txt')
+        open(fp,'w').close()
+
+        escaped_path = tornado.escape.url_escape(fakep)
+        response = self.fetch(
+            '/a/filesystem/files/{}/'.format(escaped_path),
+            method='GET',
+            follow_redirects=False
+        )
+        self.assertEqual(response.code, 404)
+
+        escaped_path = tornado.escape.url_escape(fp)
+        response = self.fetch(
+            '/a/filesystem/files/{}/'.format(escaped_path),
+            method='GET',
+            follow_redirects=False
+        )
+        self.assertEqual(response.code, 200)
+        res = json.loads(response.body)
+
+        self.assertEqual(res['filepath'],fp)
+        self.assertEqual(res['type'],'file')
+
+    @mock.patch('sandstone.lib.filesystem.interfaces.PosixFS.update_group')
+    @mock.patch('sandstone.lib.filesystem.interfaces.PosixFS.exists')
+    @mock.patch.object(BaseHandler,'get_secure_cookie',return_value=EXEC_USER)
+    def test_get_update_group(self,m,exists,update_group):
+        fp = os.path.join(self.test_dir,'testfile.txt')
+        escaped_path = tornado.escape.url_escape(fp)
+
+        exists.return_value = False
+        args = {
+            'action': {
+                'action': 'update_group',
+                'group': 'testgrp'
+            }
+        }
+        response = self.fetch(
+            '/a/filesystem/files/{}/'.format(escaped_path),
+            method='PUT',
+            headers=self.json_headers,
+            body=json.dumps(args),
+            follow_redirects=False
+        )
+        self.assertEqual(response.code, 404)
+
+        exists.return_value = True
+        update_group.side_effect = OSError
+        response = self.fetch(
+            '/a/filesystem/files/{}/'.format(escaped_path),
+            method='PUT',
+            headers=self.json_headers,
+            body=json.dumps(args),
+            follow_redirects=False
+        )
+        self.assertEqual(response.code, 404)
+        update_group.assert_called_with(fp,'testgrp')
+
+        update_group.side_effect = None
+        update_group.reset_mock()
+        response = self.fetch(
+            '/a/filesystem/files/{}/'.format(escaped_path),
+            method='PUT',
+            headers=self.json_headers,
+            body=json.dumps(args),
+            follow_redirects=False
+        )
+        self.assertEqual(response.code, 200)
+        update_group.assert_called_with(fp,'testgrp')
+
+    @mock.patch('sandstone.lib.filesystem.interfaces.PosixFS.update_permissions')
+    @mock.patch('sandstone.lib.filesystem.interfaces.PosixFS.exists')
+    @mock.patch.object(BaseHandler,'get_secure_cookie',return_value=EXEC_USER)
+    def test_get_update_group(self,m,exists,update_permissions):
+        fp = os.path.join(self.test_dir,'testfile.txt')
+        escaped_path = tornado.escape.url_escape(fp)
+
+        args = {
+            'action': {
+                'action': 'update_permissions',
+                'permissions': 'rwxrw-r--'
+            }
+        }
+        exists.return_value = True
+        update_permissions.side_effect = OSError
+        response = self.fetch(
+            '/a/filesystem/files/{}/'.format(escaped_path),
+            method='PUT',
+            headers=self.json_headers,
+            body=json.dumps(args),
+            follow_redirects=False
+        )
+        self.assertEqual(response.code, 404)
+        update_permissions.assert_called_with(fp,'rwxrw-r--')
+
+        update_permissions.side_effect = None
+        update_permissions.reset_mock()
+        response = self.fetch(
+            '/a/filesystem/files/{}/'.format(escaped_path),
+            method='PUT',
+            headers=self.json_headers,
+            body=json.dumps(args),
+            follow_redirects=False
+        )
+        self.assertEqual(response.code, 200)
+        update_permissions.assert_called_with(fp,'rwxrw-r--')

@@ -157,12 +157,18 @@ class FileHandler(JSONHandler,FSMixin):
 
         if action['action'] == 'update_group':
             newgrp = action['group']
-            self.fs.update_group(filepath,newgrp)
-            self.write({'msg':'Updated group for {}'.format(filepath)})
+            try:
+                self.fs.update_group(filepath,newgrp)
+                self.write({'msg':'Updated group for {}'.format(filepath)})
+            except OSError:
+                raise tornado.web.HTTPError(404)
         elif action['action'] == 'update_permissions':
             newperms = action['permissions']
-            self.fs.update_permissions(filepath,newperms)
-            self.write({'msg':'Updated permissions for {}'.format(filepath)})
+            try:
+                self.fs.update_permissions(filepath,newperms)
+                self.write({'msg':'Updated permissions for {}'.format(filepath)})
+            except OSError:
+                raise tornado.web.HTTPError(404)
 
     @sandstone.lib.decorators.authenticated
     def delete(self, filepath):
