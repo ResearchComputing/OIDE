@@ -137,12 +137,12 @@ class FileHandler(JSONHandler,FSMixin):
         """
         Get file details for the specified file.
         """
-        if not self.fs.exists(filepath):
+        try:
+            res = self.fs.get_file_details(filepath)
+            res = res.to_dict()
+            self.write(res)
+        except OSError:
             raise tornado.web.HTTPError(404)
-
-        res = self.fs.get_file_details(filepath)
-        res = res.to_dict()
-        self.write(res)
 
     @sandstone.lib.decorators.authenticated
     def put(self, filepath):
@@ -150,9 +150,6 @@ class FileHandler(JSONHandler,FSMixin):
         Change the group or permissions of the specified file. Action
         must be specified when calling this method.
         """
-        if not self.fs.exists(filepath):
-            raise tornado.web.HTTPError(404)
-
         action = self.get_body_argument('action')
 
         if action['action'] == 'update_group':
@@ -175,11 +172,11 @@ class FileHandler(JSONHandler,FSMixin):
         """
         Delete the specified file.
         """
-        if not self.fs.exists(filepath):
+        try:
+            self.fs.delete(filepath)
+            self.write({'msg':'File deleted at {}'.format(filepath)})
+        except OSError:
             raise tornado.web.HTTPError(404)
-
-        self.fs.delete(filepath)
-        self.write({'msg':'File deleted at {}'.format(filepath)})
 
 class FileCreateHandler(JSONHandler,FSMixin):
     """
@@ -219,9 +216,6 @@ class DirectoryHandler(FileHandler):
         (default=False) then du -hs will be run against subdirectories
         for accurate content sizes.
         """
-        if not self.fs.exists(filepath):
-            raise tornado.web.HTTPError(404)
-
         contents = self.get_argument('contents', False)
         if contents == u'true':
             contents = True
@@ -233,9 +227,12 @@ class DirectoryHandler(FileHandler):
         else:
             dir_sizes = False
 
-        res = self.fs.get_directory_details(filepath,contents=contents,dir_sizes=dir_sizes)
-        res = res.to_dict()
-        self.write(res)
+        try:
+            res = self.fs.get_directory_details(filepath,contents=contents,dir_sizes=dir_sizes)
+            res = res.to_dict()
+            self.write(res)
+        except OSError:
+            raise tornado.web.HTTPError(404)
 
 class DirectoryCreateHandler(JSONHandler,FSMixin):
     """
@@ -251,11 +248,13 @@ class DirectoryCreateHandler(JSONHandler,FSMixin):
         """
         filepath = self.get_body_argument('filepath')
 
-        self.fs.create_directory(filepath)
-
-        encoded_filepath = tornado.escape.url_escape(filepath,plus=True)
-        resource_uri = self.reverse_url('filesystem:directories-details', encoded_filepath)
-        self.write({'uri':resource_uri})
+        try:
+            self.fs.create_directory(filepath)
+            encoded_filepath = tornado.escape.url_escape(filepath,plus=True)
+            resource_uri = self.reverse_url('filesystem:directories-details', encoded_filepath)
+            self.write({'uri':resource_uri})
+        except OSError:
+            raise tornado.web.HTTPError(404)
 
 class FileContentsHandler(JSONHandler, FSMixin):
     """
@@ -267,11 +266,11 @@ class FileContentsHandler(JSONHandler, FSMixin):
         """
         Get the contents of the specified file.
         """
-        if not self.fs.exists(filepath):
+        try:
+            contents = self.fs.read_file(filepath)
+            self.write({'filepath':filepath,'contents': contents})
+        except OSError:
             raise tornado.web.HTTPError(404)
-
-        contents = self.fs.read_file(filepath)
-        self.write({'filepath':filepath,'contents': contents})
 
     @sandstone.lib.decorators.authenticated
     def post(self, filepath):
@@ -280,10 +279,9 @@ class FileContentsHandler(JSONHandler, FSMixin):
         an append, all file contents will be replaced by the contents
         given.
         """
-        if not self.fs.exists(filepath):
+        try:
+            content = self.get_body_argument('content')
+            self.fs.write_file(filepath, content)
+            self.write({'msg': 'Updated file at {}'.format(filepath)})
+        except OSError:
             raise tornado.web.HTTPError(404)
-
-        content = self.get_body_argument('content')
-
-        self.fs.write_file(filepath, content)
-        self.write({'msg': 'Updated file at {}'.format(filepath)})
