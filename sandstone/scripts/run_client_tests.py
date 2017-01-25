@@ -38,7 +38,9 @@ dep_list = [
     'sandstone.acemodes',
     'ui.bootstrap',
     'sandstone.websocketservice',
-    'sandstone.broadcastservice'
+    'sandstone.broadcastservice',
+    'sandstone.filesystemservice',
+    'sandstone.filetreedirective'
 ]
 
 for spec in settings.APP_SPECIFICATIONS:
