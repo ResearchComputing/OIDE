@@ -54,7 +54,7 @@ angular.module('sandstone.filetreedirective', [])
         }
       };
 
-      var loadDirectoryContents = function(node) {
+      self.loadDirectoryContents = function(node) {
         FilesystemService.getDirectoryDetails(node.filepath, {}, function(directory) {
           node.children = [];
           for (var i=0;i<directory.contents.length;i++) {
@@ -63,14 +63,14 @@ angular.module('sandstone.filetreedirective', [])
         });
       };
 
-      var updateDirectoryContents = function(filepath) {
+      self.updateDirectoryContents = function(filepath) {
         var node, nodeNormPath;
         var normPath = FilesystemService.normalize(filepath);
         for (var i=0;i<self.treeData.expanded.length;i++) {
           node = self.treeData.expanded[i];
           nodeNormPath = FilesystemService.normalize(node.filepath);
           if (nodeNormPath === normPath) {
-            loadDirectoryContents(node);
+            self.loadDirectoryContents(node);
             break;
           }
         }

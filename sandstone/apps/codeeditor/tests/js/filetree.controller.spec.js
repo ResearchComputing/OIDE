@@ -1,4 +1,4 @@
-describe('filetree', function(){
+xdescribe('filetree', function(){
   var controller;
   var $filetreeService;
   var filetreeCtrl;

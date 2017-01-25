@@ -1,211 +1,140 @@
-xdescribe('sandstone.filesystemservice', function(){
-  var $filesystemservice;
-  var httpBackend;
+describe('sandstone.filesystemservice', function() {
+  var FilesystemService;
 
-  var dirs = [{
-        "filepath": "/home/saurabh/dir2",
-        "filename": "dir2",
-        "group": "saurabh",
-        "is_accessible": true,
-        "perm": "-rw-rw-r--",
-        "perm_string": "664",
-        "size": "4.0 KiB",
-        "type": "dir"
-      }, {
-        "filepath": "/home/saurabh/dir2",
-        "filename": "dir2",
-        "group": "root",
-        "is_accessible": false,
-        "perm": "-rw-r--r--",
-        "perm_string": "644",
-        "size": "4.0 KiB",
-        "type": "dir"
-      },
-      {
-        "filepath": "/home/saurabh/dir3",
-        "filename": "dir3",
-        "group": "saurabh",
-        "is_accessible": true,
-        "perm": "-rw-rw-r--",
-        "perm_string": "664",
-        "size": "4.0 KiB",
-        "type": "dir"
-      }];
+  beforeEach(module('sandstone'));
+  beforeEach(module('sandstone.filesystemservice'));
 
-    var files = [{
-          "filepath": "/home/saurabh/file1",
-          "filename": "file1",
-          "group": "saurabh",
-          "is_accessible": true,
-          "perm": "-rw-rw-r--",
-          "perm_string": "664",
-          "size": "4.0 KiB",
-          "type": "dir"
-        }, {
-          "filepath": "/home/saurabh/file2",
-          "filename": "file2",
-          "group": "root",
-          "is_accessible": false,
-          "perm": "-rw-r--r--",
-          "perm_string": "644",
-          "size": "4.0 KiB",
-          "type": "dir"
-        }];
+  beforeEach(inject(function(_FilesystemService_) {
+    FilesystemService = _FilesystemService_;
+  }));
 
-    beforeEach(module('sandstone'));
-    beforeEach(module('sandstone.editor'));
-    beforeEach(module('sandstone.filesystemservice'));
+  describe('filepath manipulations', function() {
 
-    beforeEach(inject(function(FilesystemService, $httpBackend){
-      $filesystemservice = FilesystemService;
+    it('basename',function() {
+      var path;
+      path = FilesystemService.basename('/a/dir/');
+      expect(path).toEqual('');
+      path = FilesystemService.basename('/a/file');
+      expect(path).toEqual('file');
+    });
 
-      httpBackend = $httpBackend;
-      httpBackend.whenGET('/filebrowser/filetree/a/dir').respond(function(){
-        return [200, dirs];
-      });
-      httpBackend.whenGET(/\/filebrowser\/filetree\/a\/dir\?dirpath=.*&folders=true/).respond(function(){
-        return [200, dirs];
-      });
-      httpBackend.whenGET(/\/filebrowser\/filetree\/a\/dir\?dirpath=.*/).respond(function(){
-        return [200, files];
-      });
-      httpBackend.whenGET(/\/filebrowser\/a\/fileutil\?dirpath=.*&operation=GET_NEXT_UNTITLED_FILE/).respond(function(){
-        return [200, {'filepath': '/home/saurabh/Untitled1'}];
-      });
-      httpBackend.whenPOST(/\/filebrowser\/localfiles.*/).respond(function(){
-        return [200, {'result': '/home/saurabh/Untitled1'}];
-      });
-      httpBackend.whenPOST(/\/filebrowser\/a\/fileutil\?filepath=.*&newFileName=.*&operation=RENAME/).respond(function(){
-        return [200, {'filepath': '/home/saurabh/somefile'}];
-      });
-      httpBackend.when('DELETE', /\/filebrowser\/localfiles.*/).respond(function(){
-        return [200, {'result': 'DELETED file'}];
-      });
-      httpBackend.whenGET(/\/filebrowser\/a\/fileutil\?filepath=.*&operation=GET_NEXT_DUPLICATE/).respond(function(){
-        return [200, {'filepath': '/home/saurabh/Untitled12'}];
-      });
-      httpBackend.whenGET(/\/filebrowser\/a\/fileutil\?filepath=.*&operation=GET_VOLUME_INFO/).respond(function(){
-        return [200, {'result': {'percent': 28, 'size': 429, 'used': 117}}];
-      });
-      httpBackend.whenGET(/\/filebrowser\/a\/fileutil\?filepath=.*&operation=GET_ROOT_DIR/).respond(function(){
-        return [200, {'result': '/home/saurabh/'}];
-      });
-      httpBackend.whenGET(/\/filebrowser\/a\/fileutil\?operation=GET_GROUPS/).respond(function(){
-        return [200, ['users', 'ldap']];
-      });
-      httpBackend.whenPOST(/\/filebrowser\/a\/fileutil\?newpath=.*&operation=COPY&origpath=.*/).respond(function(){
-        return [200, {'result': '/home/saurabh/Untitled1-duplicate'}];
-      });
-      httpBackend.whenGET(/\/filebrowser\/a\/fileutil\?dirpath=.*&operation=GET_NEXT_UNTITLED_DIR/).respond(function(){
-        return [200, {'filepath': '/home/saurabh/dir2-duplicate'}];
-      });
-      httpBackend.whenPOST(/\/filebrowser\/a\/fileutil\?filepath=.*&group=.*&operation=CHANGE_GROUP/).respond(function(){
-        return [200, {'result': 'Changed Group'}];
-      });
-      httpBackend.whenPOST(/\/filebrowser\/a\/fileutil\?filepath=.*&operation=CHANGE_PERMISSIONS&permissions=.*/).respond(function(){
-        return [200, {'result': {permissions: '0666'}}];
-      });
+    it('dirname',function() {
+      var path;
+      path = FilesystemService.dirname('file');
+      expect(path).toEqual('.');
+      path = FilesystemService.dirname('/a/file');
+      expect(path).toEqual('/a');
+      path = FilesystemService.dirname('/a/dir/');
+      expect(path).toEqual('/a/dir');
+    });
+
+    it('join',function() {
+      var path;
+      path = FilesystemService.join('/a/','../','/dir/');
+      expect(path).toEqual('/dir/');
+      path = FilesystemService.join('a/','rel','path');
+      expect(path).toEqual('a/rel/path');
+    });
+
+    it('normalize',function() {
+      var path;
+      path = FilesystemService.normalize('/./a/..//dir/');
+      expect(path).toEqual('/dir');
+      path = FilesystemService.normalize('./a/..//dir/');
+      expect(path).toEqual('dir');
+    });
+
+  });
+
+  describe('filesystem methods', function() {
+    var $httpBackend;
+
+    beforeEach(inject(function(_$httpBackend_) {
+      $httpBackend = _$httpBackend_;
     }));
 
-    describe('Functionality of FilesystemService', function(){
-      it('should be able to get files', function(){
-        $filesystemservice.getFiles(dirs[0], function(data){
-          expect(data.length).toBe(2);
-        });
-        httpBackend.flush();
+    afterEach(function() {
+      $httpBackend.flush();
+      $httpBackend.verifyNoOutstandingExpectation();
+      $httpBackend.verifyNoOutstandingRequest();
+    });
+
+    it('getFilesystemDetails', function() {
+      var fsDetails = {
+        groups: ['testgrp'],
+        type: 'filesystem',
+        volumes: [{
+          available: '11G',
+          filepath: '/volume1/',
+          size: '18G',
+          type: 'volume',
+          used: '6.0G',
+          used_pct: 36
+        }]
+      };
+      $httpBackend.whenGET('/a/filesystem/').respond(function() {
+        return [200, fsDetails];
       });
-      it('should be able to get folders', function(){
-        $filesystemservice.getFolders(dirs[0], function(data){
-          expect(data.length).toBe(3);
-        });
-        httpBackend.flush();
-      });
-      it('should be able to get the next untitled file', function(){
-        $filesystemservice.getNextUntitledFile(dirs[0], function(data){
-          expect(data.filepath).toBeDefined();
-        });
-        httpBackend.flush();
-      });
-      it('should be able to create a new file', function(){
-        $filesystemservice.createNewFile(files[0].filename, function(data){
-          expect(data.result).toBeDefined();
-        });
-        httpBackend.flush();
-      });
-      it('should be able to rename a file', function(){
-        $filesystemservice.renameFile("somefile", files[0], function(data){
-          expect(data.filepath).toBeDefined();
-        });
-        httpBackend.flush();
-      });
-      it('should be able to delete a file', function(){
-        $filesystemservice.deleteFile(files[0].filepath, function(data){
-          expect(data.result).toBeDefined();
-        });
-        httpBackend.flush();
-      });
-      it('should be able to get the next duplicate filename', function(){
-        $filesystemservice.getNextDuplicate(files[0].filepath, function(data){
-          expect(data.originalFile).toBeDefined();
-          expect(data.filepath).toBe('/home/saurabh/Untitled12');
-        });
-        httpBackend.flush();
-      });
-      it('should be able to duplicate a file', function(){
-        $filesystemservice.duplicateFile(files[0].filepath, '/home/saurabh/Untitled1-duplicate', function(data){
-          expect(data.result).toBeDefined();
-          expect(data.result).toBe('/home/saurabh/Untitled1-duplicate');
-        });
-        httpBackend.flush();
-      });
-      it('should be able to get the volume info', function(){
-        $filesystemservice.getVolumeInfo(files[0].filepath, function(data){
-          expect(data.result).toBeDefined();
-          expect(data.result.percent).toBe(28);
-          expect(data.result.size).toBe(429);
-          expect(data.result.used).toBe(117);
-        });
-        httpBackend.flush();
-      });
-      it('should be able to get the root directories', function(){
-        $filesystemservice.getRootDirectory(files[0].filepath, function(data){
-          expect(data.result).toBeDefined();
-        });
-        httpBackend.flush();
-      });
-      it('should be able to fetch the groups', function(){
-        $filesystemservice.getGroups( function(data){
-          expect(data).toBeDefined();
-          expect(data.length).toBe(2);
-        });
-        httpBackend.flush();
-      });
-      it('should be able to get next untitled directory', function(){
-        $filesystemservice.getNextUntitledDir(dirs[0].filepath, function(data){
-          expect(data).toBeDefined();
-          expect(data.filepath).toBe('/home/saurabh/dir2-duplicate');
-        });
-        httpBackend.flush();
-      });
-      it('should be able to create a new dir', function(){
-        $filesystemservice.createNewDir(dirs[0].filepath, function(data){
-          console.log(data);
-          expect(data.result).toBeDefined();
-        });
-        httpBackend.flush();
-      });
-      it('should be able to change groups', function(){
-        $filesystemservice.changeGroup(files[0].filepath, "ldap", function(data){
-          expect(data.result).toBeDefined();
-        });
-        httpBackend.flush();
-      });
-      it('should be able to change permissions', function(){
-        $filesystemservice.changePermissions(files[0].filepath, "0666", function(data){
-          expect(data.result).toBeDefined();
-          expect(data.result.permissions).toBe("0666");
-        });
-        httpBackend.flush();
+
+      FilesystemService.getFilesystemDetails(function(data) {
+        expect(data instanceof FilesystemService.Filesystem).toBe(true);
       });
     });
+
+    it('rename', function() {
+      var filepath = '/test/path';
+      var newName = 'newpath';
+      expRequest = {
+        filepath: filepath,
+        action: {
+          action: 'rename',
+          newname: newName
+        }
+      }
+      $httpBackend.whenPUT('/a/filesystem/').respond(function() {
+        return [200, encodeURIComponent('/test/newpath')];
+      });
+
+      $httpBackend.expectPUT('/a/filesystem/',expRequest);
+      FilesystemService.rename(filepath,newName,function(data) {});
+    });
+
+    it('move', function() {
+      var filepath = '/test/path';
+      var newpath = '/test/newpath';
+      expRequest = {
+        filepath: filepath,
+        action: {
+          action: 'move',
+          newpath: newpath
+        }
+      }
+      $httpBackend.whenPUT('/a/filesystem/').respond(function() {
+        return [200, encodeURIComponent('/test/newpath')];
+      });
+
+      $httpBackend.expectPUT('/a/filesystem/',expRequest);
+      FilesystemService.move(filepath,newpath,function(data) {});
+    });
+
+    it('copy', function() {
+      var filepath = '/test/path';
+      var newpath = '/test/newpath';
+      expRequest = {
+        filepath: filepath,
+        action: {
+          action: 'copy',
+          copypath: newpath
+        }
+      }
+      $httpBackend.whenPUT('/a/filesystem/').respond(function() {
+        return [200, encodeURIComponent('/test/newpath')];
+      });
+
+      $httpBackend.expectPUT('/a/filesystem/',expRequest);
+      FilesystemService.copy(filepath,newpath,function(data) {});
+    });
+
+  });
+
 });

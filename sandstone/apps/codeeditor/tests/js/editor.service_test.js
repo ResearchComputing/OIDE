@@ -1,6 +1,6 @@
 'use strict';
 
-describe('sandstone.editor.EditorService', function() {
+xdescribe('sandstone.editor.EditorService', function() {
   beforeEach(module('sandstone'));
   beforeEach(module('sandstone.editor'));
 

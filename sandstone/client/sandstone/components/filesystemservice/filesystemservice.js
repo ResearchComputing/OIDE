@@ -150,8 +150,6 @@ angular.module('sandstone.filesystemservice', [])
       }
     });
     var string = stack.join('/');
-    console.log(absolute);
-    console.log(string);
     return absolute ? '/' + string : string;
   };
 
@@ -169,6 +167,72 @@ angular.module('sandstone.filesystemservice', [])
     });
     req.error(function(data, status) {
       err(data, status);
+    });
+  };
+
+  self.rename = function(filepath,newName,success,error) {
+    var err = error || _error;
+    var requestUrl = _fsUrl;
+
+    var req = $http.put(
+      requestUrl,
+      {
+        filepath: filepath,
+        action: {
+          action: 'rename',
+          newname: newName
+        }
+      }
+    );
+    req.success(function(data) {
+      success(data.uri);
+    });
+    req.error(function(data,status) {
+      err(data,status);
+    });
+  };
+
+  self.move = function(filepath,newPath,success,error) {
+    var err = error || _error;
+    var requestUrl = _fsUrl;
+
+    var req = $http.put(
+      requestUrl,
+      {
+        filepath: filepath,
+        action: {
+          action: 'move',
+          newpath: newPath
+        }
+      }
+    );
+    req.success(function(data) {
+      success(data.uri);
+    });
+    req.error(function(data,status) {
+      err(data,status);
+    });
+  };
+
+  self.copy = function(filepath,copyPath,success,error) {
+    var err = error || _error;
+    var requestUrl = _fsUrl;
+
+    var req = $http.put(
+      requestUrl,
+      {
+        filepath: filepath,
+        action: {
+          action: 'copy',
+          copypath: copyPath
+        }
+      }
+    );
+    req.success(function(data) {
+      success(data.uri);
+    });
+    req.error(function(data,status) {
+      err(data,status);
     });
   };
 
@@ -360,72 +424,6 @@ angular.module('sandstone.filesystemservice', [])
     );
     req.success(function(data) {
       success();
-    });
-    req.error(function(data,status) {
-      err(data,status);
-    });
-  };
-
-  self.rename = function(filepath,newName,success,error) {
-    var err = error || _error;
-    var requestUrl = _fsUrl;
-
-    var req = $http.put(
-      requestUrl,
-      {
-        filepath: filepath,
-        action: {
-          action: 'rename',
-          newname: newName
-        }
-      }
-    );
-    req.success(function(data) {
-      success(data.uri);
-    });
-    req.error(function(data,status) {
-      err(data,status);
-    });
-  };
-
-  self.move = function(filepath,newPath,success,error) {
-    var err = error || _error;
-    var requestUrl = _fsUrl;
-
-    var req = $http.put(
-      requestUrl,
-      {
-        filepath: filepath,
-        action: {
-          action: 'move',
-          newpath: newPath
-        }
-      }
-    );
-    req.success(function(data) {
-      success(data.uri);
-    });
-    req.error(function(data,status) {
-      err(data,status);
-    });
-  };
-
-  self.copy = function(filepath,copyPath,success,error) {
-    var err = error || _error;
-    var requestUrl = _fsUrl;
-
-    var req = $http.put(
-      requestUrl,
-      {
-        filepath: filepath,
-        action: {
-          action: 'copy',
-          copypath: copyPath
-        }
-      }
-    );
-    req.success(function(data) {
-      success(data.uri);
     });
     req.error(function(data,status) {
       err(data,status);
