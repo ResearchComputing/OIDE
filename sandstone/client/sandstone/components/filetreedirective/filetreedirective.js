@@ -77,16 +77,16 @@ angular.module('sandstone.filetreedirective', [])
       };
 
       $rootScope.$on('filesystem:file_created', function(event, data) {
-        updateDirectoryContents(data.dirpath);
+        self.updateDirectoryContents(data.dirpath);
       });
 
       $rootScope.$on('filesystem:file_deleted', function(event, data) {
-        updateDirectoryContents(data.dirpath);
+        self.updateDirectoryContents(data.dirpath);
       });
 
       $rootScope.$on('filesystem:file_moved', function(event, data) {
-        updateDirectoryContents(data.src_dirpath);
-        updateDirectoryContents(data.dest_dirpath);
+        self.updateDirectoryContents(data.src_dirpath);
+        self.updateDirectoryContents(data.dest_dirpath);
       });
 
       self.onToggle = function(node,expanded) {
@@ -94,13 +94,13 @@ angular.module('sandstone.filetreedirective', [])
           self.extraOnToggle({node: node, expanded: expanded});
         }
 
-        if (!self.isExpanded(node.filepath)) {
+        if (expanded) {
+          self.loadDirectoryContents(node);
+          FilesystemService.createFilewatcher(node.filepath, function() {});
+        } else {
           FilesystemService.deleteFilewatcher(node.filepath, function() {});
-          return;
         }
 
-        loadDirectoryContents(node);
-        FilesystemService.createFilewatcher(node.filepath, function() {});
       };
     }
   ]};

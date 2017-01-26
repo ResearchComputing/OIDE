@@ -48,10 +48,10 @@ describe('sandstone.filetreedirective', function() {
         getDirectoryDetails: function(filepath,config,success) {
           success(dirDetails);
         },
-        createFilewatcher: function(success) {
+        createFilewatcher: function(filepath,success) {
           success();
         },
-        deleteFilewatcher: function(success) {
+        deleteFilewatcher: function(filepath,success) {
           success();
         },
         normalize: function() {}
@@ -61,9 +61,10 @@ describe('sandstone.filetreedirective', function() {
   }));
 
   describe('controller', function() {
-    var $compile, $scope, isolateScope, element;
+    var $compile, $scope, isolateScope, element, FilesystemService;
 
-    beforeEach(inject(function(_$compile_,_$rootScope_) {
+    beforeEach(inject(function(_$compile_,_$rootScope_,_FilesystemService_) {
+      FilesystemService = _FilesystemService_;
       $compile = _$compile_;
       $scope = _$rootScope_.$new();
       $scope.treeData = {
@@ -94,6 +95,45 @@ describe('sandstone.filetreedirective', function() {
       expect(contents.length).toEqual(1);
       expect(contents[0].children.length).toEqual(1);
       expect(contents[0].children[0].filepath).toEqual('/volume1/dir1/file1');
+    });
+
+    it('updateDirectoryContents',function() {
+      var node = $scope.treeData.contents[0];
+      isolateScope.loadDirectoryContents(node);
+      $scope.$digest();
+      // Not expanded
+      spyOn(isolateScope,'loadDirectoryContents');
+      isolateScope.updateDirectoryContents(dirDetails.filepath);
+      expect(isolateScope.loadDirectoryContents).not.toHaveBeenCalled();
+      // Expanded
+      var dir = node.children[0];
+      var expanded = isolateScope.treeData.expanded;
+      expanded.push(dir);
+      isolateScope.updateDirectoryContents(dirDetails.filepath);
+      expect(isolateScope.loadDirectoryContents).toHaveBeenCalledWith(dir);
+    });
+
+    it('onSelect',function() {
+      spyOn(isolateScope,'extraOnSelect');
+      isolateScope.onSelect({},{});
+      expect(isolateScope.extraOnSelect).toHaveBeenCalledWith({node:{},selected:{}});
+    });
+
+    it('onToggle',function() {
+      var node = $scope.treeData.contents[0];
+
+      spyOn(isolateScope,'extraOnToggle');
+      spyOn(isolateScope,'loadDirectoryContents');
+      spyOn(FilesystemService,'createFilewatcher');
+      spyOn(FilesystemService,'deleteFilewatcher');
+      isolateScope.onToggle(node,true);
+      expect(isolateScope.extraOnToggle).toHaveBeenCalledWith({node:node,expanded:true});
+      expect(isolateScope.loadDirectoryContents).toHaveBeenCalled();
+      expect(FilesystemService.createFilewatcher).toHaveBeenCalled();
+      expect(FilesystemService.deleteFilewatcher).not.toHaveBeenCalled();
+      isolateScope.onToggle(node,false);
+      expect(isolateScope.extraOnToggle).toHaveBeenCalledWith({node:node,expanded:false});
+      expect(FilesystemService.deleteFilewatcher).toHaveBeenCalled();
     });
 
   });
