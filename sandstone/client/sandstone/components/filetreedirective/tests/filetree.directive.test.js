@@ -139,9 +139,25 @@ describe('sandstone.filetreedirective', function() {
   });
 
   describe('directive', function() {
-    var $compile, $scope, isolateScope, element;
+    var $compile, $scope, isolateScope, element, FilesystemService;
 
-    beforeEach(inject(function(_$compile_,_$rootScope_) {
+    var getMatchesFromTpl = function(pattern,tpl) {
+      var matches = tpl.match(pattern);
+      if (!matches) {
+        return [];
+      }
+      return matches;
+    };
+
+    var renderTpl = function(scope,el) {
+      var tpl;
+      scope.$digest();
+      tpl = el.html();
+      return tpl;
+    };
+
+    beforeEach(inject(function(_$compile_,_$rootScope_,_FilesystemService_) {
+      FilesystemService = _FilesystemService_;
       $compile = _$compile_;
       $scope = _$rootScope_.$new();
       $scope.treeData = {
@@ -158,6 +174,26 @@ describe('sandstone.filetreedirective', function() {
       $scope.$digest();
       isolateScope = element.isolateScope();
     }));
+
+    it('initial tree contents load and render',function() {
+      var tpl = element.html();
+      expect(tpl).toContain('/volume1/');
+      expect(tpl).not.toContain('dir1');
+    });
+
+    it('expand and contract node',function() {
+      var contents = isolateScope.treeData.contents;
+      var expanded = isolateScope.treeData.expanded;
+      expanded.push(contents[0]);
+      var tpl = renderTpl($scope,element);
+      expect(tpl).toContain('/volume1/');
+      expect(tpl).toContain('file1');
+      expanded.shift();
+      tpl = renderTpl($scope,element);
+      expect(tpl).toContain('/volume1/');
+      expect(tpl).not.toContain('file1');
+    });
+
   });
 
 });
