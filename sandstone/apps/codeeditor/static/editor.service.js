@@ -147,12 +147,15 @@ angular.module('sandstone.editor')
       } else {
         // Load document from filesystem
         $log.debug('Load '+filepath+' from filesystem.');
-        FilesystemService.getFileContents(filepath,function(contents) {
-          var mode = AceModeService.getModeForPath(filepath);
-          $rootScope.$emit('aceModeChanged', mode);
-          createNewSession(filepath,contents,mode.mode);
-          switchSession(filepath);
-        });
+        var fileContents = FilesystemService.getFileContents(filepath);
+        fileContents.then(
+          function(contents) {
+            var mode = AceModeService.getModeForPath(filepath);
+            $rootScope.$emit('aceModeChanged', mode);
+            createNewSession(filepath,contents,mode.mode);
+            switchSession(filepath);
+          }
+        );
       }
     }
 };
@@ -271,20 +274,25 @@ angular.module('sandstone.editor')
     saveDocument: function(filepath) {
       var content = openDocs[filepath].session.getValue();
       var updateContents = function() {
-        FilesystemService.writeFileContents(filepath,content,function() {
-          $log.debug('Saved file: ', filepath);
-          openDocs[filepath].unsaved = false;
-          $rootScope.$emit('refreshFiletree');
-          var mode = AceModeService.getModeForPath(filepath);
-          $rootScope.$emit('aceModeChanged', mode);
-        });
+        var writeContents = FilesystemService.writeFileContents(filepath,content);
+        writeContents.then(
+          function() {
+            $log.debug('Saved file: ', filepath);
+            openDocs[filepath].unsaved = false;
+            $rootScope.$emit('refreshFiletree');
+            var mode = AceModeService.getModeForPath(filepath);
+            $rootScope.$emit('aceModeChanged', mode);
+          }
+        );
       };
       var createAndUpdate = function(data,status) {
         if (status === 404) {
-          FilesystemService.createFile(filepath,updateContents);
+          var createFile = FilesystemService.createFile(filepath);
+          createFile.then(updateContents);
         }
       };
-      FilesystemService.getFileDetails(filepath,updateContents,createAndUpdate);
+      var fileDetails = FilesystemService.getFileDetails(filepath);
+      fileDetails.then(updateContents,createAndUpdate);
     },
     fileRenamed: function(oldpath,newpath) {
       if (oldpath in openDocs) {

@@ -99,9 +99,13 @@ angular.module('sandstone.editor')
       var newPath, normDirpath;
       normDirpath = FilesystemService.normalize(selectedDir.filepath);
       newPath = FilesystemService.join(normDirpath,newFileName);
-      FilesystemService.createFile(newPath,function(uri){
-        $log.debug('File created at: ' + newPath);
-      });
+
+      var createFile = FilesystemService.createFile(newPath);
+      createFile.then(
+        function(uri){
+          $log.debug('File created at: ' + newPath);
+        }
+      );
     }, function () {
       $log.debug('Modal dismissed at: ' + new Date());
     });
@@ -129,9 +133,12 @@ angular.module('sandstone.editor')
       normDirpath = FilesystemService.normalize(selectedDir.filepath);
       newPath = FilesystemService.join(normDirpath,newFileName);
 
-      FilesystemService.createDirectory(newPath,function(uri){
-        $log.debug('Directory created at: ' + newPath);
-      });
+      var createDirectory = FilesystemService.createDirectory(newPath);
+      createDirectory.then(
+        function(uri){
+          $log.debug('Directory created at: ' + newPath);
+        }
+      );
     }, function () {
       $log.debug('Modal dismissed at: ' + new Date());
     });
@@ -161,13 +168,19 @@ angular.module('sandstone.editor')
       newPath = FilesystemService.join(normDirpath,newFileName);
 
       if (selectedFile.type === 'directory') {
-        FilesystemService.createDirectory(newPath,function(uri){
-          $log.debug('Directory duplicated at: ' + newPath);
-        });
+        var createDirectory = FilesystemService.createDirectory(newPath);
+        createDirectory.then(
+          function(uri){
+            $log.debug('Directory duplicated at: ' + newPath);
+          }
+        );
       } else if (selectedFile.type === 'file') {
-        FilesystemService.createFile(newPath,function(uri){
-          $log.debug('File duplicated at: ' + newPath);
-        });
+        var createFile = FilesystemService.createFile(newPath);
+        createFile.then(
+          function(uri){
+            $log.debug('File duplicated at: ' + newPath);
+          }
+        );
       }
     }, function () {
       $log.debug('Modal dismissed at: ' + new Date());
@@ -190,9 +203,12 @@ angular.module('sandstone.editor')
     self.deleteModalInstance.result.then(function () {
       for (var i=0;i<self.treeData.selected.length;i++) {
         var filepath = self.treeData.selected[i].filepath;
-        FilesystemService.delete(filepath,function(){
-          $log.debug('Deleted file: ',filepath);
-        });
+        var deleteFile = FilesystemService.delete(filepath);
+        deleteFile.then(
+          function(){
+            $log.debug('Deleted file: ',filepath);
+          }
+        );
         self.deleteModalInstance = null;
       }
     }, function () {
@@ -213,11 +229,11 @@ angular.module('sandstone.editor')
     var node, destPath;
     var i = 0;
     var newDirPath = FilesystemService.normalize(self.treeData.selected[0].filepath);
-    
+
     while (self.clipboard.length > 0) {
       node = self.clipboard.shift();
       destPath = FilesystemService.join(newDirPath,node.name);
-      FilesystemService.copy(node.filepath,destPath,function() {});
+      var copyFile = FilesystemService.copy(node.filepath,destPath);
     }
   };
 
@@ -237,7 +253,7 @@ angular.module('sandstone.editor')
     renameModalInstance.result.then(function (newFileName) {
       $log.debug('File renamed at: ' + new Date());
       var node = self.treeData.selected[0];
-      FilesystemService.rename(node.filepath,newFileName,function(){});
+      var renameFile = FilesystemService.rename(node.filepath,newFileName);
     }, function () {
       $log.debug('Modal dismissed at: ' + new Date());
     });

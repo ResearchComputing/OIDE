@@ -12,12 +12,16 @@ angular.module('sandstone.filetreedirective', [])
     templateUrl: '/static/core/components/filetreedirective/templates/filetree.html',
     controller: ['$scope', '$element', '$rootScope', 'FilesystemService', function($scope, $element, $rootScope, FilesystemService) {
       var self = $scope;
-      FilesystemService.getFilesystemDetails(function(filesystem) {
-        for (var i=0;i<filesystem.volumes.length;i++) {
-          filesystem.volumes[i].name = filesystem.volumes[i].filepath;
-          self.treeData.contents.push(filesystem.volumes[i]);
+
+      var fsDetails = FilesystemService.getFilesystemDetails();
+      fsDetails.then(
+        function(filesystem) {
+          for (var i=0;i<filesystem.volumes.length;i++) {
+            filesystem.volumes[i].name = filesystem.volumes[i].filepath;
+            self.treeData.contents.push(filesystem.volumes[i]);
+          }
         }
-      });
+      );
 
       // Options
       self.options = {
@@ -55,12 +59,15 @@ angular.module('sandstone.filetreedirective', [])
       };
 
       self.loadDirectoryContents = function(node) {
-        FilesystemService.getDirectoryDetails(node.filepath, {}, function(directory) {
-          node.children = [];
-          for (var i=0;i<directory.contents.length;i++) {
-            node.children.push(directory.contents[i]);
+        var dirDetails = FilesystemService.getDirectoryDetails(node.filepath);
+        dirDetails.then(
+          function(directory) {
+            node.children = [];
+            for (var i=0;i<directory.contents.length;i++) {
+              node.children.push(directory.contents[i]);
+            }
           }
-        });
+        );
       };
 
       self.updateDirectoryContents = function(filepath) {
@@ -90,15 +97,16 @@ angular.module('sandstone.filetreedirective', [])
       });
 
       self.onToggle = function(node,expanded) {
+        var watcher;
         if (self.extraOnToggle) {
           self.extraOnToggle({node: node, expanded: expanded});
         }
 
         if (expanded) {
           self.loadDirectoryContents(node);
-          FilesystemService.createFilewatcher(node.filepath, function() {});
+          watcher = FilesystemService.createFilewatcher(node.filepath);
         } else {
-          FilesystemService.deleteFilewatcher(node.filepath, function() {});
+          watcher = FilesystemService.deleteFilewatcher(node.filepath);
         }
 
       };

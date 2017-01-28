@@ -2,7 +2,7 @@
 
 angular.module('sandstone.filesystemservice', [])
 
-.service('FilesystemService', ['$http', '$log',function($http, $log){
+.service('FilesystemService', ['$http', '$log', '$q', function($http, $log, $q){
   var self = this;
   // Private
   var _fsUrl = '/a/filesystem/';
@@ -154,26 +154,26 @@ angular.module('sandstone.filesystemservice', [])
   };
 
   // Filesystem methods
-  self.getFilesystemDetails = function(success,error) {
-    var err = error || _error;
-
+  self.getFilesystemDetails = function() {
+    var deferred = $q.defer();
     var req = $http.get(_fsUrl);
     req.success(function(data) {
       var fsDetails = new self.Filesystem(
         data.groups,
         data.volumes
       );
-      success(fsDetails);
+      deferred.resolve(fsDetails);
     });
     req.error(function(data, status) {
-      err(data, status);
+      deferred.reject(data, status);
     });
+    return deferred.promise;
   };
 
-  self.rename = function(filepath,newName,success,error) {
-    var err = error || _error;
+  self.rename = function(filepath,newName) {
     var requestUrl = _fsUrl;
 
+    var deferred = $q.defer();
     var req = $http.put(
       requestUrl,
       {
@@ -185,17 +185,18 @@ angular.module('sandstone.filesystemservice', [])
       }
     );
     req.success(function(data) {
-      success(data.uri);
+      deferred.resolve(data.uri);
     });
     req.error(function(data,status) {
-      err(data,status);
+      deferred.reject(data,status);
     });
+    return deferred.promise;
   };
 
-  self.move = function(filepath,newPath,success,error) {
-    var err = error || _error;
+  self.move = function(filepath,newPath) {
     var requestUrl = _fsUrl;
 
+    var deferred = $q.defer();
     var req = $http.put(
       requestUrl,
       {
@@ -207,17 +208,18 @@ angular.module('sandstone.filesystemservice', [])
       }
     );
     req.success(function(data) {
-      success(data.uri);
+      deferred.resolve(data.uri);
     });
     req.error(function(data,status) {
-      err(data,status);
+      deferred.reject(data,status);
     });
+    return deferred.promise;
   };
 
-  self.copy = function(filepath,copyPath,success,error) {
-    var err = error || _error;
+  self.copy = function(filepath,copyPath) {
     var requestUrl = _fsUrl;
 
+    var deferred = $q.defer();
     var req = $http.put(
       requestUrl,
       {
@@ -229,18 +231,19 @@ angular.module('sandstone.filesystemservice', [])
       }
     );
     req.success(function(data) {
-      success(data.uri);
+      deferred.resolve(data.uri);
     });
     req.error(function(data,status) {
-      err(data,status);
+      deferred.reject(data,status);
     });
+    return deferred.promise;
   };
 
   // File methods
-  self.getFileDetails = function(filepath,success,error) {
-    var err = error || _error;
+  self.getFileDetails = function(filepath) {
     var requestUrl = _fsFileUrl + encodeURIComponent(filepath) + '/';
 
+    var deferred = $q.defer();
     var req = $http.get(requestUrl);
     req.success(function(data) {
       var fileDetails = new self.File(
@@ -251,30 +254,32 @@ angular.module('sandstone.filesystemservice', [])
         data.permissions,
         data.size
       );
-      success(fileDetails);
+      deferred.resolve(fileDetails);
     });
     req.error(function(data,status) {
-      err(data, status);
+      deferred.reject(data, status);
     });
+    return deferred.promise;
   };
 
-  self.getFileContents = function(filepath,success,error) {
-    var err = error || _error;
+  self.getFileContents = function(filepath) {
     var requestUrl = _fsFileUrl + encodeURIComponent(filepath) + '/contents/';
 
+    var deferred = $q.defer();
     var req = $http.get(requestUrl);
     req.success(function(data) {
-      success(data.contents);
+      deferred.resolve(data.contents);
     });
     req.error(function(data,status) {
-      err(data, status);
+      deferred.reject(data, status);
     });
+    return deferred.promise;
   };
 
-  self.writeFileContents = function(filepath,content,success,error) {
-    var err = error || _error;
+  self.writeFileContents = function(filepath,content) {
     var requestUrl = _fsFileUrl + encodeURIComponent(filepath) + '/contents/';
 
+    var deferred = $q.defer();
     var req = $http.post(
       requestUrl,
       {
@@ -282,17 +287,18 @@ angular.module('sandstone.filesystemservice', [])
       }
     );
     req.success(function(data) {
-      success(data.msg);
+      deferred.resolve(data.msg);
     });
     req.error(function(data,status) {
-      err(data,status);
+      deferred.reject(data,status);
     });
+    return deferred.promise;
   };
 
-  self.createFile = function(filepath,success,error) {
-    var err = error || _error;
+  self.createFile = function(filepath) {
     var requestUrl = _fsFileUrl;
 
+    var deferred = $q.defer();
     var req = $http.post(
       requestUrl,
       {
@@ -300,20 +306,22 @@ angular.module('sandstone.filesystemservice', [])
       }
     );
     req.success(function(data) {
-      success(data.uri);
+      deferred.resolve(data.uri);
     });
     req.error(function(data,status) {
-      err(data,status);
+      deferred.reject(data,status);
     });
+    return deferred.promise;
   };
 
   // Directory methods
-  self.getDirectoryDetails = function(filepath,config,success,error) {
+  self.getDirectoryDetails = function(filepath,conf) {
+    var config = conf || {};
     var contents = config.contents || true;
     var dirSizes = config.dirSizes || false;
-    var err = error || _error;
     var requestUrl = _fsDirUrl + encodeURIComponent(filepath) + '/';
 
+    var deferred = $q.defer();
     var req = $http.get(
       requestUrl,
       {
@@ -349,17 +357,18 @@ angular.module('sandstone.filesystemservice', [])
         directory.contents = contents;
       }
 
-      success(directory);
+      deferred.resolve(directory);
     });
     req.error(function(data,status) {
-      err(data,status);
+      deferred.reject(data,status);
     });
+    return deferred.promise;
   };
 
-  self.createDirectory = function(filepath,success,error) {
-    var err = error || _error;
+  self.createDirectory = function(filepath) {
     var requestUrl = _fsDirUrl;
 
+    var deferred = $q.defer();
     var req = $http.post(
       requestUrl,
       {
@@ -367,31 +376,33 @@ angular.module('sandstone.filesystemservice', [])
       }
     );
     req.success(function(data) {
-      success(data.uri);
+      deferred.resolve(data.uri);
     });
     req.error(function(data,status) {
-      err(data,status);
+      deferred.reject(data,status);
     });
+    return deferred.promise;
   };
 
   // General methods
-  self.delete = function(filepath,success,error) {
-    var err = error || _error;
+  self.delete = function(filepath) {
     var requestUrl = _fsFileUrl + encodeURIComponent(filepath) + '/';
 
+    var deferred = $q.defer();
     var req = $http.delete(requestUrl);
     req.success(function(data) {
-      success();
+      deferred.resolve();
     });
     req.error(function(data,status) {
-      err(data,status);
+      deferred.reject(data,status);
     });
+    return deferred.promise;
   };
 
-  self.changeGroup = function(filepath,newGroup,success,error) {
-    var err = error || _error;
+  self.changeGroup = function(filepath,newGroup) {
     var requestUrl = _fsFileUrl + encodeURIComponent(filepath) + '/';
 
+    var deferred = $q.defer();
     var req = $http.put(
       requestUrl,
       {
@@ -402,17 +413,18 @@ angular.module('sandstone.filesystemservice', [])
       }
     );
     req.success(function(data) {
-      success();
+      deferred.resolve();
     });
-    req.error(function(data,status) {
-      err(data,status);
+    res.error(function(data,status) {
+      deferred.reject(data,status);
     });
+    return deferred.promise;
   };
 
-  self.changePermissions = function(filepath,newPermissions,success,error) {
-    var err = error || _error;
+  self.changePermissions = function(filepath,newPermissions) {
     var requestUrl = _fsFileUrl + encodeURIComponent(filepath) + '/';
 
+    var deferred = $q.defer();
     var req = $http.put(
       requestUrl,
       {
@@ -423,17 +435,18 @@ angular.module('sandstone.filesystemservice', [])
       }
     );
     req.success(function(data) {
-      success();
+      deferred.resolve();
     });
     req.error(function(data,status) {
-      err(data,status);
+      deferred.reject(data,status);
     });
+    return deferred.promise;
   };
 
-  self.createFilewatcher = function(filepath,success,error) {
-    var err = error || _error;
+  self.createFilewatcher = function(filepath) {
     var requestUrl = _watcherUrl;
 
+    var deferred = $q.defer();
     var req = $http.post(
       requestUrl,
       {
@@ -441,24 +454,26 @@ angular.module('sandstone.filesystemservice', [])
       }
     );
     req.success(function(data) {
-      success();
+      deferred.resolve();
     });
     req.error(function(data,status) {
-      err(data,status);
+      deferred.reject(data,status);
     });
+    return deferred.promise;
   };
 
-  self.deleteFilewatcher = function(filepath,success,error) {
-    var err = error || _error;
+  self.deleteFilewatcher = function(filepath) {
     var requestUrl = _watcherUrl + encodeURIComponent(filepath) + '/';
 
+    var deferred = $q.defer();
     var req = $http.delete(requestUrl);
     req.success(function(data) {
-      success();
+      deferred.resolve();
     });
     req.error(function(data,status) {
-      err(data,status);
+      deferred.reject(data,status);
     });
+    return deferred.promise;
   };
 
 }]);
