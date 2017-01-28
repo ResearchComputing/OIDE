@@ -76,9 +76,12 @@ describe('sandstone.filesystemservice', function() {
         return [200, fsDetails];
       });
 
-      FilesystemService.getFilesystemDetails(function(data) {
-        expect(data instanceof FilesystemService.Filesystem).toBe(true);
-      });
+      var getFsDetails = FilesystemService.getFilesystemDetails();
+      getFsDetails.then(
+        function(data) {
+          expect(data instanceof FilesystemService.Filesystem).toBe(true);
+        }
+      );
     });
 
     it('rename', function() {
@@ -96,7 +99,7 @@ describe('sandstone.filesystemservice', function() {
       });
 
       $httpBackend.expectPUT('/a/filesystem/',expRequest);
-      FilesystemService.rename(filepath,newName,function(data) {});
+      FilesystemService.rename(filepath,newName);
     });
 
     it('move', function() {
@@ -114,7 +117,7 @@ describe('sandstone.filesystemservice', function() {
       });
 
       $httpBackend.expectPUT('/a/filesystem/',expRequest);
-      FilesystemService.move(filepath,newpath,function(data) {});
+      FilesystemService.move(filepath,newpath);
     });
 
     it('copy', function() {
@@ -132,7 +135,7 @@ describe('sandstone.filesystemservice', function() {
       });
 
       $httpBackend.expectPUT('/a/filesystem/',expRequest);
-      FilesystemService.copy(filepath,newpath,function(data) {});
+      FilesystemService.copy(filepath,newpath);
     });
 
   });
