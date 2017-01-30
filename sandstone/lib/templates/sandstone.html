@@ -51,6 +51,7 @@
             {% for app in get_app_descriptions() %}
             <li ng-class="{'active':pageCtrl.currentUrl()==='{{app['link']}}'}"><a href="{{app['link']}}" role="button">{{app['name']}}</a></li>
             {% end %}
+            <li><a href="/auth/logout" role="button">Logout</a></li>
           </ul>
         </div>
       </div>
