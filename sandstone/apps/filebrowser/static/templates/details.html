@@ -1,0 +1,164 @@
+<div class="row">
+  <ol class="breadcrumb">
+    <li ng-click="ctrl.changeDir($index)" ng-repeat="pathComponent in ctrl.currentDirectory" ng-class="{active: $last}">{{pathComponent}}</li>
+    <!-- <div class="directory-options"> -->
+      <div class="btn-group btn-group-sm dir-controls directory-options" role="group">
+        <div class="btn-group btn-group-sm" role="group">
+          <button id="paste-file-btn" type="button" ng-disabled="!ctrl.isCopied || ctrl.selectedFile == ''" ng-click="ctrl.pasteFile()" class="btn btn-default" tooltip="Paste" tooltip-trigger="mouseenter" tooltip-placement="bottom">
+            <i class="fa fa-paste dir-option"></i>
+          </button>
+        </div>
+        <div class="btn-group btn-group-sm" role="group">
+          <button id="upload-file-btn" type="button" class="btn btn-default" tooltip="Upload" ng-click="ctrl.openUploadModal()" ng-disabled="ctrl.currentDirectory.length == 0" tooltip-trigger="mouseenter" tooltip-placement="bottom">
+            <i class="fa fa-upload dir-option"></i>
+          </button>
+        </div>
+        <div class="btn-group btn-group-sm" role="group">
+          <button id="create-file-btn" type="button" ng-click="ctrl.createNewFile()" ng-disabled="ctrl.currentDirectory.length == 0" class="btn btn-default" tooltip="New File" tooltip-trigger="mouseenter" tooltip-placement="bottom">
+            <i class="fa fa-file-o dir-option"></i>
+          </button>
+        </div>
+        <div class="btn-group btn-group-sm" role="group">
+          <button id="create-dir-btn" type="button" ng-click="ctrl.createNewDirectory()" ng-disabled="ctrl.currentDirectory.length == 0"  class="btn btn-default" tooltip="New Directory"  tooltip-trigger="mouseenter" tooltip-placement="bottom">
+            <i class="fa fa-folder-o dir-option"></i>
+          </button>
+        </div>
+      </div>
+    <!-- </div> -->
+  </ol>
+</div>
+<div class="row">
+  <div ng-class="{'col-sm-8 scrollable-table': ctrl.show_details, 'col-sm-12 scrollable-table': !ctrl.show_details}">
+    <table id="dir-detail-table" st-table="ctrl.displayData" st-safe-src="ctrl.fileData" class="table">
+      <thead>
+      <tr>
+        <th st-sort="ctrl.getters.filename" st-sort-default="true">Name</th>
+        <th st-sort="ctrl.getters.size">Size</th>
+        <th>Owner</th>
+        <th>Group</th>
+        <th>Permissions</th>
+      </tr>
+      </thead>
+      <tbody>
+        <tr ng-repeat="file in ctrl.displayData">
+          <td><i class="fa" ng-class="{'fa-folder': file.type==='dir' && file.is_accessible, 'fa-file': file.type==='file' && file.is_accessible, 'fa-lock': file.is_accessible == false}" style="padding-right: 5px;"></i><span class="filetable-filename" ng-class="{'filetable-filename-selected': file.filename === ctrl.selectedFile.filename}" ng-dblclick="ctrl.openFolder(file)" ng-click="ctrl.ShowDetails(file)">{{file.filename}} </span></td>
+          <td>{{ file.size }}</td>
+          <td>{{ file.owner }}</td>
+          <td>{{ file.group }}</td>
+          <td>{{ file.perm }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="col-sm-4 file-details" ng-show="ctrl.show_details">
+    <!-- <h1>{{ctrl.selectedFile.filename}}</h1> -->
+    <!-- <p class="filedetails-filename">{{ctrl.selectedFile.filename}}</p>
+    <button type="button" class="btn btn-default"><i class="fa fa-pencil"></i></button> -->
+    <div class="row">
+      <div class="col-sm-12">
+        <input type="text" class="filedetails-filename" ng-disabled="!ctrl.isEditing" ng-model="ctrl.editedFileName" ng-blur="ctrl.renameFile()" sync-focus-with="ctrl.isEditing">
+        <i class="fa fa-pencil" ng-click="ctrl.editFileName()" style="cursor: pointer;"></i>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-sm-3 file-detail">
+        <b>Owner:</b>
+      </div>
+      <div class="col-sm-9 file-detail">
+        &nbsp;{{ctrl.selectedFile.owner}}
+      </div>
+      <div class="col-sm-3 file-detail">
+        <p>
+          <b>Group:</b>
+        </p>
+      </div>
+      <div class="col-sm-9 file-detail">
+        <select class="form-control input-sm" name="select" ng-model="ctrl.selectedFile.group" ng-change="ctrl.changeGroup()">
+          <option ng-repeat="group in ctrl.groups">{{group}}</option>
+        </select>
+      </div>
+      <div class="col-sm-3 file-detail">
+        <b>Size:</b>
+      </div>
+      <div class="col-sm-9 file-detail">
+        &nbsp;{{ctrl.selectedFile.size}}
+      </div>
+
+      <div class="col-sm-3 file-detail">
+        <b>Permissions:</b>
+      </div>
+      <div class="col-sm-12 file-detail">
+        <table id="permissions-table" class="table">
+          <thead>
+            <tr>
+              <td class="perm"></td>
+              <td class="perm">read</td>
+              <td class="perm">write</td>
+              <td class="perm">execute</td>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="perm">
+                user
+              </td>
+              <td class="perm">
+                <input type="checkbox" ng-model="ctrl.currentFilePermissions['user']['r']" ng-click="ctrl.changePermissions()" ng-checked="ctrl.currentFilePermissions.user.r">
+              </td>
+              <td class="perm">
+                <input type="checkbox" ng-model="ctrl.currentFilePermissions['user']['w']" ng-click="ctrl.changePermissions()" ng-checked="ctrl.currentFilePermissions.user.w">
+              </td>
+              <td class="perm">
+                <input type="checkbox"  ng-model="ctrl.currentFilePermissions['user']['x']" ng-click="ctrl.changePermissions()" ng-checked="ctrl.currentFilePermissions.user.x">
+              </td>
+            </tr>
+            <tr>
+              <td class="perm">
+                group
+              </td>
+              <td class="perm">
+                <input type="checkbox" ng-model="ctrl.currentFilePermissions['group']['r']" ng-click="ctrl.changePermissions()" ng-checked="ctrl.currentFilePermissions.group.r">
+              </td>
+              <td class="perm">
+                <input type="checkbox" ng-model="ctrl.currentFilePermissions['group']['w']" ng-click="ctrl.changePermissions()" ng-checked="ctrl.currentFilePermissions.group.w">
+              </td>
+              <td class="perm">
+                <input type="checkbox" ng-model="ctrl.currentFilePermissions['group']['x']" ng-click="ctrl.changePermissions()" ng-checked="ctrl.currentFilePermissions.group.x">
+              </td>
+            </tr>
+            <tr>
+              <td class="perm">
+                other
+              </td>
+              <td class="perm">
+                <input type="checkbox" ng-model="ctrl.currentFilePermissions['others']['r']" ng-click="ctrl.changePermissions()" ng-checked="ctrl.currentFilePermissions.others.r">
+              </td>
+              <td class="perm">
+                <input type="checkbox" ng-model="ctrl.currentFilePermissions['others']['w']" ng-click="ctrl.changePermissions()" ng-checked="ctrl.currentFilePermissions.others.w">
+              </td>
+              <td class="perm">
+                <input type="checkbox" ng-model="ctrl.currentFilePermissions['others']['x']" ng-click="ctrl.changePermissions()" ng-checked="ctrl.currentFilePermissions.others.x">
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="col-sm-6 col-sm-offset-6 file-detail">
+        <div class="btn-group btn-group-sm dir-controls pull-right" role="group">
+          <div class="btn-group btn-group-sm" role="group">
+            <button id="copy-file-btn" type="button" ng-click="ctrl.copyFile()" tooltip="Copy" class="btn btn-default filedetails-bottom-actions">
+              <i class="fa fa-files-o dir-option" style="font-size:18px;"></i>
+            </button>
+          </div>
+          <div class="btn-group btn-group-sm" role="group">
+            <button id="delete-file-btn" type="button" ng-click="ctrl.deleteFile()" tooltip="Delete" class="btn btn-default filedetails-bottom-actions">
+              <i class="fa fa-trash-o dir-option" style="font-size:18px;"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+      <button type="button" class="btn btn-primary" ng-click="ctrl.openFileInEditor()">Open in Editor</button>
+  </div>
+</div>

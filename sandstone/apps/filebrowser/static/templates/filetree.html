@@ -1,14 +1,9 @@
-<div id="filetree-container">
-  <treecontrol
-    class="tree-sandstone"
-    tree-model="ctrl.treeData.filetreeContents"
-    options="ctrl.treeOptions"
-    order-by="type+filename"
-    selected-nodes="ctrl.treeData.selectedNodes"
-    expanded-nodes="ctrl.treeData.expandedNodes"
-    on-selection="ctrl.describeSelection(node, selected)"
-    on-node-toggle="ctrl.getDirContents(node,expanded)">
-    {{node.filename}}
-    <span class="filetree-permissions">{{node.permissions}}</span>
-  </treecontrol>
+<div class="row">
+  <span class="volume-info">Volume Info</span>
+  <div class="progress">
+    <div class="progress-bar progress-bar-success progress-bar-striped" role="progressbar" aria-valuenow="{{ctrl.volumeInfo}}" aria-valuemin="0" aria-valuemax="20" ng-style="{width: ctrl.volumeInfo + '%'}"></div>
+  </div>
+  <p class="volume-info" ng-show="ctrl.showVolumeInfo()">{{ ctrl.volumeUsed + ' GB' }} of {{ ctrl.volumeSize + ' GB' }} used</p>
 </div>
+<!-- <div ui-view="filetree"></div> -->
+<div sandstone-filetree tree-data="ctrl.treeData" leaf-level="dir" selection-desc="ctrl.sd"></div>

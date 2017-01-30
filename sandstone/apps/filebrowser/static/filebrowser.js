@@ -7,15 +7,16 @@ angular.module('sandstone.filebrowser', ['smart-table', 'angularFileUpload', 'ui
     url: '/filebrowser',
     views: {
       '': {
-        templateUrl: '/static/filebrowser/filebrowser.html',
-        controller: 'FilebrowserController',
-        controllerAs: 'ctrl'
-      }//,
-      // 'filetree@filebrowser': {
-      //   templateUrl: '/static/filebrowser/templates/filetree.html',
-      //   controller: 'FiletreeController',
-      //   controllerAs: 'ctrl'
-      // }
+        templateUrl: '/static/filebrowser/filebrowser.html'
+      },
+      'filetree@filebrowser': {
+        templateUrl: '/static/filebrowser/templates/filetree.html',
+        controller: 'FiletreeCtrl as ctrl'
+      },
+      'details@filebrowser': {
+        templateUrl: '/static/filebrowser/templates/details.html',
+        controller: 'DetailsCtrl as ctrl'
+      }
     }
   });
 }]);
