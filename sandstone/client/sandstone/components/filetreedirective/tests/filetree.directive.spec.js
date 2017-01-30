@@ -16,8 +16,8 @@ describe('sandstone.filetreedirective', function() {
   };
   var fileDetails = {
     type: 'file',
-    filepath: '/volume1/dir1/file1',
-    dirpath: '/volume1/dir1',
+    filepath: '/volume1/file1',
+    dirpath: '/volume1',
     name: 'file1',
     owner: 'testuser',
     group: 'testgrp',
@@ -26,9 +26,9 @@ describe('sandstone.filetreedirective', function() {
   };
   var dirDetails = {
     type: 'directory',
-    filepath: '/volume1/dir1',
+    filepath: '/volume1',
     dirpath: '/volume1/',
-    name: 'dir1',
+    name: 'volume1',
     owner: 'testuser',
     group: 'testgrp',
     permissions: 'rwxrw-r--',
@@ -38,32 +38,19 @@ describe('sandstone.filetreedirective', function() {
 
   beforeEach(module('sandstone'));
   beforeEach(module('sandstone.templates'));
+  beforeEach(module('sandstone.filesystemservice'));
   beforeEach(module('sandstone.filetreedirective'));
-  beforeEach(module(function($provide) {
-    var MockFilesystemService = function() {
-      return {
-        getFilesystemDetails: function(success) {
-          success(fsDetails);
-        },
-        getDirectoryDetails: function(filepath,config,success) {
-          success(dirDetails);
-        },
-        createFilewatcher: function(filepath,success) {
-          success();
-        },
-        deleteFilewatcher: function(filepath,success) {
-          success();
-        },
-        normalize: function() {}
-      };
-    };
-    $provide.service('FilesystemService',MockFilesystemService);
-  }));
 
   describe('controller', function() {
-    var $compile, $scope, isolateScope, element, FilesystemService;
+    var $compile, $scope, isolateScope, element, FilesystemService, mockResolve;
 
-    beforeEach(inject(function(_$compile_,_$rootScope_,_FilesystemService_) {
+    beforeEach(inject(function(_$compile_,_$rootScope_,_$q_,_FilesystemService_) {
+      mockResolve = function(data) {
+        var deferred = _$q_.defer();
+        deferred.resolve(data);
+        return deferred.promise;
+      };
+
       FilesystemService = _FilesystemService_;
       $compile = _$compile_;
       $scope = _$rootScope_.$new();
@@ -77,27 +64,40 @@ describe('sandstone.filetreedirective', function() {
       };
       $scope.treeOnSelect = function(node,selected){};
       $scope.treeOnToggle = function(node,expanded){};
+      // Called on load
+      spyOn(FilesystemService,'getFilesystemDetails').and.callFake(function() {
+        return mockResolve(fsDetails);
+      });
+
       element = $compile(baseElement)($scope);
       $scope.$digest();
       isolateScope = element.isolateScope();
     }));
 
     it('populates contents upon load',function() {
+      expect(FilesystemService.getFilesystemDetails).toHaveBeenCalled();
       var contents = $scope.treeData.contents;
       expect(contents[0].filepath).toEqual(volumeDetails.filepath);
     });
 
     it('loadDirectoryContents',function() {
+      spyOn(FilesystemService,'getDirectoryDetails').and.callFake(function() {
+        return mockResolve(dirDetails);
+      });
       var node = $scope.treeData.contents[0];
       isolateScope.loadDirectoryContents(node);
+      expect(FilesystemService.getDirectoryDetails).toHaveBeenCalledWith('/volume1/');
       $scope.$digest();
       var contents = isolateScope.treeData.contents;
       expect(contents.length).toEqual(1);
       expect(contents[0].children.length).toEqual(1);
-      expect(contents[0].children[0].filepath).toEqual('/volume1/dir1/file1');
+      expect(contents[0].children[0].filepath).toEqual('/volume1/file1');
     });
 
     it('updateDirectoryContents',function() {
+      spyOn(FilesystemService,'getDirectoryDetails').and.callFake(function() {
+        return mockResolve(dirDetails);
+      });
       var node = $scope.treeData.contents[0];
       isolateScope.loadDirectoryContents(node);
       $scope.$digest();
@@ -106,11 +106,10 @@ describe('sandstone.filetreedirective', function() {
       isolateScope.updateDirectoryContents(dirDetails.filepath);
       expect(isolateScope.loadDirectoryContents).not.toHaveBeenCalled();
       // Expanded
-      var dir = node.children[0];
       var expanded = isolateScope.treeData.expanded;
-      expanded.push(dir);
+      expanded.push(node);
       isolateScope.updateDirectoryContents(dirDetails.filepath);
-      expect(isolateScope.loadDirectoryContents).toHaveBeenCalledWith(dir);
+      expect(isolateScope.loadDirectoryContents).toHaveBeenCalledWith(node);
     });
 
     it('onSelect',function() {
@@ -139,7 +138,7 @@ describe('sandstone.filetreedirective', function() {
   });
 
   describe('directive', function() {
-    var $compile, $scope, isolateScope, element, FilesystemService;
+    var $compile, $scope, isolateScope, element, FilesystemService, mockResolve;
 
     var getMatchesFromTpl = function(pattern,tpl) {
       var matches = tpl.match(pattern);
@@ -156,7 +155,13 @@ describe('sandstone.filetreedirective', function() {
       return tpl;
     };
 
-    beforeEach(inject(function(_$compile_,_$rootScope_,_FilesystemService_) {
+    beforeEach(inject(function(_$compile_,_$rootScope_,_$q_,_FilesystemService_) {
+      mockResolve = function(data) {
+        var deferred = _$q_.defer();
+        deferred.resolve(data);
+        return deferred.promise;
+      };
+
       FilesystemService = _FilesystemService_;
       $compile = _$compile_;
       $scope = _$rootScope_.$new();
@@ -170,6 +175,11 @@ describe('sandstone.filetreedirective', function() {
       };
       $scope.treeOnSelect = function(node,selected){};
       $scope.treeOnToggle = function(node,expanded){};
+      // Called on load
+      spyOn(FilesystemService,'getFilesystemDetails').and.callFake(function() {
+        return mockResolve(fsDetails);
+      });
+
       element = $compile(baseElement)($scope);
       $scope.$digest();
       isolateScope = element.isolateScope();
@@ -178,7 +188,7 @@ describe('sandstone.filetreedirective', function() {
     it('initial tree contents load and render',function() {
       var tpl = element.html();
       expect(tpl).toContain('/volume1/');
-      expect(tpl).not.toContain('dir1');
+      expect(tpl).not.toContain('file1');
     });
 
     it('expand and contract node',function() {
