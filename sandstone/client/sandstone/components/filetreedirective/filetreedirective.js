@@ -7,7 +7,9 @@ angular.module('sandstone.filetreedirective', [])
       extraOptions: '=options',
       extraOnSelect: '&onSelect',
       extraOnToggle: '&onToggle',
-      treeData: '='
+      treeData: '=',
+      filterExpression: '=',
+      filterComparator: '='
     },
     templateUrl: '/static/core/components/filetreedirective/templates/filetree.html',
     controller: ['$scope', '$element', '$rootScope', 'FilesystemService', function($scope, $element, $rootScope, FilesystemService) {

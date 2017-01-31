@@ -6,4 +6,4 @@
   <p class="volume-info" ng-show="ctrl.showVolumeInfo()">{{ ctrl.volumeUsed + ' GB' }} of {{ ctrl.volumeSize + ' GB' }} used</p>
 </div>
 
-<div sandstone-filetree tree-data="ctrl.treeData" options="ctrl.treeOptions" on-select="ctrl.treeOnSelect(node,selected)"></div>
+<div sandstone-filetree tree-data="ctrl.treeData" options="ctrl.treeOptions" on-select="ctrl.treeOnSelect(node,selected)" filter-expression="ctrl.filterExpression" filter-comparator="self.filterComparator"></div>

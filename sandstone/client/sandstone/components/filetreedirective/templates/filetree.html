@@ -7,7 +7,9 @@
     selected-nodes="treeData.selected"
     expanded-nodes="treeData.expanded"
     on-selection="onSelect(node,selected)"
-    on-node-toggle="onToggle(node,expanded)">
+    on-node-toggle="onToggle(node,expanded)"
+    filter-expression="filterExpression"
+    filter-comparator="filterComparator">
     {{node.name}}
   </treecontrol>
 </div>
