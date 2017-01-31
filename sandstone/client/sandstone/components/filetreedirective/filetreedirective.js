@@ -15,15 +15,17 @@ angular.module('sandstone.filetreedirective', [])
     controller: ['$scope', '$element', '$rootScope', 'FilesystemService', function($scope, $element, $rootScope, FilesystemService) {
       var self = $scope;
 
-      var fsDetails = FilesystemService.getFilesystemDetails();
-      fsDetails.then(
-        function(filesystem) {
-          for (var i=0;i<filesystem.volumes.length;i++) {
-            filesystem.volumes[i].name = filesystem.volumes[i].filepath;
-            self.treeData.contents.push(filesystem.volumes[i]);
+      if (self.treeData.contents.length === 0) {
+        var fsDetails = FilesystemService.getFilesystemDetails();
+        fsDetails.then(
+          function(filesystem) {
+            for (var i=0;i<filesystem.volumes.length;i++) {
+              filesystem.volumes[i].name = filesystem.volumes[i].filepath;
+              self.treeData.contents.push(filesystem.volumes[i]);
+            }
           }
-        }
-      );
+        );
+      }
 
       // Options
       self.options = {
