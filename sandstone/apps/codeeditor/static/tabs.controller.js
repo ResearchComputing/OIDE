@@ -125,7 +125,7 @@ angular.module('sandstone.editor')
     });
 
   }])
-.controller('SaveAsModalCtrl', function ($scope, $modalInstance, $http, file) {
+.controller('SaveAsModalCtrl', function ($scope, $modalInstance, $http, file, FilesystemService) {
   var self = this;
   self.treeData = {
     contents: [],
