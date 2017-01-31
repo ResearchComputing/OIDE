@@ -9,20 +9,20 @@ angular.module('sandstone.editor')
     expanded: []
   };
   self.treeOptions = {
-    multiSelection: true
+    multiSelection: false
   };
 
-  // Workaround since toggling multiSelection in Filetree creates a
-  // condition where treeData.selected becomes disused.
-  var multiSelection = false;
+  // Toggle multi-selection when meta or control keys are pressed
   var filetreeKeydown = function(event) {
     if (event.key === 'Meta' || event.key === 'Control') {
-      multiSelection = true;
+      self.treeOptions.multiSelection = true;
+      $scope.$digest();
     }
   };
   var filetreeKeyup = function(event) {
     if (event.key === 'Meta' || event.key === 'Control') {
-      multiSelection = false;
+      self.treeOptions.multiSelection = false;
+      $scope.$digest();
     }
   };
   $document.on('keydown',filetreeKeydown);
@@ -33,14 +33,6 @@ angular.module('sandstone.editor')
   $scope.$on('$destroy', function () {
     $document.off('keyup',filetreeKeyup);
   });
-
-  self.treeOnSelect = function(node,selected) {
-    if (!multiSelection && selected) {
-      self.treeData.selected = [node];
-    } else if (!multiSelection && !selected) {
-      self.treeData.selected = [];
-    }
-  };
   // End of multiselection code
 
   self.sd = {

@@ -36,7 +36,7 @@ angular.module('sandstone.filetreedirective', [])
         }
       };
 
-      self.$watch('extraOptions', function(oldValue,newValue) {
+      self.$watch('extraOptions', function(newValue,oldValue) {
         if (self.extraOptions) {
           angular.extend(self.options,self.extraOptions);
         }
