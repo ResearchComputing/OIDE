@@ -1,9 +1,9 @@
 'use strict';
 
 angular.module('sandstone.filebrowser')
-.controller('DetailsCtrl', ['$rootScope', 'FileService', '$scope', 'FilesystemService', '$modal', 'BroadcastService', function($rootScope, FileService, $scope, FilesystemService, $modal, BroadcastService) {
+.controller('DetailsCtrl', ['$scope', function($scope) {
   var self = this;
-  
+
 }])
 .directive('syncFocusWith', function($timeout, $rootScope) {
     return {
