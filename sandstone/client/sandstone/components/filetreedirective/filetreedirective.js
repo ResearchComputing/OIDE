@@ -62,14 +62,33 @@ angular.module('sandstone.filetreedirective', [])
         }
       };
 
+      var getChildrenForDirectory = function(node) {
+        var dirChildren = {};
+        if (node.children) {
+          var children = node.children;
+          for (var i=0;i<children.length;i++) {
+            if (children[i].children.length > 0) {
+              dirChildren[children[i].filepath] = children[i].children;
+            }
+          }
+        }
+        return dirChildren;
+      };
+
       self.loadDirectoryContents = function(node) {
         var dirDetails = FilesystemService.getDirectoryDetails(node.filepath);
         dirDetails.then(
           function(directory) {
-            node.children = [];
+            var prevChildren = getChildrenForDirectory(node);
+            var newChildren = [];
             for (var i=0;i<directory.contents.length;i++) {
-              node.children.push(directory.contents[i]);
+              var dir = directory.contents[i];
+              if (dir.filepath in prevChildren) {
+                dir.children = prevChildren[dir.filepath];
+              }
+              newChildren.push(dir);
             }
+            node.children = newChildren;
           }
         );
       };

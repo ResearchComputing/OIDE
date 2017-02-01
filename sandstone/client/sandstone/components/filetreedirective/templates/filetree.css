@@ -3,15 +3,9 @@ div[sandstone-filetree] {
 }
 div[sandstone-filetree] > .filetree-container {
   margin-top: 50px;
-  /*position: absolute;*/
-  /*left: 15px;
-  right: 15px;
-  bottom: 30px;
-  top: 20px;*/
-  /*max-height: 80%;*/
   height: 90%;
-  overflow-x: scroll;
-  overflow-y: scroll;
+  overflow-x: auto;
+  overflow-y: auto;
 }
 div[sandstone-filetree] > .filetree-container li {
   white-space: nowrap;
