@@ -10,8 +10,8 @@ angular.module('sandstone.filebrowser', ['smart-table', 'angularFileUpload', 'ui
         templateUrl: '/static/filebrowser/filebrowser.html'
       },
       'filetree@filebrowser': {
-        templateUrl: '/static/filebrowser/templates/filetree.html',
-        controller: 'FbFiletreeCtrl as ctrl'
+        templateUrl: '/static/filebrowser/templates/volumes.html',
+        controller: 'VolumesCtrl as ctrl'
       },
       'details@filebrowser': {
         templateUrl: '/static/filebrowser/templates/details.html',

@@ -5,13 +5,6 @@ angular.module('sandstone.filebrowser')
 .service('FilebrowserService', ['$rootScope', 'FilesystemService', function($rootScope,FilesystemService){
   var self = this;
 
-  // Filetree
-  self.treeData = {
-    contents: [],
-    selected: [],
-    expanded: []
-  };
-
   // Selection Info
   var selectionInfo = {
     cwd: undefined,
@@ -38,6 +31,10 @@ angular.module('sandstone.filebrowser')
 
   // Volume and Filesystem
   var filesystem = {};
+
+  self.getFilesystem = function() {
+    return filesystem;
+  };
 
   var fsDetails = FilesystemService.getFilesystemDetails();
   fsDetails.then(

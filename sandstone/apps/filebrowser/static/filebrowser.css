@@ -1,7 +1,48 @@
-.volume-info {
+/* Volume info styles */
+.fb-volume {
   margin-left: 20px;
+  margin-right: 20px;
+  margin-bottom: 50px;
 }
 
+.fb-volume > span {
+  font-weight: bold;
+}
+
+.fb-volume-info > .progress {
+  margin-bottom: 0;
+  background-color: #fff;
+  border: 1px solid #ddd;
+}
+
+.fb-volume-listing > .list-group {}
+.fb-volume-listing > .list-group > li {
+  cursor: pointer;
+  text-align: left;
+}
+.fb-volume-listing > .list-group > li:hover {
+  background-color: #eee;
+}
+
+/* Filepath breadcrumb styles */
+.breadcrumb {
+  margin-bottom: 0;
+  padding-top: 20px;
+  padding-bottom: 20px;
+  background-color: #FFFFFF;
+  cursor: pointer;
+  height: 64px;
+}
+
+.breadcrumb a {
+  color: #555;
+}
+
+.breadcrumb > .active {
+  color: #93c54b;
+}
+
+/* Directory detail styles */
 .directory-options {
   float: right;
   text-align: center;
@@ -20,35 +61,11 @@
   max-width: 300px;
 }
 
-.breadcrumb {
-  margin-bottom: 0;
-  padding-top: 20px;
-  padding-bottom: 20px;
-  background-color: #FFFFFF;
-  cursor: pointer;
-  height: 64px;
-}
-
-.breadcrumb a {
-  color: #555;
-}
-
-.breadcrumb > .active {
-  color: #93c54b;
-}
-
-.progress {
-  margin-left: 20px;
-  margin-right: 20px;
-  margin-bottom: 0;
-  background-color: #fff;
-  border: 1px solid #ddd;
-}
-
 .side {
   /*background-color: #FFFFFF;*/
 }
 
+/* File details styles */
 .file-details {
   border-left: 1px solid #eee;
   background-color: #FFFFFF;
@@ -75,6 +92,11 @@
     cursor: pointer;
     opacity: 0;
     filter: alpha(opacity=0);
+}
+
+.file-detail {
+  margin-top: 30px;
+  margin-bottom: 0;
 }
 
 .filedetails-filename {
@@ -143,15 +165,4 @@ td.perm {
 input.upload {
   color: transparent;
   margin-left: -25px;
-}
-
-/* File detail styles */
-.file-detail {
-  margin-top: 30px;
-  margin-bottom: 0;
-}
-
-/* Filetree Styles */
-.fb-filetree-hidden {
-  visibility: hidden;
 }

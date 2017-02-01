@@ -1,0 +1,17 @@
+<div class="row fb-volume fb-volume-info">
+  <span>Volume Info</span>
+  <div class="progress">
+    <div class="progress-bar progress-bar-success progress-bar-striped" role="progressbar" aria-valuenow="{{ctrl.selection.volume.usedPercent}}" aria-valuemin="0" aria-valuemax="20" ng-style="{width: ctrl.selection.volume.usedPercent + '%'}"></div>
+  </div>
+  <p ng-show="ctrl.selection.volume">{{ ctrl.selection.volume.used + ' GB' }} of {{ ctrl.selection.volume.size + ' GB' }} used</p>
+</div>
+
+<div class="row fb-volume fb-volume-listing">
+  <span>Available Volumes</span>
+  <ul class="list-group">
+    <li class="list-group-item" ng-class="{'list-group-item-success': ctrl.selection.volume.filepath===volume.filepath}" ng-repeat="volume in ctrl.filesystem.volumes track by $index" ng-click="ctrl.changeVolume(volume)">
+      <span class="badge">{{volume.usedPercent}}% full</span>
+      {{volume.filepath}}
+    </li>
+  </ul>
+</div>
