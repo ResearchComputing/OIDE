@@ -23,6 +23,6 @@ angular.module('sandstone.filebrowser')
     return FilebrowserService.getSelection();
   }, function(newValue) {
     self.selection = newValue;
-  });
+  },true);
 
 }]);

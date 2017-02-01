@@ -21,9 +21,9 @@ angular.module('sandstone.filebrowser')
     selectionInfo.cwd = cwd;
     selectionInfo.selectedFile = selectedFile;
     if (selectedFile) {
-      selectionInfo.volume = getVolumeFromPath(selectedFile.filepath);
+      selectionInfo.volume = self.getVolumeFromPath(selectedFile.filepath);
     } else if (cwd) {
-      selectionInfo.volume = getVolumeFromPath(cwd.filepath);
+      selectionInfo.volume = self.getVolumeFromPath(cwd.filepath);
     } else {
       selectionInfo.volume = undefined;
     }
@@ -43,7 +43,7 @@ angular.module('sandstone.filebrowser')
     }
   );
 
-  var getVolumeFromPath = function(filepath) {
+  self.getVolumeFromPath = function(filepath) {
     if (!filesystem.hasOwnProperty('volumes')) {
       return;
     }

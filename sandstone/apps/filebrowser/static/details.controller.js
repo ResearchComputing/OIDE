@@ -1,95 +1,56 @@
 'use strict';
 
 angular.module('sandstone.filebrowser')
-.controller('DetailsCtrl', ['$scope', function($scope) {
+
+.controller('DetailsCtrl', ['$scope', 'FilebrowserService', 'FilesystemService', function($scope,FilebrowserService,FilesystemService) {
   var self = this;
 
-}])
-.directive('syncFocusWith', function($timeout, $rootScope) {
-    return {
-        restrict: 'A',
-        scope: {
-            focusValue: "=syncFocusWith"
-        },
-        link: function($scope, $element, attrs) {
-            $scope.$watch("focusValue", function(currentValue, previousValue) {
-                if (currentValue === true && !previousValue) {
-                    $element[0].focus();
-                } else if (currentValue === false && previousValue) {
-                    $element[0].blur();
-                }
-            })
+  self.filesystem = {};
+  $scope.$watch(function() {
+    return FilebrowserService.getFilesystem();
+  }, function(newValue) {
+    self.filesystem = newValue;
+  });
+
+  self.breadcrumbs = [];
+  var setBreadcrumbs = function() {
+    if (self.selection.cwd) {
+      var cmps = FilesystemService.split(self.selection.cwd.filepath);
+      self.breadcrumbs = [];
+      for (var i=0;i<cmps.length;i++) {
+        if (cmps[i] !== '') {
+          self.breadcrumbs.push(cmps[i]);
         }
+      }
     }
-})
-.controller('DeleteModalInstanceCtrl', ['FilesystemService', '$modalInstance', 'selectedFile',function (FilesystemService, $modalInstance, selectedFile) {
-  var self = this;
-  self.selectedFile = selectedFile;
-  self.remove = function () {
-    FilesystemService.deleteFile(self.selectedFile.filepath, function(data){
-      $modalInstance.close(self.selectedFile);
+  };
+
+  self.changeDirectory = function(index) {
+    var newPathCmps = self.breadcrumbs.slice(0,index+1);
+    newPathCmps[0] = '/' + newPathCmps[0];
+    var newPath = FilesystemService.join.apply(this,newPathCmps);
+    var volume = FilesystemService.normalize(self.selection.volume.filepath);
+    if (newPath.length < volume.length) {
+      volume = FilebrowserService.getVolumeFromPath(newPath);
+      if (!volume) {
+        FilebrowserService.setSelection({
+          cwd: self.selection.volume
+        });
+        return;
+      }
+    }
+
+    FilebrowserService.setSelection({
+      cwd: newPath
     });
   };
 
-  self.cancel = function () {
-    $modalInstance.dismiss('cancel');
-  };
+  self.selection = {};
+  $scope.$watch(function() {
+    return FilebrowserService.getSelection();
+  }, function(newValue) {
+    self.selection = newValue;
+    setBreadcrumbs();
+  },true);
+
 }])
-.controller('UploadModalInstanceCtrl', ['FilesystemService', '$modalInstance', 'FileUploader', 'selectedDirectory',function (FilesystemService, $modalInstance, FileUploader, selectedDirectory) {
-  var self = this;
-  self.dirpath = selectedDirectory;
-  var uploader = self.uploader = new FileUploader({
-      autoUpload: true,
-      url: '/supl/a/upload',
-      headers: {
-        'X-XSRFToken': getCookie('_xsrf'),
-        'basepath': self.dirpath
-      }
-   });
-
-  uploader.filters.push({
-    name: 'customFilter',
-    fn: function(item /*{File|FileLikeObject}*/, options) {
-      return this.queue.length < 10;
-    }
-  });
-
-   uploader.onWhenAddingFileFailed = function(item /*{File|FileLikeObject}*/, filter, options) {
-       console.log('onWhenAddingFileFailed', item, filter, options);
-   };
-    uploader.onAfterAddingFile = function(fileItem) {
-      fileItem.headers['uploadDir'] = self.dirpath;
-      console.log('onAfterAddingFile', fileItem);
-    };
-   uploader.onAfterAddingAll = function(addedFileItems) {
-       console.log('onAfterAddingAll', addedFileItems);
-   };
-   uploader.onBeforeUploadItem = function(item) {
-       console.log('onBeforeUploadItem', item);
-   };
-   uploader.onProgressItem = function(fileItem, progress) {
-       console.log('onProgressItem', fileItem, progress);
-   };
-   uploader.onProgressAll = function(progress) {
-       console.log('onProgressAll', progress);
-   };
-   uploader.onSuccessItem = function(fileItem, response, status, headers) {
-       console.log('onSuccessItem', fileItem, response, status, headers);
-   };
-   uploader.onErrorItem = function(fileItem, response, status, headers) {
-       console.log('onErrorItem', fileItem, response, status, headers);
-   };
-   uploader.onCancelItem = function(fileItem, response, status, headers) {
-       console.log('onCancelItem', fileItem, response, status, headers);
-   };
-   uploader.onCompleteItem = function(fileItem, response, status, headers) {
-       console.log('onCompleteItem', fileItem, response, status, headers);
-   };
-   uploader.onCompleteAll = function() {
-       console.log('onCompleteAll');
-   };
-
-  self.cancel = function () {
-    $modalInstance.close();
-  };
-}]);
