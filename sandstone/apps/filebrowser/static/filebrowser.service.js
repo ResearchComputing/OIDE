@@ -37,6 +37,10 @@ angular.module('sandstone.filebrowser')
 
   var populateBreadcrumbs = function() {
     var newCrumbs = [];
+    if (!selectionInfo.volume) {
+      breadcrumbs = newCrumbs;
+      return;
+    }
     var volPath = FilesystemService.normalize(selectionInfo.volume.filepath);
     var cwdPath = FilesystemService.normalize(selectionInfo.cwd.filepath);
     var crumbPath = FilesystemService.normalize(cwdPath.replace(volPath,''));
@@ -47,14 +51,20 @@ angular.module('sandstone.filebrowser')
     }
     crumbCmps = FilesystemService.split(crumbPath).slice(1);
     var path = volPath;
-    for (var i=0;i<crumbCmps.length;i++) {
-      path = FilesystemService.join(path,crumbCmps[i]);
-      // eventually needs to make request to backend for details
-      newCrumbs.push({
+
+    crumbCmps.forEach(function(val,i,cmps) {
+      path = FilesystemService.join(path,val);
+      var partial = {
         filepath: path,
-        name: crumbCmps[i]
-      });
-    }
+        name: val
+      };
+      newCrumbs.push(partial);
+      FilesystemService
+        .getFileDetails(partial.filepath)
+        .then(function(file) {
+          angular.extend(partial,file);
+        });
+    });
     breadcrumbs = newCrumbs;
   };
 
