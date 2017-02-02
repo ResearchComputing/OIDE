@@ -429,7 +429,7 @@ angular.module('sandstone.filesystemservice', [])
       requestUrl,
       {
         action: {
-          action: 'change_permissions',
+          action: 'update_permissions',
           permissions: newPermissions
         }
       }

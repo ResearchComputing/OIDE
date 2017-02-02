@@ -166,6 +166,8 @@ class FileHandler(JSONHandler,FSMixin):
                 self.write({'msg':'Updated permissions for {}'.format(filepath)})
             except OSError:
                 raise tornado.web.HTTPError(404)
+        else:
+            raise tornado.web.HTTPError(400)
 
     @sandstone.lib.decorators.authenticated
     def delete(self, filepath):

@@ -15,5 +15,6 @@ APP_SPECIFICATION = {
         'filebrowser.service.js',
         'volumes.controller.js',
         'details.controller.js',
+        'fb-filedetails/fb-filedetails.directive.js',
     ),
 }
