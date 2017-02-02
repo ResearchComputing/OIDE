@@ -44,10 +44,10 @@
 }
 
 /* Directory detail styles */
-.fb-dir-controls {
+.fb-dir-actions {
   margin-top: 16px;
 }
-.fb-dir-controls button > i.fa {
+.fb-dir-actions button > i.fa {
   display: inline;
   padding: 5px;
 }

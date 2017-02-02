@@ -1,11 +1,11 @@
 <div class="row">
-  <div class="col-md-10">
+  <div class="col-md-9">
     <ol class="breadcrumb">
       <li ng-click="ctrl.changeDirectory($index)" ng-repeat="directory in ctrl.breadcrumbs track by $index" ng-class="{active: $last}">{{$first ? directory.filepath : directory.name}}</li>
     </ol>
   </div>
-  <div class="col-md-2">
-    <div class="fb-dir-controls text-center">
+  <div class="col-md-3">
+    <div class="fb-dir-actions text-center">
       <div class="btn-group btn-group-sm" role="group">
         <button id="paste-file-btn" type="button" ng-disabled="!ctrl.isCopied || ctrl.selectedFile == ''" ng-click="ctrl.pasteFile()" class="btn btn-default" tooltip="Paste" tooltip-trigger="mouseenter" tooltip-placement="bottom">
           <i class="fa fa-paste"></i>
@@ -24,11 +24,11 @@
   </div>
 </div>
 <div class="row">
-  <div ng-class="{'col-sm-8 scrollable-table': ctrl.show_details, 'col-sm-12 scrollable-table': !ctrl.show_details}">
-    <table id="dir-detail-table" st-table="ctrl.displayData" st-safe-src="ctrl.fileData" class="table">
+  <div ng-class="{'col-sm-8 scrollable-table': ctrl.selection.selectedFile, 'col-sm-12 scrollable-table': !ctrl.selection.selectedFile}">
+    <table id="dir-detail-table" st-table="ctrl.displayData" st-safe-src="ctrl.selection.cwd.contents" class="table">
       <thead>
       <tr>
-        <th st-sort="ctrl.getters.filename" st-sort-default="true">Name</th>
+        <th st-sort="ctrl.getters.name" st-sort-default="true">Name</th>
         <th st-sort="ctrl.getters.size">Size</th>
         <th>Owner</th>
         <th>Group</th>
@@ -37,16 +37,16 @@
       </thead>
       <tbody>
         <tr ng-repeat="file in ctrl.displayData">
-          <td><i class="fa" ng-class="{'fa-folder': file.type==='dir' && file.is_accessible, 'fa-file': file.type==='file' && file.is_accessible, 'fa-lock': file.is_accessible == false}" style="padding-right: 5px;"></i><span class="filetable-filename" ng-class="{'filetable-filename-selected': file.filename === ctrl.selectedFile.filename}" ng-dblclick="ctrl.openFolder(file)" ng-click="ctrl.ShowDetails(file)">{{file.filename}} </span></td>
+          <td><i class="fa" ng-class="{'fa-folder': file.type!=='file', 'fa-file': file.type==='file', 'fa-lock': false}" style="padding-right: 5px;"></i><span class="filetable-filename" ng-class="{'filetable-filename-selected': file.name === ctrl.selection.selectedFile.name}" ng-dblclick="ctrl.openFolder(file)" ng-click="ctrl.ShowDetails(file)">{{file.name}} </span></td>
           <td>{{ file.size }}</td>
           <td>{{ file.owner }}</td>
           <td>{{ file.group }}</td>
-          <td>{{ file.perm }}</td>
+          <td>{{ file.permissions }}</td>
         </tr>
       </tbody>
     </table>
   </div>
-  <div class="col-sm-4 file-details" ng-show="ctrl.show_details">
+  <div class="col-sm-4 file-details" ng-show="ctrl.selection.selectedFile">
     <!-- <h1>{{ctrl.selectedFile.filename}}</h1> -->
     <!-- <p class="filedetails-filename">{{ctrl.selectedFile.filename}}</p>
     <button type="button" class="btn btn-default"><i class="fa fa-pencil"></i></button> -->

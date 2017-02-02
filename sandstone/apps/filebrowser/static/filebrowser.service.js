@@ -19,6 +19,17 @@ angular.module('sandstone.filebrowser')
     var cwd = selection.cwd || undefined;
     var selectedFile = selection.selectedFile || undefined;
     selectionInfo.cwd = cwd;
+    // Load contents for CWD
+    var cwdDetails = FilesystemService.getDirectoryDetails(
+      cwd.filepath,
+      {
+        contents: true
+      }
+    );
+    cwdDetails.then(function(dirDetails) {
+      angular.extend(selectionInfo.cwd,dirDetails);
+    });
+
     selectionInfo.selectedFile = selectedFile;
     if (selectedFile) {
       selectionInfo.volume = self.getVolumeFromPath(selectedFile.filepath);
