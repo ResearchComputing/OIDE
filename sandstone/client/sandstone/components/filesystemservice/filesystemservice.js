@@ -407,7 +407,7 @@ angular.module('sandstone.filesystemservice', [])
       requestUrl,
       {
         action: {
-          action: 'change_group',
+          action: 'update_group',
           group: newGroup
         }
       }
@@ -415,7 +415,7 @@ angular.module('sandstone.filesystemservice', [])
     req.success(function(data) {
       deferred.resolve();
     });
-    res.error(function(data,status) {
+    req.error(function(data,status) {
       deferred.reject(data,status);
     });
     return deferred.promise;

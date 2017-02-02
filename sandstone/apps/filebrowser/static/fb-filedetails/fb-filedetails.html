@@ -18,7 +18,7 @@
     </p>
   </div>
   <div class="col-sm-9 file-detail">
-    <select class="form-control input-sm" name="select" ng-model="editFile.group" ng-change="ctrl.changeGroup()">
+    <select class="form-control input-sm" name="select" ng-model="editFile.group" ng-change="changeGroup()">
       <option ng-repeat="group in filesystem.groups">{{group}}</option>
     </select>
   </div>

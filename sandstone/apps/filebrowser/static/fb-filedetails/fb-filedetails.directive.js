@@ -41,6 +41,18 @@ angular.module('sandstone.filebrowser')
       // File Details
       self.isEditing = false;
 
+      self.changeGroup = function() {
+        FilesystemService
+          .changeGroup(self.selection.selectedFile.filepath,self.editFile.group)
+          .then(function() {
+            self.selection.selectedFile.group = self.editFile.group;
+            FilebrowserService.setSelection({
+              cwd: self.selection.cwd,
+              selectedFile: self.selection.selectedFile
+            });
+          });
+      }
+
       self.changePermissions = function() {
         var base = 'rwxrwxrwx';
         var perms = '';
