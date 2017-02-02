@@ -29,6 +29,41 @@ angular.module('sandstone.filebrowser')
     }
   };
 
+  // Breadcrumbs
+  var breadcrumbs = [];
+  self.getBreadcrumbs = function() {
+    return breadcrumbs;
+  };
+
+  var populateBreadcrumbs = function() {
+    var newCrumbs = [];
+    var volPath = FilesystemService.normalize(selectionInfo.volume.filepath);
+    var cwdPath = FilesystemService.normalize(selectionInfo.cwd.filepath);
+    var crumbPath = FilesystemService.normalize(cwdPath.replace(volPath,''));
+    newCrumbs.push(selectionInfo.volume);
+    if (crumbPath.length === 0) {
+      breadcrumbs = newCrumbs;
+      return;
+    }
+    crumbCmps = FilesystemService.split(crumbPath).slice(1);
+    var path = volPath;
+    for (var i=0;i<crumbCmps.length;i++) {
+      path = FilesystemService.join(path,crumbCmps[i]);
+      // eventually needs to make request to backend for details
+      newCrumbs.push({
+        filepath: path,
+        name: crumbCmps[i]
+      });
+    }
+    breadcrumbs = newCrumbs;
+  };
+
+  $rootScope.$watch(function() {
+      return self.getSelection();
+    },function(newValue) {
+      populateBreadcrumbs();
+    },true);
+
   // Volume and Filesystem
   var filesystem = {};
 

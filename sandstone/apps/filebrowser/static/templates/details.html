@@ -1,7 +1,7 @@
 <div class="row">
   <div class="col-md-10">
     <ol class="breadcrumb">
-      <li ng-click="ctrl.changeDirectory($index)" ng-repeat="crumb in ctrl.breadcrumbs track by $index" ng-class="{active: $last}">{{crumb}}</li>
+      <li ng-click="ctrl.changeDirectory($index)" ng-repeat="directory in ctrl.breadcrumbs track by $index" ng-class="{active: $last}">{{$first ? directory.filepath : directory.name}}</li>
     </ol>
   </div>
   <div class="col-md-2">
