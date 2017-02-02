@@ -60,7 +60,7 @@ angular.module('sandstone.filebrowser')
       breadcrumbs = newCrumbs;
       return;
     }
-    crumbCmps = FilesystemService.split(crumbPath).slice(1);
+    var crumbCmps = FilesystemService.split(crumbPath).slice(1);
     var path = volPath;
 
     crumbCmps.forEach(function(val,i,cmps) {

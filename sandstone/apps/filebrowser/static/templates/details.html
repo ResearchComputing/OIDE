@@ -37,7 +37,7 @@
       </thead>
       <tbody>
         <tr ng-repeat="file in ctrl.displayData">
-          <td><i class="fa" ng-class="{'fa-folder': file.type!=='file', 'fa-file': file.type==='file', 'fa-lock': false}" style="padding-right: 5px;"></i><span class="filetable-filename" ng-class="{'filetable-filename-selected': file.name === ctrl.selection.selectedFile.name}" ng-dblclick="ctrl.openFolder(file)" ng-click="ctrl.ShowDetails(file)">{{file.name}} </span></td>
+          <td><i class="fa" ng-class="{'fa-folder': file.type!=='file', 'fa-file': file.type==='file', 'fa-lock': false}" style="padding-right: 5px;"></i><span class="filetable-filename" ng-class="{'filetable-filename-selected': file.name === ctrl.selection.selectedFile.name}" ng-dblclick="ctrl.openDirectory(file)" ng-click="ctrl.selectFile(file)">{{file.name}} </span></td>
           <td>{{ file.size }}</td>
           <td>{{ file.owner }}</td>
           <td>{{ file.group }}</td>
@@ -47,9 +47,6 @@
     </table>
   </div>
   <div class="col-sm-4 file-details" ng-show="ctrl.selection.selectedFile">
-    <!-- <h1>{{ctrl.selectedFile.filename}}</h1> -->
-    <!-- <p class="filedetails-filename">{{ctrl.selectedFile.filename}}</p>
-    <button type="button" class="btn btn-default"><i class="fa fa-pencil"></i></button> -->
     <div class="row">
       <div class="col-sm-12">
         <input type="text" class="filedetails-filename" ng-disabled="!ctrl.isEditing" ng-model="ctrl.editedFileName" ng-blur="ctrl.renameFile()" sync-focus-with="ctrl.isEditing">

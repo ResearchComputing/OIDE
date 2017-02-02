@@ -32,4 +32,22 @@ angular.module('sandstone.filebrowser')
     self.selection = newValue;
   },true);
 
+  // Directory and File Details
+  self.openDirectory = function(file) {
+    if (file.type === 'file') {
+      self.selectFile(file);
+    } else {
+      FilebrowserService.setSelection({
+        cwd: file
+      });
+    }
+  };
+
+  self.selectFile = function(file) {
+    FilebrowserService.setSelection({
+      cwd: self.selection.cwd,
+      selectedFile: file
+    });
+  };
+
 }])
