@@ -39,7 +39,24 @@ angular.module('sandstone.filebrowser')
       },true);
 
       // File Details
-      self.isEditing = false;
+      self.editingName = false;
+      self.renameFile = function() {
+        FilesystemService
+          .rename(self.selection.selectedFile.filepath,self.editFile.name)
+          .then(function(newpath) {
+            // Update file details prior to reselection since the
+            // filepath has now changed.
+            FilesystemService
+              .getFileDetails(newpath)
+              .then(function(file) {
+                angular.extend(self.selection.selectedFile,file);
+                FilebrowserService.setSelection({
+                  cwd: self.selection.cwd,
+                  selectedFile: self.selection.selectedFile
+                });
+              });
+          });
+      };
 
       self.changeGroup = function() {
         FilesystemService

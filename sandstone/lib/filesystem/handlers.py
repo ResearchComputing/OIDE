@@ -27,9 +27,7 @@ class FilesystemHandler(JSONHandler,FSMixin):
             self.fs.move(self.fp,newpath)
         except OSError:
             raise tornado.web.HTTPError(400)
-        encoded_filepath = tornado.escape.url_escape(newpath,plus=True)
-        resource_uri = self.reverse_url(self.handler_name,encoded_filepath)
-        return resource_uri
+        return newpath
 
     def _copy(self):
         """
@@ -41,8 +39,7 @@ class FilesystemHandler(JSONHandler,FSMixin):
             self.fs.copy(self.fp,copypath)
         except OSError:
             raise tornado.web.HTTPError(400)
-        encoded_filepath = tornado.escape.url_escape(copypath,plus=True)
-        resource_uri = self.reverse_url(self.handler_name,encoded_filepath)
+        return copypath
 
     def _rename(self):
         """
@@ -54,8 +51,7 @@ class FilesystemHandler(JSONHandler,FSMixin):
             newpath = self.fs.rename(self.fp,newname)
         except OSError:
             raise tornado.web.HTTPError(400)
-        encoded_filepath = tornado.escape.url_escape(newpath,plus=True)
-        resource_uri = self.reverse_url(self.handler_name,encoded_filepath)
+        return newpath
 
     @sandstone.lib.decorators.authenticated
     def get(self):
@@ -85,14 +81,14 @@ class FilesystemHandler(JSONHandler,FSMixin):
             self.handler_name = 'filesystem:files-details'
 
         if self.action['action'] == 'move':
-            resource_uri = self._move()
-            self.write({'uri':resource_uri})
+            newpath = self._move()
+            self.write({'filepath':newpath})
         elif self.action['action'] == 'copy':
-            resource_uri = self._copy()
-            self.write({'uri':resource_uri})
+            newpath = self._copy()
+            self.write({'filepath':newpath})
         elif self.action['action'] == 'rename':
-            resource_uri = self._rename()
-            self.write({'uri':resource_uri})
+            newpath = self._rename()
+            self.write({'filepath':newpath})
         else:
             raise tornado.web.HTTPError(400)
 

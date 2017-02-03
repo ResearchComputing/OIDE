@@ -16,5 +16,6 @@ APP_SPECIFICATION = {
         'volumes.controller.js',
         'details.controller.js',
         'fb-filedetails/fb-filedetails.directive.js',
+        'syncfocuswith/syncfocuswith.directive.js',
     ),
 }

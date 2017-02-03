@@ -185,7 +185,7 @@ angular.module('sandstone.filesystemservice', [])
       }
     );
     req.success(function(data) {
-      deferred.resolve(data.uri);
+      deferred.resolve(data.filepath);
     });
     req.error(function(data,status) {
       deferred.reject(data,status);
@@ -208,7 +208,7 @@ angular.module('sandstone.filesystemservice', [])
       }
     );
     req.success(function(data) {
-      deferred.resolve(data.uri);
+      deferred.resolve(data.filepath);
     });
     req.error(function(data,status) {
       deferred.reject(data,status);
@@ -231,7 +231,7 @@ angular.module('sandstone.filesystemservice', [])
       }
     );
     req.success(function(data) {
-      deferred.resolve(data.uri);
+      deferred.resolve(data.filepath);
     });
     req.error(function(data,status) {
       deferred.reject(data,status);

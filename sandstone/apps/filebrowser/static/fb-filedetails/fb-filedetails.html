@@ -1,10 +1,18 @@
-<div class="row">
+<!-- <div class="row">
   <div class="col-sm-12">
     <input type="text" class="filedetails-filename" ng-disabled="!ctrl.isEditing" ng-model="editFile.name" ng-blur="ctrl.renameFile()" ng-show="ctrl.isEditing" value="editFile.name">
     <span class="filedetails-filename" ng-hide="ctrl.isEditing">{{editFile.name}}</span>
     <i class="fa fa-pencil" ng-click="ctrl.isEditing=!ctrl.isEditing" style="cursor: pointer;"></i>
   </div>
+</div> -->
+
+<div class="row">
+  <div class="col-sm-12">
+    <input type="text" class="filedetails-filename" ng-disabled="!editingName" ng-model="editFile.name" ng-blur="renameFile()" sync-focus-with="editingName">
+    <i class="fa fa-pencil" ng-click="editingName=!editingName" style="cursor: pointer;"></i>
+  </div>
 </div>
+
 <div class="row">
   <div class="col-sm-3 file-detail">
     <b>Owner:</b>
