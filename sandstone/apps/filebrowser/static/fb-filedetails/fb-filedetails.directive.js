@@ -7,7 +7,7 @@ angular.module('sandstone.filebrowser')
     restrict: 'A',
     scope: {},
     templateUrl: '/static/filebrowser/fb-filedetails/fb-filedetails.html',
-    controller: ['$scope', '$element', '$modal', 'FilesystemService', 'FilebrowserService', function($scope,$element,$modal,FilesystemService,FilebrowserService) {
+    controller: ['$scope', '$element', '$modal', 'FilesystemService', 'FilebrowserService', 'BroadcastService', function($scope,$element,$modal,FilesystemService,FilebrowserService,BroadcastService) {
       var self = $scope;
 
       var permStringToModel = function(perms) {
@@ -89,6 +89,17 @@ angular.module('sandstone.filebrowser')
               selectedFile: self.selection.selectedFile
             });
           });
+      };
+
+      self.openInEditor = function() {
+        var message = {
+            key: 'editor:open-document',
+            data: {
+                filepath: self.selection.selectedFile.filepath
+            }
+        };
+        BroadcastService.sendMessage(message);
+        window.location.href = '#/editor';
       };
 
       self.duplicate = function() {
