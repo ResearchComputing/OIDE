@@ -50,6 +50,43 @@ angular.module('sandstone.filebrowser')
     });
   };
 
+  self.create = function(type) {
+    var createModalInstance = $modal.open({
+      templateUrl: '/static/filebrowser/templates/create-modal.html',
+      backdrop: 'static',
+      keyboard: false,
+      controller: 'CreateModalInstanceCtrl as ctrl',
+      resolve: {
+        action: function () {
+          return {
+            type: type,
+            baseDirectory: self.selection.cwd,
+            filename: 'Untitled'
+          };
+        }
+      }
+    });
+
+    createModalInstance.result.then(function (newFileName) {
+      var newPath = FilesystemService.join(self.selection.cwd.filepath,newFileName);
+
+      var createReq;
+      var setSelection = function(filepath) {
+        FilebrowserService.setSelection({
+          cwd: self.selection.cwd,
+          selectedFile: self.selection.selectedFile
+        });
+      };
+      if (type === 'file') {
+        createReq = FilesystemService.createFile(newPath);
+        createReq.then(setSelection);
+      } else {
+        createReq = FilesystemService.createDirectory(newPath);
+        createReq.then(setSelection);
+      }
+    });
+  };
+
   self.upload = function() {
     var modalInstance = $modal.open({
       templateUrl: '/static/filebrowser/templates/upload-modal.html',
