@@ -64,6 +64,10 @@
   top: 20px;
 }
 
+.file-details .fb-dir-actions button > i.fa {
+  font-size: 18px;
+}
+
 .file-upload {
     position: relative;
     overflow: hidden;

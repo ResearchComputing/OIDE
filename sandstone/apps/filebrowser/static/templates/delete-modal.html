@@ -1,10 +1,10 @@
 <div class="modal-header">
-    <h3 class="modal-title"><i class="fa fa-exclamation fa-border"></i> Confirm Remove</h3>
+    <h3 class="modal-title"><i class="fa fa-exclamation fa-border"></i> Confirm Delete</h3>
 </div>
 <div class="modal-body">
-  <span class="modal-body-message">Are you sure you want to delete {{ctrl.selectedFile.filename}}?</span>
+  <span class="modal-body-message">Are you sure you want to delete {{ctrl.file.name}}?</span>
 </div>
 <div class="modal-footer">
-  <button class="btn btn-success" ng-click="ctrl.remove()">Remove Files</button>
+  <button class="btn btn-success" ng-click="ctrl.delete()">Delete File</button>
   <button class="btn btn-danger" ng-click="ctrl.cancel()">Cancel</button>
 </div>

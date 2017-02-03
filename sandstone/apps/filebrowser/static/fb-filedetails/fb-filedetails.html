@@ -68,20 +68,22 @@
       </tbody>
     </table>
   </div>
+</div>
 
-  <div class="col-sm-6 col-sm-offset-6 file-detail">
-    <div class="btn-group btn-group-sm dir-controls pull-right" role="group">
+<div class="row">
+  <div class="col-md-12">
+    <div class="fb-dir-actions text-center">
       <div class="btn-group btn-group-sm" role="group">
-        <button id="copy-file-btn" type="button" ng-click="ctrl.copyFile()" tooltip="Copy" class="btn btn-default filedetails-bottom-actions">
-          <i class="fa fa-files-o dir-option" style="font-size:18px;"></i>
+        <button id="edit-file-btn" type="button" ng-click="openInEditor()" tooltip="Open in Editor" class="btn btn-default filedetails-bottom-actions" ng-hide="editFile.type !== 'file'">
+          <i class="fa fa-pencil"></i>
         </button>
-      </div>
-      <div class="btn-group btn-group-sm" role="group">
-        <button id="delete-file-btn" type="button" ng-click="ctrl.deleteFile()" tooltip="Delete" class="btn btn-default filedetails-bottom-actions">
-          <i class="fa fa-trash-o dir-option" style="font-size:18px;"></i>
+        <button id="copy-file-btn" type="button" ng-click="copy()" tooltip="Copy" class="btn btn-default filedetails-bottom-actions">
+          <i class="fa fa-files-o"></i>
+        </button>
+        <button id="delete-file-btn" type="button" ng-click="delete()" tooltip="Delete" class="btn btn-default filedetails-bottom-actions">
+          <i class="fa fa-trash-o"></i>
         </button>
       </div>
     </div>
   </div>
 </div>
-  <button type="button" class="btn btn-primary" ng-click="ctrl.openFileInEditor()">Open in Editor</button>

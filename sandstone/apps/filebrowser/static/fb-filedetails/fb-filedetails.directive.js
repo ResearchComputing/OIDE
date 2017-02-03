@@ -7,7 +7,7 @@ angular.module('sandstone.filebrowser')
     restrict: 'A',
     scope: {},
     templateUrl: '/static/filebrowser/fb-filedetails/fb-filedetails.html',
-    controller: ['$scope', '$element', 'FilesystemService', 'FilebrowserService', function($scope,$element,FilesystemService,FilebrowserService) {
+    controller: ['$scope', '$element', '$modal', 'FilesystemService', 'FilebrowserService', function($scope,$element,$modal,FilesystemService,FilebrowserService) {
       var self = $scope;
 
       var permStringToModel = function(perms) {
@@ -90,6 +90,37 @@ angular.module('sandstone.filebrowser')
             });
           });
       };
+
+      self.copy = function() {
+
+      };
+
+      self.delete = function() {
+        self.deleteModalInstance = $modal.open({
+          templateUrl: '/static/filebrowser/templates/delete-modal.html',
+          backdrop: 'static',
+          keyboard: false,
+          controller: 'DeleteModalInstanceCtrl as ctrl',
+          resolve: {
+            file: function () {
+              return self.selection.selectedFile;
+            }
+          }
+        });
+
+        self.deleteModalInstance.result.then(function (file) {
+          FilesystemService
+            .delete(self.selection.selectedFile.filepath)
+            .then(function() {
+              FilebrowserService.setSelection({
+                cwd: self.selection.cwd
+              });
+            });
+        }, function () {
+          self.deleteModalInstance = null;
+        });
+      };
+
     }]
   };
 }]);
