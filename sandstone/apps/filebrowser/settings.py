@@ -15,6 +15,7 @@ APP_SPECIFICATION = {
         'filebrowser.service.js',
         'volumes.controller.js',
         'details.controller.js',
+        'movemodal.controller.js',
         'deletemodal.controller.js',
         'uploadmodal.controller.js',
         'fb-filedetails/fb-filedetails.directive.js',

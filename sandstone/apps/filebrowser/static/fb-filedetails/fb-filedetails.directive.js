@@ -119,6 +119,28 @@ angular.module('sandstone.filebrowser')
           });
       };
 
+      self.move = function() {
+        var moveModalInstance = $modal.open({
+          templateUrl: '/static/filebrowser/templates/move-modal.html',
+          backdrop: 'static',
+          keyboard: false,
+          size: 'lg',
+          controller: 'MoveModalInstanceCtrl',
+          controllerAs: 'ctrl',
+          resolve: {
+            file: function () {
+              return self.selection.selectedFile
+            }
+          }
+        });
+
+        moveModalInstance.result.then(function (newpath) {
+          FilesystemService
+            .move(self.selection.selectedFile.filepath,newpath)
+            .then(function(filepath) {});
+        });
+      };
+
       self.delete = function() {
         self.deleteModalInstance = $modal.open({
           templateUrl: '/static/filebrowser/templates/delete-modal.html',
