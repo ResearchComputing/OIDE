@@ -28,7 +28,7 @@ class SimpleUploadHandler(BaseHandler, FSMixin):
         dest_path = os.path.join(fp,self.filename)
         self.fd.close()
         # shutil.move(self.fd.name,dest_path)
-        self.fs.move_file(self.fd.name, dest_path)
+        self.fs.move(self.fd.name, dest_path)
         os.chmod(dest_path, 0644)
 
     @tornado.web.authenticated

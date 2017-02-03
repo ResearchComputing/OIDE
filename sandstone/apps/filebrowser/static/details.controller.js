@@ -2,7 +2,7 @@
 
 angular.module('sandstone.filebrowser')
 
-.controller('DetailsCtrl', ['$scope', 'FilebrowserService', 'FilesystemService', function($scope,FilebrowserService,FilesystemService) {
+.controller('DetailsCtrl', ['$scope', '$modal', 'FilebrowserService', 'FilesystemService', function($scope,$modal,FilebrowserService,FilesystemService) {
   var self = this;
 
   self.filesystem = {};
@@ -49,14 +49,25 @@ angular.module('sandstone.filebrowser')
       selectedFile: file
     });
   };
-}])
-.controller('DeleteModalInstanceCtrl', ['FilesystemService', '$modalInstance', 'file',function (FilesystemService, $modalInstance, file) {
-  var self = this;
-  self.file = file;
-  self.delete = function () {
-    $modalInstance.close(self.file);
+
+  self.upload = function() {
+    var modalInstance = $modal.open({
+      templateUrl: '/static/filebrowser/templates/upload-modal.html',
+      controller: 'UploadModalInstanceCtrl as ctrl',
+      backdrop: 'static',
+      size: 'lg',
+      resolve: {
+        directory: function () {
+          return self.selection.cwd;
+        }
+      }
+    });
+
+    modalInstance.result.then(function() {
+      FilebrowserService.setSelection({
+        cwd: self.selection.cwd
+      });
+    });
   };
-  self.cancel = function () {
-    $modalInstance.dismiss('cancel');
-  };
+
 }]);
