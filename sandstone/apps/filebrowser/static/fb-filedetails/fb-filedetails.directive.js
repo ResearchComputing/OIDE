@@ -91,8 +91,32 @@ angular.module('sandstone.filebrowser')
           });
       };
 
-      self.copy = function() {
-
+      self.duplicate = function() {
+        var cwd = self.selection.cwd;
+        var dupFile = self.selection.selectedFile;
+        var basepath = FilesystemService.join(cwd.filepath,dupFile.name);
+        var exists = false;
+        var i = 0;
+        var suffix;
+        do {
+          i++;
+          exists = false;
+          suffix = ' ('+i+')';
+          for (var ci=0;ci<cwd.contents.length;ci++) {
+            if (cwd.contents[ci].filepath === (basepath + suffix)) {
+              exists = true;
+              break;
+            }
+          }
+        } while (exists);
+        FilesystemService
+          .copy(self.selection.selectedFile.filepath,basepath+suffix)
+          .then(function(copypath) {
+            FilebrowserService.setSelection({
+              cwd: self.selection.cwd,
+              selectedFile: self.selection.selectedFile
+            });
+          });
       };
 
       self.delete = function() {

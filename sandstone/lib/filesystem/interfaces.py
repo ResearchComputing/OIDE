@@ -75,12 +75,17 @@ class PosixFS:
         size = contents[5]
         if not size[-1].isalpha():
             size += 'b'
+
+        name_cmps = contents[9:]
+        name = ' '.join(name_cmps)
+
         details = {
             'type': t,
             'permissions': perms,
             'owner': owner,
             'group': group,
-            'size': size
+            'size': size,
+            'name': name
         }
         return details
 
@@ -127,7 +132,7 @@ class PosixFS:
             contents = []
             for line in lines[2:-1]:
                 line_details = self._parse_ls_line(line)
-                name = line.split()[-1]
+                name = line_details['name']
                 fp = os.path.join(filepath,name)
                 line_details.update({
                     'filepath': fp

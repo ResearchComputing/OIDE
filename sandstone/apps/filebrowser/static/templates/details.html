@@ -7,9 +7,6 @@
   <div class="col-md-3">
     <div class="fb-dir-actions text-center">
       <div class="btn-group btn-group-sm" role="group">
-        <button id="paste-file-btn" type="button" ng-disabled="!ctrl.isCopied || ctrl.selectedFile == ''" ng-click="ctrl.pasteFile()" class="btn btn-default" tooltip="Paste" tooltip-trigger="mouseenter" tooltip-placement="bottom">
-          <i class="fa fa-paste"></i>
-        </button>
         <button id="upload-file-btn" type="button" class="btn btn-default" tooltip="Upload" ng-click="ctrl.upload()" ng-disabled="!ctrl.selection.cwd" tooltip-trigger="mouseenter" tooltip-placement="bottom">
           <i class="fa fa-upload"></i>
         </button>
