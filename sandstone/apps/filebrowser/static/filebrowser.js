@@ -1,5 +1,8 @@
 'use strict';
-
+/**
+ * Filebrowser
+ * @namespace Filebrowser
+ */
 angular.module('sandstone.filebrowser', ['smart-table', 'angularFileUpload', 'ui.router'])
 
 .config(['$stateProvider', '$urlRouterProvider' ,function($stateProvider, $urlRouterProvider){

@@ -1,5 +1,10 @@
 'use strict';
 
+/**
+ * Filebrowser
+ * @namespace FilebrowserController
+ * @memberOf Filebrowser
+ */
 angular.module('sandstone.filebrowser')
 .controller('FilebrowserController', ['$rootScope', 'FileService', '$scope', 'FilesystemService', '$modal', 'BroadcastService', function($rootScope, FileService, $scope, FilesystemService, $modal, BroadcastService){
   var self = this;
@@ -67,11 +72,22 @@ angular.module('sandstone.filebrowser')
 
   self.isCopied = false;
   self.isEditing = false;
+
+  /**
+   * @name self.copyFile
+   * @desc Saves the name of the file to be copied
+   * @memberOf sandstone.filebrowser.FilebrowserController
+   */
   self.copyFile = function() {
     self.copiedFile = self.selectedFile;
     self.isCopied = true;
   };
 
+  /**
+   * @name self.openFileInEditor
+   * @desc Opens the Selected File in the Editor
+   * @memberOf sandstone.filebrowser.FilebrowserController
+   */
   self.openFileInEditor = function() {
       window.location.href = '#/editor';
       var message = {
@@ -83,19 +99,43 @@ angular.module('sandstone.filebrowser')
       BroadcastService.sendMessage(message);
   };
 
+  /**
+   * @name self.gotFiles
+   * @desc Callback function of self.getFiles
+   * @memberOf sandstone.filebrowser.FilebrowserController
+   */
   self.gotFiles = function(data, status, headers, config) {
     FileService.setFileData(data);
   };
+
+  /**
+   * @name self.gotRootDirectory
+   * @desc Callback function of self.getRootDirectory
+   * @param {Object} data Object containing the Root Directories
+   * @memberOf sandstone.filebrowser.FilebrowserController
+   */
   self.gotRootDirectory = function(data, status, headers, config) {
     var rootDirectory = data.result;
     FileService.setRootDirectory(rootDirectory);
   };
 
+  /**
+   * @name self.gotVolumeInfo
+   * @desc Callback function of self.getVolumeInfo
+   * @param {Object} data Object containing the volume information
+   * @memberOf sandstone.filebrowser.FilebrowserController
+   */
   self.gotVolumeInfo = function(data, status, headers, config) {
     var volumeInfo = data.result;
     FileService.setVolumeInfo(volumeInfo);
   };
 
+  /**
+   * @name self.formDirPath
+   * @desc Converts the components of self.currentDirectory, which is an array into a string path, and returns it
+   * @memberOf sandstone.filebrowser.FilebrowserController
+   * @returns {String} path - well formed path representing the currently selected directory
+   */
   self.formDirPath = function() {
     // Form path
     var path = "";
@@ -109,6 +149,12 @@ angular.module('sandstone.filebrowser')
     return path;
   };
 
+  /**
+   * @name self.pasteFile
+   * @function
+   * @memberOf sandstone.filebrowser.FilebrowserController
+   * @desc Pastes the copied file into the currently selected directory.
+   */
   self.pasteFile = function() {
     // Form path
     var path = self.formDirPath();
@@ -128,6 +174,11 @@ angular.module('sandstone.filebrowser')
     });
   };
 
+  /**
+   * @name self.duplicateFile
+   * @desc Duplicates the currently selected file
+   * @memberOf sandstone.filebrowser.FilebrowserController
+   */
   self.duplicateFile = function(){
     FilesystemService.getNextDuplicate(self.selectedFile.filepath, function(data){
       FilesystemService.duplicateFile(data.originalFile, data.result, function(data){
@@ -137,6 +188,11 @@ angular.module('sandstone.filebrowser')
     });
   };
 
+  /**
+   * @name self.deleteFile
+   * @desc Opens the Delete File modal. When the modal is dismissed, the selected files are deleted
+   * @memberOf sandstone.filebrowser.FilebrowserController
+   */
   self.deleteFile = function() {
     self.modalInstance = $modal.open({
       templateUrl: '/static/filebrowser/templates/delete-modal.html',
@@ -160,6 +216,11 @@ angular.module('sandstone.filebrowser')
 
   };
 
+  /**
+   * @name self.openUploadModal
+   * @desc Opens the Upload File modal. Allows the user to select upload files from the Filesystem
+   * @memberOf sandstone.filebrowser.FilebrowserController
+   */
   self.openUploadModal = function() {
     self.modalInstance = $modal.open({
       templateUrl: '/static/filebrowser/templates/upload-modal.html',
@@ -180,6 +241,11 @@ angular.module('sandstone.filebrowser')
 
   };
 
+  /**
+   * @name self.createNewFile
+   * @desc Create a new File on the Filesystem
+   * @memberOf sandstone.filebrowser.FilebrowserController
+   */
   self.createNewFile = function() {
     var path = self.formDirPath();
     FilesystemService.getNextUntitledFile(path, function(data){
@@ -191,10 +257,20 @@ angular.module('sandstone.filebrowser')
     });
   };
 
+  /**
+   * @name self.editFileName
+   * @desc Sets editing mode to True
+   * @memberOf sandstone.filebrowser.FilebrowserController
+   */
   self.editFileName = function() {
     self.isEditing = true;
   };
 
+  /**
+   * @name self.renameFile
+   * @desc Renames the currently selected file with the edited filename
+   * @memberOf sandstone.filebrowser.FilebrowserController
+   */
   self.renameFile = function() {
     FilesystemService.renameFile(self.editedFileName, self.selectedFile, function(data){
       self.selectedFile.filename = self.editedFileName;
@@ -204,6 +280,11 @@ angular.module('sandstone.filebrowser')
     });
   };
 
+  /**
+   * @name self.createNewDirectory
+   * @desc Creates a new directory on the filesystem
+   * @memberOf sandstone.filebrowser.FilebrowserController
+   */
   self.createNewDirectory = function() {
     var path = self.formDirPath();
     FilesystemService.getNextUntitledFile(path, function(data){
@@ -217,6 +298,12 @@ angular.module('sandstone.filebrowser')
     });
   };
 
+  /**
+   * @name self.showVolumeInfo
+   * @desc returns if volume information is available or not
+   * @memberOf sandstone.filebrowser.FilebrowserController
+   * @returns {Boolean} true in case volume information is available. Else false
+   */
   self.showVolumeInfo = function() {
     if(typeof self.volumeUsed == 'undefined') {
       return false;
@@ -239,6 +326,11 @@ angular.module('sandstone.filebrowser')
     self.groups = data;
   });
 
+  /**
+   * @name self.refreshDirectory
+   * @desc Refreshes the currently selected directory, and gets the contents of the selected directory
+   * @memberOf sandstone.filebrowser.
+   */
   self.refreshDirectory = function() {
     // Form path
     var path = "";
@@ -256,6 +348,12 @@ angular.module('sandstone.filebrowser')
     });
   }
 
+  /**
+   * @name self.changeDir
+   * @desc Changes the currently selected directory, and get the files in the new directory
+   * @param {Integer} index The index of the component of the path to navigate to
+   * @memberOf sandstone.filebrowser.FilebrowserController
+   */
   self.changeDir = function(index) {
     // Form path
     var path = ""
@@ -279,6 +377,11 @@ angular.module('sandstone.filebrowser')
     });
   };
 
+  /**
+   * @name self.populatePermissions
+   * @desc Sets the permissions for the selected file
+   * @memberOf sandstone.filebrowser.FilebrowserController
+   */
   self.populatePermissions = function() {
     // Perm sting looks like 644, 755 etc
     // Split it into its consituents
@@ -372,6 +475,12 @@ angular.module('sandstone.filebrowser')
   };
 
   self.show_details = false;
+  /**
+   * @name self.ShowDetails
+   * @desc Shows file details in the side pane
+   * @param {String} selectedFile Contains the selected file for which the details will be shown
+   * @memberOf sandstone.filebrowser.FilebrowserController
+   */
   self.ShowDetails = function(selectedFile){
     self.show_details = false;
       self.selectedFile = selectedFile;
@@ -384,6 +493,12 @@ angular.module('sandstone.filebrowser')
     }
   };
 
+  /**
+   * @name self.openFolder
+   * @desc Open the newly selected directory on double clicking
+   * @param {Object} selectedFile Contains the Directory object which will be opened
+   * @memberOf sandstone.filebrowser.FilebrowserController
+   */
   self.openFolder = function(selectedFile) {
     if(selectedFile.type == 'file') {
       return;
@@ -393,6 +508,11 @@ angular.module('sandstone.filebrowser')
     self.show_details = false;
   };
 
+  /**
+   * @name self.changeGroup
+   * @desc Change the group of the currently selected file
+   * @memberOf sandstone.filebrowser.FilebrowserController
+   */
   self.changeGroup = function(){
     var group_name = self.selectedFile.group
     var filepath = self.selectedFile.filepath
@@ -401,10 +521,22 @@ angular.module('sandstone.filebrowser')
     });
   };
 
+  /**
+   * @name self.isNavigatable
+   * @desc Returns whether the folder specified by the index can be navigated to or not
+   * @memberOf sandstone.filebrowser.FilebrowserController
+   * @param {Integer} index Specifies the index of the component of the current directory
+   * @returns {Boolean} True if the directory can be navigated to. Else False
+   */
   self.isNavigatable = function(index) {
     return index >= self.rootDirectory.length - 1;
   };
 
+  /**
+   * @name self.changePermissions
+   * @desc Change the permissions for the currently selected file
+   * @memberOf sandstone.filebrowser.FilebrowserController
+   */
   self.changePermissions = function() {
     // Form permissions object
     var perms = ["0"];
@@ -435,12 +567,24 @@ angular.module('sandstone.filebrowser')
     });
   };
 }])
+/**
+ * @class sandstone.filebrowser.syncFocusWith
+ */
 .directive('syncFocusWith', function($timeout, $rootScope) {
     return {
         restrict: 'A',
         scope: {
             focusValue: "=syncFocusWith"
         },
+        /**
+         * @name link
+         * @desc Focuses the textbox used to rename the file, on clicking the edit button
+         * @memberOf sandstone.filebrowser.syncFocusWith
+         * @param {Object} $scope The directive scope
+         * @param {Object} $element The jqLite-wrapped element that this directive matches.
+         * @param {Object} attrs Hash object with key-value pairs of normalized attribute names and their corresponding attribute values.
+         * @returns {Boolean} True if the directory can be navigated to. Else False
+         */
         link: function($scope, $element, attrs) {
             $scope.$watch("focusValue", function(currentValue, previousValue) {
                 if (currentValue === true && !previousValue) {
@@ -452,19 +596,34 @@ angular.module('sandstone.filebrowser')
         }
     }
 })
+/**
+ * @class sandstone.filebrowser.DeleteModalInstanceCtrl
+ */
 .controller('DeleteModalInstanceCtrl', ['FilesystemService', '$modalInstance', 'selectedFile',function (FilesystemService, $modalInstance, selectedFile) {
   var self = this;
   self.selectedFile = selectedFile;
+  /**
+   * @name remove
+   * @desc Remove the selected files from the filesystem
+   * @memberOf sandstone.filebrowser.DeleteModalInstanceCtrl
+   */
   self.remove = function () {
     FilesystemService.deleteFile(self.selectedFile.filepath, function(data){
       $modalInstance.close(self.selectedFile);
     });
   };
-
+  /**
+   * @name cancel
+   * @desc Cancels removing the files from the filesystem
+   * @memberOf sandstone.filebrowser.DeleteModalInstanceCtrl
+   */
   self.cancel = function () {
     $modalInstance.dismiss('cancel');
   };
 }])
+/**
+ * @class sandstone.filebrowser.UploadModalInstanceCtrl
+ */
 .controller('UploadModalInstanceCtrl', ['FilesystemService', '$modalInstance', 'FileUploader', 'selectedDirectory',function (FilesystemService, $modalInstance, FileUploader, selectedDirectory) {
   var self = this;
   self.dirpath = selectedDirectory;
@@ -483,7 +642,7 @@ angular.module('sandstone.filebrowser')
       return this.queue.length < 10;
     }
   });
-
+  // Callback methods for upload events
    uploader.onWhenAddingFileFailed = function(item /*{File|FileLikeObject}*/, filter, options) {
        console.log('onWhenAddingFileFailed', item, filter, options);
    };
@@ -518,7 +677,11 @@ angular.module('sandstone.filebrowser')
    uploader.onCompleteAll = function() {
        console.log('onCompleteAll');
    };
-
+   /**
+    * @name cancel
+    * @desc Cancels uploading the files to the filesystem
+    * @memberOf sandstone.filebrowser.UploadModalInstanceCtrl
+    */
   self.cancel = function () {
     $modalInstance.close();
   };
