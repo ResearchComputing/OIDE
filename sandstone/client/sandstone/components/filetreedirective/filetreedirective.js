@@ -67,7 +67,7 @@ angular.module('sandstone.filetreedirective', [])
         if (node.children) {
           var children = node.children;
           for (var i=0;i<children.length;i++) {
-            if (children[i].children.length > 0) {
+            if (children[i].children && (children[i].children.length > 0)) {
               dirChildren[children[i].filepath] = children[i].children;
             }
           }
