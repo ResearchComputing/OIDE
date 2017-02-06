@@ -4,7 +4,7 @@ from setuptools import find_packages
 
 setup(
     name='sandstone',
-    version='0.12.5',
+    version='1.0.0',
     author=u'Zebula Sampedro',
     author_email='sampedro@colorado.edu',
     packages=find_packages(),
