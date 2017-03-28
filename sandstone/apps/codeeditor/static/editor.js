@@ -13,10 +13,10 @@ angular.module('sandstone.editor', ['ui.ace','treeControl'])
       url: '/editor',
       views: {
         '': {
-          templateUrl: '/static/editor/editor.html'
+          templateUrl: 'static/editor/editor.html'
         },
         'ace@editor': {
-          templateUrl: '/static/editor/templates/ace.html',
+          templateUrl: 'static/editor/templates/ace.html',
           controller: 'AceCtrl as ctrl'
           // resolve: {
           //   stateLoaded: function(StateService) {
@@ -25,15 +25,15 @@ angular.module('sandstone.editor', ['ui.ace','treeControl'])
           // }
         },
         'tabs@editor': {
-          templateUrl: '/static/editor/templates/tabs.html',
+          templateUrl: 'static/editor/templates/tabs.html',
           controller: 'EditorTabsCtrl as ctrl'
         },
         'settings@editor': {
-          templateUrl: '/static/editor/templates/settings.html',
+          templateUrl: 'static/editor/templates/settings.html',
           controller: 'EditorSettingsCtrl as ctrl'
         },
         'filetree@editor': {
-          templateUrl: '/static/editor/templates/filetree.html',
+          templateUrl: 'static/editor/templates/filetree.html',
           controller: 'FiletreeCtrl as ctrl'
         }
       }

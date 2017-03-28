@@ -6,12 +6,12 @@ angular.module('sandstone.terminal', [])
   $stateProvider
     .state('terminal', {
       url: '/terminal',
-      templateUrl: '/static/terminal/terminal.html',
+      templateUrl: 'static/terminal/terminal.html',
       controller: 'TerminalCtrl'
     });
 }])
 
-.controller('TerminalCtrl', ['$scope','$window','$log', function($scope,$window,$log) {
+.controller('TerminalCtrl', ['$scope','$window','$log','getUrlPrefix', function($scope,$window,$log,getUrlPrefix) {
   var self = $scope;
   self.terminal = {
     ws: undefined,
@@ -20,7 +20,7 @@ angular.module('sandstone.terminal', [])
 
   self.startTerminal = function() {
     var protocol = (window.location.protocol.indexOf("https") === 0) ? "wss" : "ws";
-    var ws_url = protocol+"://"+window.location.host+ "/terminal/a/term";
+    var ws_url = protocol+"://"+window.location.host+ getUrlPrefix() +"/terminal/a/term";
     var element = document.getElementById("terminal-pane");
 
     var rows = Math.max(2, Math.floor(element.offsetHeight/15)-1);

@@ -4,7 +4,7 @@ function getSandstoneModule(depList) {
       $httpProvider.interceptors.push('XsrfInjector');
       $httpProvider.interceptors.push('AuthInjector');
       $httpProvider.interceptors.push('ConnectionLostInjector');
-      $urlRouterProvider.otherwise('/editor');
+      // $urlRouterProvider.otherwise('/editor');
     }])
     .run(function(BroadcastService) {
         // Loads the BroadcastService
@@ -14,10 +14,23 @@ function getSandstoneModule(depList) {
       var r = document.cookie.match("\\b_xsrf=([^;]*)\\b");
       return r ? r[1] : undefined;
     })
+    .value('getUrlPrefix', function() {
+      // URLPREFIX is defined as a global via tornado.template
+      var prefix = URLPREFIX || '';
+      return prefix;
+    })
     .factory('XsrfInjector',['getXsrfCookie', function(getXsrfCookie) {
       return {
         request: function(config) {
           config.headers['X-XSRFToken'] = getXsrfCookie();
+          return config;
+        }
+      };
+    }])
+    .factory('PrefixInjector',['$q','getUrlPrefix',function($q,getUrlPrefix) {
+      return {
+        request: function(config) {
+          config.url = getUrlPrefix() + config.url;
           return config;
         }
       };

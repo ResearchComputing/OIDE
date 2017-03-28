@@ -7,7 +7,7 @@
     var initInjector = angular.injector(['ng']);
     var $http = initInjector.get('$http');
 
-    return $http.get('/a/deps').then(function(response) {
+    return $http.get(URLPREFIX+'/a/deps').then(function(response) {
       var depList = ['ui.router'];
       for (var i=0;i<response.data.dependencies.length;i++) {
         depList.push('sandstone.'+response.data.dependencies[i]);

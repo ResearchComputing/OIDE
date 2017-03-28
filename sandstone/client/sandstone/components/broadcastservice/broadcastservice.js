@@ -6,7 +6,7 @@
 'use strict';
 
 angular.module('sandstone.broadcastservice', [])
-.factory('BroadcastService', ['$rootScope','WebsocketService','$location', function($rootScope,WebsocketService,$location) {
+.factory('BroadcastService', ['$rootScope','WebsocketService','$location','getUrlPrefix', function($rootScope,WebsocketService,$location,getUrlPrefix) {
   var ws = null;
   var initialize = function() {
     var websocketAddress = getBroadcastUrl();
@@ -22,7 +22,7 @@ angular.module('sandstone.broadcastservice', [])
     if($location.protocol() === 'https') {
       protocol = 'wss';
     }
-    var broadcastUrl = protocol + '://' + $location.host() + ':' + $location.port() + '/messages';
+    var broadcastUrl = protocol + '://' + $location.host() + ':' + $location.port() + getUrlPrefix() + '/messages';
     return broadcastUrl;
   };
 

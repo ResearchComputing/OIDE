@@ -18,4 +18,5 @@ URL_SCHEMA = [
             (r"/a/deps", DependencyHandler),
             (r"/a/state", StateHandler),
             (r"/messages", BroadcastHandler),
-        ] + fs_api.URL_SCHEMA + APP_SCHEMA
+        ] + APP_SCHEMA
+        # + fs_api.URL_SCHEMA

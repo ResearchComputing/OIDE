@@ -1,30 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    {% set URL_PREFIX = get_url_prefix() %}
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="">
     <meta name="author" content="">
-    <link rel="icon" type="image/png" href="/static/core/favicon-32x32.png" sizes="32x32" />
+    <link rel="icon" type="image/png" href="{{ URL_PREFIX }}/static/core/favicon-32x32.png" sizes="32x32" />
 
     <title>Welcome to Sandstone IDE!</title>
         <!-- Bootstrap core CSS -->
     <!-- <link href="bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet"> -->
-    <link href="/static/core/bootstrap-sandstone.min.css" rel="stylesheet">
+    <link href="{{ URL_PREFIX }}/static/core/bootstrap-sandstone.min.css" rel="stylesheet">
     <!-- link for CSS when using the tree as a Dom element -->
-    <link rel="stylesheet" type="text/css" href="/static/core/bower_components/angular-tree-control/css/tree-control.css">
+    <link rel="stylesheet" type="text/css" href="{{ URL_PREFIX }}/static/core/bower_components/angular-tree-control/css/tree-control.css">
     <!-- link for CSS when using the tree as an attribute -->
-    <link rel="stylesheet" type="text/css" href="/static/core/bower_components/angular-tree-control/css/tree-control-attribute.css">
+    <link rel="stylesheet" type="text/css" href="{{ URL_PREFIX }}/static/core/bower_components/angular-tree-control/css/tree-control-attribute.css">
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
-    <link rel="stylesheet" type="text/css" href="/static/core/sandstone.css">
+    <link rel="stylesheet" type="text/css" href="{{ URL_PREFIX }}/static/core/sandstone.css">
     {% for module_spec in get_ng_module_spec() %}
       {% for mod_dep in module_spec['stylesheets'] %}
-        <link rel="stylesheet" type="text/css" href="/static/{{module_spec['module_name']}}/{{mod_dep}}">
+        <link rel="stylesheet" type="text/css" href="{{ URL_PREFIX }}/static/{{module_spec['module_name']}}/{{mod_dep}}">
       {% end %}
     {% end %}
-    <link rel="stylesheet" type="text/css" href="/static/core/filetree.css">
-    <link rel="stylesheet" type="text/css" href="/static/core/components/filetreedirective/templates/filetree.css" />
+    <link rel="stylesheet" type="text/css" href="{{ URL_PREFIX }}/static/core/filetree.css">
+    <link rel="stylesheet" type="text/css" href="{{ URL_PREFIX }}/static/core/components/filetreedirective/templates/filetree.css" />
 
   </head>
 
@@ -43,15 +44,15 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a href="#" class="navbar-icon pull-left"><img src="/static/core/sandstone-icon-800x800.png"></a>
-          <a class="navbar-brand" href="#">Sandstone IDE</a>
+          <a href="{{ URL_PREFIX }}/#" class="navbar-icon pull-left"><img src="{{ URL_PREFIX }}/static/core/sandstone-icon-800x800.png"></a>
+          <a class="navbar-brand" href="{{ URL_PREFIX }}/#">Sandstone IDE</a>
         </div>
         <div id="navbar" class="navbar-collapse collapse" collapse="navbarCollapsed">
           <ul class="nav navbar-nav navbar-right">
             {% for app in get_app_descriptions() %}
-            <li ng-class="{'active':pageCtrl.currentUrl()==='{{app['link']}}'}"><a href="{{app['link']}}" role="button">{{app['name']}}</a></li>
+            <li ng-class="{'active':pageCtrl.currentUrl()==='{{ URL_PREFIX }}'+'{{app['link']}}'}"><a href="{{ URL_PREFIX }}{{app['link']}}" role="button">{{app['name']}}</a></li>
             {% end %}
-            <li><a href="/auth/logout" role="button">Logout</a></li>
+            <li><a href="{{ URL_PREFIX }}/auth/logout" role="button">Logout</a></li>
           </ul>
         </div>
       </div>
@@ -63,27 +64,30 @@
       ui-view>
     </div>
 
-    <script src="/static/core/bower_components/ace-builds/src-min-noconflict/ace.js"></script>
-    <script src="/static/core/bower_components/angular/angular.min.js"></script>
-    <script src="/static/core/bower_components/angular-ui-router/release/angular-ui-router.js"></script>
-    <script src="/static/core/bower_components/angular-smart-table/dist/smart-table.js"></script>
-    <script src="/static/core/bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
-    <script src="/static/core/bower_components/angular-ui-ace/src/ui-ace.js"></script>
-    <script src="/static/core/bower_components/angular-tree-control/angular-tree-control.js"></script>
-    <script src="/static/core/bower_components/angular-file-upload/dist/angular-file-upload.js"></script>
-    <script src="/static/core/bower_components/term.js/src/term.js"></script>
-    <script src="/static/core/sandstone.mod.js"></script>
-    <script src="/static/core/sandstone.js"></script>
-    <script src="/static/core/components/acemodes/acemodes.js"></script>
-    <script src="/static/core/components/websocketservice/websocketservice.js"></script>
-    <script src="/static/core/components/filesystemservice/filesystemservice.js"></script>
-    <script src="/static/core/components/alertsdirective/alertsdirective.js"></script>
-    <script src="/static/core/components/filetreedirective/filetreedirective.js"></script>
-    <script src="/static/core/components/broadcastservice/broadcastservice.js"></script>
+    <script>
+      var URLPREFIX = '{{ URL_PREFIX }}';
+    </script>
+    <script src="{{ URL_PREFIX }}/static/core/bower_components/ace-builds/src-min-noconflict/ace.js"></script>
+    <script src="{{ URL_PREFIX }}/static/core/bower_components/angular/angular.min.js"></script>
+    <script src="{{ URL_PREFIX }}/static/core/bower_components/angular-ui-router/release/angular-ui-router.js"></script>
+    <script src="{{ URL_PREFIX }}/static/core/bower_components/angular-smart-table/dist/smart-table.js"></script>
+    <script src="{{ URL_PREFIX }}/static/core/bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
+    <script src="{{ URL_PREFIX }}/static/core/bower_components/angular-ui-ace/src/ui-ace.js"></script>
+    <script src="{{ URL_PREFIX }}/static/core/bower_components/angular-tree-control/angular-tree-control.js"></script>
+    <script src="{{ URL_PREFIX }}/static/core/bower_components/angular-file-upload/dist/angular-file-upload.js"></script>
+    <script src="{{ URL_PREFIX }}/static/core/bower_components/term.js/src/term.js"></script>
+    <script src="{{ URL_PREFIX }}/static/core/sandstone.mod.js"></script>
+    <script src="{{ URL_PREFIX }}/static/core/sandstone.js"></script>
+    <script src="{{ URL_PREFIX }}/static/core/components/acemodes/acemodes.js"></script>
+    <script src="{{ URL_PREFIX }}/static/core/components/websocketservice/websocketservice.js"></script>
+    <script src="{{ URL_PREFIX }}/static/core/components/filesystemservice/filesystemservice.js"></script>
+    <script src="{{ URL_PREFIX }}/static/core/components/alertsdirective/alertsdirective.js"></script>
+    <script src="{{ URL_PREFIX }}/static/core/components/filetreedirective/filetreedirective.js"></script>
+    <script src="{{ URL_PREFIX }}/static/core/components/broadcastservice/broadcastservice.js"></script>
     <!--<script src="/static/core/components/states/states.js"></script>-->
     {% for module_spec in get_ng_module_spec() %}
       {% for mod_dep in module_spec['scripts'] %}
-        <script src="/static/{{module_spec['module_name']}}/{{mod_dep}}"></script>
+        <script src="{{ URL_PREFIX }}/static/{{module_spec['module_name']}}/{{mod_dep}}"></script>
       {% end %}
     {% end %}
   </body>

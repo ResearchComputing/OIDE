@@ -17,3 +17,7 @@ def get_ng_module_spec(*args,**kwargs):
             'scripts':app_spec['NG_MODULE_SCRIPTS']
         })
     return mod_list
+
+def get_url_prefix(*args,**kwargs):
+    url_prefix = settings.URL_PREFIX
+    return url_prefix
