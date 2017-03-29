@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 
 {% block extra_head %}
-<link href="/static/core/login.css" rel="stylesheet">
+<link href="{{ URL_PREFIX }}/static/core/login.css" rel="stylesheet">
 {% end %}
 
 {% block content %}
 <div class="container-fluid">
 
-  <form action="/auth/login" method="POST" class="form-signin" role="form">
+  <form action="{{ URL_PREFIX }}/auth/login" method="POST" class="form-signin" role="form">
     <h2 class="form-signin-heading">Please sign in</h2>
     <input name="username" type="text" class="form-control" placeholder="Username" required autofocus>
     <input name="password" type="password" class="form-control" placeholder="Password" required>

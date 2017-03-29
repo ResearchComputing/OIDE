@@ -1,6 +1,7 @@
 import logging
 import simplepam
 from sandstone.lib.handlers.base import BaseHandler
+from sandstone import settings
 
 
 
@@ -15,7 +16,7 @@ class PAMLoginHandler(BaseHandler):
 
         if simplepam.authenticate(un, str(pw), service='login'):
             self.set_secure_cookie('user', un)
-            self.redirect("/")
+            self.redirect(settings.URL_PREFIX+"/")
         else:
             failed_attempts=self.get_secure_cookie("failedattempts")
             if failed_attempts==False or failed_attempts == None:

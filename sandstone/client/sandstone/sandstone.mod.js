@@ -5,7 +5,7 @@ function getSandstoneModule(depList) {
       $httpProvider.interceptors.push('PrefixInjector');
       $httpProvider.interceptors.push('AuthInjector');
       $httpProvider.interceptors.push('ConnectionLostInjector');
-      // $urlRouterProvider.otherwise('/editor');
+      $urlRouterProvider.otherwise('/editor');
     }])
     .run(function(BroadcastService) {
         // Loads the BroadcastService

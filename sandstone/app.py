@@ -23,6 +23,7 @@ from sandstone.urls import URL_SCHEMA
 
 class SandstoneApplication(tornado.web.Application):
     def __init__(self, *args, **kwargs):
+        url_prefix = settings.URL_PREFIX
         app_static_handlers = []
         for spec in get_installed_app_static_specs():
             s_url = r"/static/{}/(.*)".format(spec[0])
@@ -34,10 +35,12 @@ class SandstoneApplication(tornado.web.Application):
                 (r"/static/core/(.*)", tornado.web.StaticFileHandler, {'path': STATIC_DIR}),
             ] + app_static_handlers + URL_SCHEMA
 
+        login_url = url_prefix + '/auth/login'
+
         app_settings = dict(
             project_dir=PROJECT_DIR,
             static_dir=STATIC_DIR,
-            login_url=settings.LOGIN_URL,
+            login_url=login_url,
             cookie_secret = settings.COOKIE_SECRET,
             debug = settings.DEBUG,
             xsrf_cookies=True,
@@ -47,7 +50,6 @@ class SandstoneApplication(tornado.web.Application):
         tornado.web.Application.__init__(self, handlers, **app_settings)
 
         # Apply url prefix to handlers
-        url_prefix = settings.URL_PREFIX
         for handler in self.handlers[0][1]:
             handler.regex = re.compile(handler.regex.pattern.replace('/', '{}/'.format(url_prefix), 1))
 

@@ -18,7 +18,7 @@ USE_SSL = False
 URL_PREFIX = ''
 
 DEBUG = True
-LOGIN_URL = '/auth/login'
+
 COOKIE_SECRET = 'YouShouldProbablyChangeThisValueForYourProject'
 
 # App-Wide settings
