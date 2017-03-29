@@ -17,7 +17,7 @@ function getSandstoneModule(depList) {
     })
     .value('getUrlPrefix', function() {
       // URLPREFIX is defined as a global via tornado.template
-      var prefix = URLPREFIX || '';
+      var prefix = (typeof URLPREFIX === 'undefined') ? '' : URLPREFIX;
       return prefix;
     })
     .factory('XsrfInjector',['getXsrfCookie', function(getXsrfCookie) {
@@ -33,7 +33,7 @@ function getSandstoneModule(depList) {
         request: function(config) {
           // We only need to manipulate absolute paths.
           // Relative paths will behave correctly.
-          if(config.url.startsWith('/')) {
+          if(config.url[0] === '/') {
             config.url = getUrlPrefix() + config.url;
           }
           return config;
