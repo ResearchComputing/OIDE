@@ -15,7 +15,7 @@ USE_SSL = False
 
 # URL prefix (with no trailing slash) to be used by
 # this instance of Sandstone. Example: "/sandstone/user"
-URL_PREFIX = '/sampedro'
+URL_PREFIX = ''
 
 DEBUG = True
 LOGIN_URL = '/auth/login'

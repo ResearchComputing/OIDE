@@ -6,7 +6,7 @@ angular.module('sandstone.terminal', [])
   $stateProvider
     .state('terminal', {
       url: '/terminal',
-      templateUrl: 'static/terminal/terminal.html',
+      templateUrl: '/static/terminal/terminal.html',
       controller: 'TerminalCtrl'
     });
 }])

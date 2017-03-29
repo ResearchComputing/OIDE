@@ -2,6 +2,7 @@ function getSandstoneModule(depList) {
   return angular.module('sandstone', depList)
     .config(['$urlRouterProvider','$httpProvider', function($urlRouterProvider,$httpProvider) {
       $httpProvider.interceptors.push('XsrfInjector');
+      $httpProvider.interceptors.push('PrefixInjector');
       $httpProvider.interceptors.push('AuthInjector');
       $httpProvider.interceptors.push('ConnectionLostInjector');
       // $urlRouterProvider.otherwise('/editor');
@@ -30,7 +31,11 @@ function getSandstoneModule(depList) {
     .factory('PrefixInjector',['$q','getUrlPrefix',function($q,getUrlPrefix) {
       return {
         request: function(config) {
-          config.url = getUrlPrefix() + config.url;
+          // We only need to manipulate absolute paths.
+          // Relative paths will behave correctly.
+          if(config.url.startsWith('/')) {
+            config.url = getUrlPrefix() + config.url;
+          }
           return config;
         }
       };

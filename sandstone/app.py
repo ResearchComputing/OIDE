@@ -1,5 +1,6 @@
 import os
 import sys
+import re
 import logging
 import tornado.ioloop
 import tornado.options
@@ -22,28 +23,16 @@ from sandstone.urls import URL_SCHEMA
 
 class SandstoneApplication(tornado.web.Application):
     def __init__(self, *args, **kwargs):
-        url_prefix = settings.URL_PREFIX
         app_static_handlers = []
         for spec in get_installed_app_static_specs():
-            s_url = r"{}/static/{}/(.*)".format(url_prefix,spec[0])
+            s_url = r"/static/{}/(.*)".format(spec[0])
             app_static_handlers.append(
                 (s_url, tornado.web.StaticFileHandler, {'path': spec[1]})
             )
 
-        # Apply url prefix to schema
-        prefixed_schema = []
-        for patt in URL_SCHEMA:
-            try:
-                prefixed_patt = (url_prefix+patt[0],patt[1])
-            except TypeError:
-                # This one is a URLSpec, not a tuple
-                patt.regex.pattern = url_prefix + patt.regex.pattern
-                prefixed_patt = patt
-            prefixed_schema.append(prefixed_patt)
-
         handlers = [
-                (r"{}/static/core/(.*)".format(url_prefix), tornado.web.StaticFileHandler, {'path': STATIC_DIR}),
-            ] + app_static_handlers + prefixed_schema
+                (r"/static/core/(.*)", tornado.web.StaticFileHandler, {'path': STATIC_DIR}),
+            ] + app_static_handlers + URL_SCHEMA
 
         app_settings = dict(
             project_dir=PROJECT_DIR,
@@ -56,6 +45,11 @@ class SandstoneApplication(tornado.web.Application):
             )
 
         tornado.web.Application.__init__(self, handlers, **app_settings)
+
+        # Apply url prefix to handlers
+        url_prefix = settings.URL_PREFIX
+        for handler in self.handlers[0][1]:
+            handler.regex = re.compile(handler.regex.pattern.replace('/', '{}/'.format(url_prefix), 1))
 
 
 def main():
