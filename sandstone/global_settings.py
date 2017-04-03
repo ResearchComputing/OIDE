@@ -17,6 +17,10 @@ USE_SSL = False
 # this instance of Sandstone. Example: "/sandstone/user"
 URL_PREFIX = ''
 
+# Handler used to authenticate a session. The default
+# is sandstone.lib.handlers.pam_auth.PAMLoginHandler
+LOGIN_HANDLER = 'sandstone.lib.handlers.pam_auth.PAMLoginHandler'
+
 DEBUG = True
 
 COOKIE_SECRET = 'YouShouldProbablyChangeThisValueForYourProject'
