@@ -45,12 +45,11 @@ class SettingsLoaderTestCase(unittest.TestCase):
     @mock.patch('os.environ',{})
     def test_load_settings(self):
         settings = SettingsLoader()
-        for s in ['USE_SSL','LOGIN_URL','COOKIE_SECRET']:
+        for s in ['USE_SSL','COOKIE_SECRET']:
             delattr(settings,s)
         self.assertFalse(hasattr(settings,'USE_SSL'))
-        self.assertFalse(hasattr(settings,'LOGIN_URL'))
         self.assertFalse(hasattr(settings,'COOKIE_SECRET'))
 
-        settings._load_settings(global_settings,ignorelist=['USE_SSL','LOGIN_URL'])
+        settings._load_settings(global_settings,ignorelist=['USE_SSL',])
         self.assertTrue(hasattr(settings,'COOKIE_SECRET'))
         self.assertEqual(settings.COOKIE_SECRET,global_settings.COOKIE_SECRET)
