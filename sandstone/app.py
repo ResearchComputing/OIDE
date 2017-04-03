@@ -42,7 +42,6 @@ class SandstoneApplication(tornado.web.Application):
             static_dir=STATIC_DIR,
             login_url=login_url,
             cookie_secret = settings.COOKIE_SECRET,
-            debug = settings.DEBUG,
             xsrf_cookies=True,
             ui_methods=ui_methods,
             )
@@ -50,12 +49,17 @@ class SandstoneApplication(tornado.web.Application):
         tornado.web.Application.__init__(self, handlers, **app_settings)
 
         # Apply url prefix to handlers
+        self._apply_prefix(url_prefix)
+
+    def _apply_prefix(self, prefix):
         for handler in self.handlers[0][1]:
-            handler.regex = re.compile(handler.regex.pattern.replace('/', '{}/'.format(url_prefix), 1))
+            handler.regex = re.compile(handler.regex.pattern.replace('/', '{}/'.format(prefix), 1))
+            # This is necessary for url reversals to work properly
+            handler._path = prefix + handler._path
 
 
 def main():
-    application = SandstoneApplication()
+    application = SandstoneApplication(debug=settings.DEBUG)
     if settings.USE_SSL:
         ssl_server = tornado.httpserver.HTTPServer(application, ssl_options={
             "certfile": settings.SSL_CERT,

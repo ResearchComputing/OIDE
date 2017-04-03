@@ -7,6 +7,7 @@ from sandstone import settings
 
 
 APP_SPECS = settings.APP_SPECIFICATIONS
+TEST_PREFIX = '/test/prefix'
 
 class GetAppDescriptionTestCase(unittest.TestCase):
     @mock.patch('sandstone.settings.APP_SPECIFICATIONS',APP_SPECS)
@@ -44,3 +45,14 @@ class GetNgModuleSpecTestCase(unittest.TestCase):
         specs = ui_methods.get_ng_module_spec()
         self.assertEqual(len(specs),0)
         self.assertEqual(type(specs),type([]))
+
+class GetUrlPrefixTestCase(unittest.TestCase):
+    @mock.patch('sandstone.settings.URL_PREFIX','')
+    def test_get_prefix_default(self):
+        prefix = ui_methods.get_url_prefix()
+        self.assertEqual(prefix,'')
+
+    @mock.patch('sandstone.settings.URL_PREFIX',TEST_PREFIX)
+    def test_get_prefix_set(self):
+        prefix = ui_methods.get_url_prefix()
+        self.assertEqual(prefix,TEST_PREFIX)

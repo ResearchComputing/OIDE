@@ -12,6 +12,7 @@ from tornado.websocket import websocket_connect
 EXEC_USER = pwd.getpwuid(os.getuid())[0]
 
 class MainHandlerTestCase(TestHandlerBase):
+    @mock.patch('sandstone.settings.URL_PREFIX','')
     @mock.patch.object(BaseHandler,'get_secure_cookie',return_value=EXEC_USER)
     def test_get_authed(self,m):
         response = self.fetch(
@@ -25,6 +26,7 @@ class MainHandlerTestCase(TestHandlerBase):
         login_form = """<form action="/auth/login" method="POST" class="form-signin" role="form">"""
         self.assertNotIn(login_form,response.body)
 
+    @mock.patch('sandstone.settings.URL_PREFIX','')
     def test_get_unauthed(self):
         response = self.fetch(
             '/',
@@ -34,6 +36,7 @@ class MainHandlerTestCase(TestHandlerBase):
         self.assertEqual(response.code, 302)
         self.assertEqual(response.headers['Location'],'/auth/login?next=%2F')
 
+    @mock.patch('sandstone.settings.URL_PREFIX','')
     def test_get_unauthed_redirect(self):
         response = self.fetch(
             '/',
@@ -44,6 +47,7 @@ class MainHandlerTestCase(TestHandlerBase):
         self.assertIn(login_form,response.body)
 
 class BaseHandlerTestCase(TestHandlerBase):
+    @mock.patch('sandstone.settings.URL_PREFIX','')
     @mock.patch.object(BaseHandler,'get_secure_cookie',return_value=EXEC_USER)
     def test_get_current_user_authed(self,m):
         request = mock.Mock()
@@ -51,6 +55,7 @@ class BaseHandlerTestCase(TestHandlerBase):
         user = handler.get_current_user()
         self.assertEqual(user,EXEC_USER)
 
+    @mock.patch('sandstone.settings.URL_PREFIX','')
     def test_get_current_user_unauthed(self):
         request = mock.Mock()
         request.cookies = None
@@ -58,6 +63,7 @@ class BaseHandlerTestCase(TestHandlerBase):
         user = handler.get_current_user()
         self.assertEqual(user, None)
 
+    @mock.patch('sandstone.settings.URL_PREFIX','')
     def test_get_template_path(self):
         app = self.get_app()
         request = mock.Mock()
@@ -66,6 +72,7 @@ class BaseHandlerTestCase(TestHandlerBase):
         self.assertEqual(tpath,app.settings['project_dir'])
 
 class PAMLoginHandlerTestCase(TestHandlerBase):
+    @mock.patch('sandstone.settings.URL_PREFIX','')
     def test_get(self):
         response = self.fetch(
             '/auth/login',
@@ -75,6 +82,7 @@ class PAMLoginHandlerTestCase(TestHandlerBase):
         login_form = """<form action="/auth/login" method="POST" class="form-signin" role="form">"""
         self.assertIn(login_form,response.body)
 
+    @mock.patch('sandstone.settings.URL_PREFIX','')
     @mock.patch('simplepam.authenticate',return_value=True)
     def test_post(self,m):
         post_args = {
@@ -89,6 +97,7 @@ class PAMLoginHandlerTestCase(TestHandlerBase):
         self.assertEqual(response.code, 302)
         self.assertEqual(response.headers["Location"],'/')
 
+    @mock.patch('sandstone.settings.URL_PREFIX','')
     def test_post_bad_creds(self):
         post_args = {
             'username': 'fakeun',

@@ -1,12 +1,14 @@
+import mock
 from tornado.testing import AsyncHTTPTestCase
 from tornado.testing import LogTrapTestCase
 from sandstone.app import SandstoneApplication
 
 
 
-APP = SandstoneApplication()
-APP.settings['xsrf_cookies'] = False
-
 class TestHandlerBase(AsyncHTTPTestCase, LogTrapTestCase):
+
+    @mock.patch('sandstone.settings.URL_PREFIX','')
     def get_app(self):
-        return APP
+        app = SandstoneApplication(debug=False)
+        app.settings['xsrf_cookies'] = False
+        return app
