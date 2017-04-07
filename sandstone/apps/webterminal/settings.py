@@ -12,3 +12,10 @@ APP_SPECIFICATION = {
         'terminal.js',
     ),
 }
+
+# The command list that will be executed when a web terminal starts
+WEB_TERMINAL_SHELL_CMD = ['bash']
+# Environment variables added to web terminal sessions
+WEB_TERMINAL_EXTRA_ENV = {
+    'TEST_VAR': 'hi!'
+}
