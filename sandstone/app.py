@@ -68,26 +68,27 @@ class SandstoneApplication(tornado.web.Application):
             # This is necessary for url reversals to work properly
             handler._path = prefix + handler._path
 
-    def _build_login_urlspec(self, url_path):
-        module_path = settings.LOGIN_HANDLER
+    def _get_handler_for_module(self, module_path):
         module_cmps = module_path.split('.')
         mod_path = '.'.join(module_cmps[:-1])
+        handler_class = module_cmps[-1]
         handler_class = module_cmps[-1]
 
         mod = __import__(mod_path, fromlist=[handler_class])
         handler = getattr(mod, handler_class)
+        return handler
+
+
+    def _build_login_urlspec(self, url_path):
+        module_path = settings.LOGIN_HANDLER
+        handler = self._get_handler_for_module(module_path)
 
         login_urlspec = url(url_path,handler)
         return login_urlspec
 
     def _build_logout_urlspec(self, url_path):
         module_path = settings.LOGOUT_HANDLER
-        module_cmps = module_path.split('.')
-        mod_path = '.'.join(module_cmps[:-1])
-        handler_class = module_cmps[-1]
-
-        mod = __import__(mod_path, fromlist=[handler_class])
-        handler = getattr(mod, handler_class)
+        handler = self._get_handler_for_module(module_path)
 
         login_urlspec = url(url_path,handler)
         return login_urlspec
