@@ -37,9 +37,14 @@ class SandstoneApplication(tornado.web.Application):
         prefixed_login_url = url_prefix + login_url
         login_urlspec = self._build_login_urlspec(login_url)
 
+        logout_url = '/auth/logout'
+        prefixed_logout_url = url_prefix + logout_url
+        logout_urlspec = self._build_logout_urlspec(logout_url)
+
         handlers = [
                 (r"/static/core/(.*)", tornado.web.StaticFileHandler, {'path': STATIC_DIR}),
                 login_urlspec,
+                logout_urlspec,
             ] + app_static_handlers + URL_SCHEMA
 
         app_settings = dict(
@@ -75,6 +80,17 @@ class SandstoneApplication(tornado.web.Application):
         login_urlspec = url(url_path,handler)
         return login_urlspec
 
+    def _build_logout_urlspec(self, url_path):
+        module_path = settings.LOGOUT_HANDLER
+        module_cmps = module_path.split('.')
+        mod_path = '.'.join(module_cmps[:-1])
+        handler_class = module_cmps[-1]
+
+        mod = __import__(mod_path, fromlist=[handler_class])
+        handler = getattr(mod, handler_class)
+
+        login_urlspec = url(url_path,handler)
+        return login_urlspec
 
 def main(**kwargs):
     port = kwargs.get('port', '8888')

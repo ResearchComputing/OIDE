@@ -22,7 +22,8 @@ URL_PREFIX = ''
 
 # Handler used to authenticate a session. The default
 # is sandstone.lib.handlers.pam_auth.PAMLoginHandler
-LOGIN_HANDLER = 'sandstone.lib.handlers.pam_auth.PAMLoginHandler'
+LOGIN_HANDLER = 'sandstone_jupyterhub_login.handlers.JupyterHubLoginHandler'
+LOGOUT_HANDLER = 'sandstone_jupyterhub_login.handlers.JupyterHubLogoutHandler'
 
 DEBUG = True
 
