@@ -285,8 +285,8 @@ angular.module('sandstone.editor')
           }
         );
       };
-      var createAndUpdate = function(data,status) {
-        if (status === 404) {
+      var createAndUpdate = function(data) {
+        if (data.status === 404) {
           var createFile = FilesystemService.createFile(filepath);
           createFile.then(updateContents);
         }

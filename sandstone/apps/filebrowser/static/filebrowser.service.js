@@ -39,7 +39,7 @@ angular.module('sandstone.filebrowser')
       // Update directory
       selectionInfo.cwd = dirDetails;
     },
-    function(data,status) {
+    function(data) {
       AlertService.addAlert({
         type: 'warning',
         message: 'Failed to retrieve directory contents for ' + filepath
@@ -63,7 +63,7 @@ angular.module('sandstone.filebrowser')
   fsDetails.then(function(filesystemDetails) {
     filesystem = filesystemDetails;
   },
-  function(data,status) {
+  function(data) {
     AlertService.addAlert({
       type: 'danger',
       message: 'Failed to retrieve filesystem details. Please refresh this page.',

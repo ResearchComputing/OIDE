@@ -93,7 +93,7 @@ angular.module('sandstone.filebrowser')
       var setSelection = function(filepath) {
         FilebrowserService.setSelectedFile(self.selection.selectedFile);
       };
-      var failedToCreate = function(data,status) {
+      var failedToCreate = function(data) {
         AlertService.addAlert({
           type: 'danger',
           message: 'Failed to create ' + newPath

@@ -56,7 +56,7 @@ angular.module('sandstone.filebrowser')
                 angular.extend(self.selection.selectedFile,file);
                 FilebrowserService.setSelectedFile(self.selection.selectedFile);
               },
-              function(data,status) {
+              function(data) {
                 AlertService.addAlert({
                   type: 'warning',
                   message: 'Failed to retrieve file details.'
@@ -64,7 +64,7 @@ angular.module('sandstone.filebrowser')
                 FilebrowserService.setSelectedFile();
               });
           },
-          function(data,status) {
+          function(data) {
             // Show an alert and roll back changes to the editFile
             AlertService.addAlert({
               type: 'danger',
@@ -81,7 +81,7 @@ angular.module('sandstone.filebrowser')
             self.selection.selectedFile.group = self.editFile.group;
             FilebrowserService.setSelectedFile(self.selection.selectedFile);
           },
-          function(data,status) {
+          function(data) {
             // Show an alert and roll back changes to the editFile
             AlertService.addAlert({
               type: 'danger',
@@ -107,7 +107,7 @@ angular.module('sandstone.filebrowser')
             self.selection.selectedFile.permissions = perms;
             FilebrowserService.setSelectedFile(self.selection.selectedFile);
           },
-          function(data,status) {
+          function(data) {
             // Show an alert and roll back changes to the editFile
             AlertService.addAlert({
               type: 'danger',
@@ -151,7 +151,7 @@ angular.module('sandstone.filebrowser')
           .then(function(copypath) {
             FilebrowserService.setSelectedFile(self.selection.selectedFile);
           },
-          function(data,status) {
+          function(data) {
             AlertService.addAlert({
               type: 'danger',
               message: 'Failed to duplicate file.'
@@ -178,7 +178,7 @@ angular.module('sandstone.filebrowser')
           FilesystemService
             .move(self.selection.selectedFile.filepath,newpath)
             .then(function(filepath) {},
-            function(data,status) {
+            function(data) {
               AlertService.addAlert({
                 type: 'danger',
                 message: 'Failed to move file.'
@@ -206,7 +206,7 @@ angular.module('sandstone.filebrowser')
             .then(function() {
               FilebrowserService.setSelectedFile();
             },
-            function(data,status) {
+            function(data) {
               AlertService.addAlert({
                 type: 'danger',
                 message: 'Failed to delete file.'
