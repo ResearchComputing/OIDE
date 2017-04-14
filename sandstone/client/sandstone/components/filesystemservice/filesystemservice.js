@@ -159,7 +159,7 @@ angular.module('sandstone.filesystemservice', [])
       deferred.resolve(fsDetails);
     });
     req.error(function(data, status) {
-      deferred.reject(data, status);
+      deferred.reject({data:data,status:status});
     });
     return deferred.promise;
   };
@@ -182,7 +182,7 @@ angular.module('sandstone.filesystemservice', [])
       deferred.resolve(data.filepath);
     });
     req.error(function(data,status) {
-      deferred.reject(data,status);
+      deferred.reject({data:data,status:status});
     });
     return deferred.promise;
   };
@@ -205,7 +205,7 @@ angular.module('sandstone.filesystemservice', [])
       deferred.resolve(data.filepath);
     });
     req.error(function(data,status) {
-      deferred.reject(data,status);
+      deferred.reject({data:data,status:status});
     });
     return deferred.promise;
   };
@@ -228,7 +228,7 @@ angular.module('sandstone.filesystemservice', [])
       deferred.resolve(data.filepath);
     });
     req.error(function(data,status) {
-      deferred.reject(data,status);
+      deferred.reject({data:data,status:status});
     });
     return deferred.promise;
   };
@@ -251,7 +251,7 @@ angular.module('sandstone.filesystemservice', [])
       deferred.resolve(fileDetails);
     });
     req.error(function(data,status) {
-      deferred.reject(data, status);
+      deferred.reject({data:data,status:status});
     });
     return deferred.promise;
   };
@@ -265,7 +265,7 @@ angular.module('sandstone.filesystemservice', [])
       deferred.resolve(data.contents);
     });
     req.error(function(data,status) {
-      deferred.reject(data, status);
+      deferred.reject({data:data,status:status});
     });
     return deferred.promise;
   };
@@ -284,7 +284,7 @@ angular.module('sandstone.filesystemservice', [])
       deferred.resolve(data.msg);
     });
     req.error(function(data,status) {
-      deferred.reject(data,status);
+      deferred.reject({data:data,status:status});
     });
     return deferred.promise;
   };
@@ -303,7 +303,7 @@ angular.module('sandstone.filesystemservice', [])
       deferred.resolve(data.uri);
     });
     req.error(function(data,status) {
-      deferred.reject(data,status);
+      deferred.reject({data:data,status:status});
     });
     return deferred.promise;
   };
@@ -354,7 +354,7 @@ angular.module('sandstone.filesystemservice', [])
       deferred.resolve(directory);
     });
     req.error(function(data,status) {
-      deferred.reject(data,status);
+      deferred.reject({data:data,status:status});
     });
     return deferred.promise;
   };
@@ -373,7 +373,7 @@ angular.module('sandstone.filesystemservice', [])
       deferred.resolve(data.uri);
     });
     req.error(function(data,status) {
-      deferred.reject(data,status);
+      deferred.reject({data:data,status:status});
     });
     return deferred.promise;
   };
@@ -388,7 +388,7 @@ angular.module('sandstone.filesystemservice', [])
       deferred.resolve();
     });
     req.error(function(data,status) {
-      deferred.reject(data,status);
+      deferred.reject({data:data,status:status});
     });
     return deferred.promise;
   };
@@ -410,7 +410,7 @@ angular.module('sandstone.filesystemservice', [])
       deferred.resolve();
     });
     req.error(function(data,status) {
-      deferred.reject(data,status);
+      deferred.reject({data:data,status:status});
     });
     return deferred.promise;
   };
@@ -432,7 +432,7 @@ angular.module('sandstone.filesystemservice', [])
       deferred.resolve();
     });
     req.error(function(data,status) {
-      deferred.reject(data,status);
+      deferred.reject({data:data,status:status});
     });
     return deferred.promise;
   };
@@ -451,7 +451,7 @@ angular.module('sandstone.filesystemservice', [])
       deferred.resolve();
     });
     req.error(function(data,status) {
-      deferred.reject(data,status);
+      deferred.reject({data:data,status:status});
     });
     return deferred.promise;
   };
@@ -465,7 +465,7 @@ angular.module('sandstone.filesystemservice', [])
       deferred.resolve();
     });
     req.error(function(data,status) {
-      deferred.reject(data,status);
+      deferred.reject({data:data,status:status});
     });
     return deferred.promise;
   };
