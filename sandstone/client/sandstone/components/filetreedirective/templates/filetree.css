@@ -1,12 +1,18 @@
 div[sandstone-filetree] {
-  /*height: 100%;*/
+  height: 90%;
 }
+
 div[sandstone-filetree] > .filetree-container {
   margin-top: 50px;
-  height: 100vh;
+  height: 100%;
   overflow-x: auto;
-  overflow-y: scroll;
+  overflow-y: auto;
 }
+
+.modal div[sandstone-filetree] .filetree-container {
+    height: 100px;
+}
+
 div[sandstone-filetree] > .filetree-container li {
   white-space: nowrap;
 }
