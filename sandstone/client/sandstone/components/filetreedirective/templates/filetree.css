@@ -10,7 +10,7 @@ div[sandstone-filetree] > .filetree-container {
 }
 
 .modal div[sandstone-filetree] .filetree-container {
-    height: 100px;
+    height: 60vh;
 }
 
 div[sandstone-filetree] > .filetree-container li {
