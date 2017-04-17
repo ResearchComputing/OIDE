@@ -32,25 +32,18 @@ class SandstoneApplication(tornado.web.Application):
                 (s_url, tornado.web.StaticFileHandler, {'path': spec[1]})
             )
 
-        # Build the URLSpec for the configured login handler
-        login_url = '/auth/login'
-        prefixed_login_url = url_prefix + login_url
-        login_urlspec = self._build_login_urlspec(login_url)
-
-        logout_url = '/auth/logout'
-        prefixed_logout_url = url_prefix + logout_url
-        logout_urlspec = self._build_logout_urlspec(logout_url)
+        # Build the URLSpecs for the configured auth handlers
+        self._login_url = '/auth/login'
+        auth_urls = self._build_auth_urlspecs()
 
         handlers = [
                 (r"/static/core/(.*)", tornado.web.StaticFileHandler, {'path': STATIC_DIR}),
-                login_urlspec,
-                logout_urlspec,
-            ] + app_static_handlers + URL_SCHEMA
+            ] + auth_urls + app_static_handlers + URL_SCHEMA
 
         app_settings = dict(
             project_dir=PROJECT_DIR,
             static_dir=STATIC_DIR,
-            login_url=prefixed_login_url,
+            login_url=url_prefix+self._login_url,
             cookie_secret = settings.COOKIE_SECRET,
             xsrf_cookies=True,
             ui_methods=ui_methods,
@@ -78,20 +71,21 @@ class SandstoneApplication(tornado.web.Application):
         handler = getattr(mod, handler_class)
         return handler
 
+    def _build_auth_urlspecs(self):
+        prefix = settings.URL_PREFIX
 
-    def _build_login_urlspec(self, url_path):
-        module_path = settings.LOGIN_HANDLER
-        handler = self._get_handler_for_module(module_path)
+        login_handler_mod = settings.LOGIN_HANDLER
+        logout_handler_mod = settings.LOGOUT_HANDLER
+        login_handler = self._get_handler_for_module(login_handler_mod)
+        logout_handler = self._get_handler_for_module(logout_handler_mod)
 
-        login_urlspec = url(url_path,handler)
-        return login_urlspec
+        url_specs = []
+        login_urlspec = url(self._login_url,login_handler)
+        url_specs.append(login_urlspec)
+        logout_urlspec = url('/auth/logout',logout_handler)
+        url_specs.append(logout_urlspec)
+        return url_specs
 
-    def _build_logout_urlspec(self, url_path):
-        module_path = settings.LOGOUT_HANDLER
-        handler = self._get_handler_for_module(module_path)
-
-        login_urlspec = url(url_path,handler)
-        return login_urlspec
 
 def main(**kwargs):
     port = kwargs.get('port', '8888')
