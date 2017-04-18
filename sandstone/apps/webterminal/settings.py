@@ -10,12 +10,12 @@ APP_SPECIFICATION = {
     ),
     'NG_MODULE_SCRIPTS': (
         'terminal.js',
+        'terminal.controller.js',
+        'terminal.service.js',
     ),
 }
 
 # The command list that will be executed when a web terminal starts
 WEB_TERMINAL_SHELL_CMD = ['bash']
 # Environment variables added to web terminal sessions
-WEB_TERMINAL_EXTRA_ENV = {
-    'TEST_VAR': 'hi!'
-}
+WEB_TERMINAL_EXTRA_ENV = {}
