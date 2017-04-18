@@ -57,6 +57,6 @@ angular.module('sandstone.filebrowser')
    };
 
   self.cancel = function () {
-    $modalInstance.close();
+    $modalInstance.dismiss();
   };
 }]);
