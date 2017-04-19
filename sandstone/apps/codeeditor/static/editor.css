@@ -197,6 +197,19 @@
 .btn.fc-dropdown-link:disabled {
   color: #5E5E5E;
 }
+
+div[sandstone-filetree] {
+  height: 80vh;
+  overflow: auto;
+  padding-top: 25px;
+}
+
+.modal div[sandstone-filetree] {
+  height: 50vh;
+  overflow: auto;
+  padding-top: 25px;
+}
+
 #editor-nav-tabs li.active {
   z-index: 1029;
 }
