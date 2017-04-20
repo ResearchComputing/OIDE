@@ -85,7 +85,6 @@ angular.module('sandstone.filebrowser')
     var filepath = FilesystemService.normalize(data.filepath);
     var dirpath = FilesystemService.normalize(data.dirpath);
     var cwdPath = FilesystemService.normalize(selectionInfo.cwd.filepath);
-    var selPath = FilesystemService.normalize(selectionInfo.selectedFile.filepath);
 
     if(data.is_directory && (filepath === cwdPath)) {
       // CWD deleted, change cwd to selected volume
@@ -94,10 +93,6 @@ angular.module('sandstone.filebrowser')
       if(dirpath === cwdPath) {
         // Contents of CWD have changed, update them
         self.setCwd(cwdPath);
-      }
-      if(filepath === selPath) {
-        // Currently selected file deleted, deselect
-        self.setSelectedFile();
       }
     }
   });

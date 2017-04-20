@@ -204,7 +204,7 @@ angular.module('sandstone.filebrowser')
           FilesystemService
             .delete(self.selection.selectedFile.filepath)
             .then(function() {
-              FilebrowserService.setSelectedFile(file);
+              FilebrowserService.setSelectedFile();
             },
             function(data) {
               AlertService.addAlert({
