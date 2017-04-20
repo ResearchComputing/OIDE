@@ -70,7 +70,7 @@ angular.module('sandstone.filebrowser')
   };
 
   self.create = function(type) {
-    var createModalInstance = $modal.open({
+    self.createModalInstance = $modal.open({
       templateUrl: '/static/filebrowser/templates/create-modal.html',
       backdrop: 'static',
       keyboard: false,
@@ -86,7 +86,7 @@ angular.module('sandstone.filebrowser')
       }
     });
 
-    createModalInstance.result.then(function (newFileName) {
+    self.createModalInstance.result.then(function (newFileName) {
       var newPath = FilesystemService.join(self.selection.cwd.filepath,newFileName);
 
       var createReq;

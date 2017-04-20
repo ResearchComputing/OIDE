@@ -160,7 +160,7 @@ angular.module('sandstone.filebrowser')
       };
 
       self.move = function() {
-        var moveModalInstance = $modal.open({
+        self.moveModalInstance = $modal.open({
           templateUrl: '/static/filebrowser/templates/move-modal.html',
           backdrop: 'static',
           keyboard: false,
@@ -174,7 +174,7 @@ angular.module('sandstone.filebrowser')
           }
         });
 
-        moveModalInstance.result.then(function (newpath) {
+        self.moveModalInstance.result.then(function (newpath) {
           FilesystemService
             .move(self.selection.selectedFile.filepath,newpath)
             .then(function(filepath) {},

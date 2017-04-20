@@ -20,14 +20,17 @@ describe('sandstone.filebrowser.UploadModalInstanceCtrl', function() {
 
   it('sets upload directory',function() {
     var ctrl;
+    var dir = {'filepath': '/volume1/test/'};
 
     ctrl = $controller('UploadModalInstanceCtrl', {
       $scope:$scope,
       FilesystemService: FilesystemService,
       $modalInstance: {},
       FileUploader: FileUploader,
-      directory: {}
+      directory: dir
     });
+
+    expect(ctrl.dirpath).toBe(dir.filepath);
   });
 
 });
