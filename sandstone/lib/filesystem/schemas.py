@@ -97,7 +97,7 @@ class VolumeObject(BaseObject):
         },
         'used': {
             'type': 'string',
-            'regex': '^([\d]+(.[\d]+)?[bKMGT])$'
+            'regex': '^(([\d]+(.[\d]+)?[bKMGT])|0)$'
         },
         'available': {
             'type': 'string',
