@@ -2,12 +2,12 @@
 
 angular.module('sandstone.filebrowser')
 
-.controller('UploadModalInstanceCtrl', ['FilesystemService', '$modalInstance', 'FileUploader', 'directory', 'getXsrfCookie' ,function (FilesystemService, $modalInstance, FileUploader, directory, getXsrfCookie) {
+.controller('UploadModalInstanceCtrl', ['FilesystemService', '$modalInstance', 'FileUploader', 'directory', 'getXsrfCookie', 'getUrlPrefix',function (FilesystemService, $modalInstance, FileUploader, directory, getXsrfCookie, getUrlPrefix) {
   var self = this;
   self.dirpath = directory.filepath;
   var uploader = self.uploader = new FileUploader({
       autoUpload: true,
-      url: '/filebrowser/a/upload',
+      url: getUrlPrefix() + '/filebrowser/a/upload',
       headers: {
         'X-XSRFToken': getXsrfCookie(),
         'basepath': self.dirpath
