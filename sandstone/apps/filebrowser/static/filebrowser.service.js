@@ -88,7 +88,7 @@ angular.module('sandstone.filebrowser')
 
     if(data.is_directory && (filepath === cwdPath)) {
       // CWD deleted, change cwd to selected volume
-      self.changeDirectory(selectionInfo.volume.filepath);
+      self.setCwd(selectionInfo.volume.filepath);
     } else {
       if(dirpath === cwdPath) {
         // Contents of CWD have changed, update them
