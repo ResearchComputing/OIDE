@@ -6,6 +6,7 @@ describe('sandstone.filebrowser.DetailsCtrl', function() {
   var $controller;
   var $rootScope, $scope;
   var mockResolve, mockReject;
+  var volumeDetails;
 
   beforeEach(module('sandstone'));
   beforeEach(module('sandstone.filesystemservice'));
@@ -27,7 +28,7 @@ describe('sandstone.filebrowser.DetailsCtrl', function() {
 
     FilesystemService = _FilesystemService_;
     // FilebrowserService automatically calls FS service methods
-    var volumeDetails = {
+    volumeDetails = {
       available: '11G',
       filepath: '/volume1/',
       size: '18G',
@@ -57,15 +58,123 @@ describe('sandstone.filebrowser.DetailsCtrl', function() {
 
   describe('breadcrumbs', function() {
 
-    it('are empty when there is no selection',function() {});
+    it('are empty when there is no selection',function() {
+        expect(ctrl.breadcrumbs.length).toBe(0);
+    });
 
-    it('change when the selection changes',function() {});
+    it('change when the selection changes',function() {
+        spyOn(FilesystemService,'getDirectoryDetails').and.callFake(function() {
+          return mockResolve(volumeDetails);
+        });
+        spyOn(FilesystemService,'createFilewatcher').and.callFake(function() {
+          return mockResolve();
+        });
+        FilebrowserService.setVolume(volumeDetails);
+        $rootScope.$digest();
+        expect(ctrl.breadcrumbs).toEqual(['/volume1']);
+    });
 
-    it('show volume path as a single crumb',function() {});
+    it('show volume path as a single crumb',function() {
+        var volume = {
+          available: '11G',
+          filepath: '/volume1/test/path',
+          size: '18G',
+          type: 'volume',
+          used: '6.0G',
+          used_pct: 36
+        };
+        spyOn(FilesystemService,'getDirectoryDetails').and.callFake(function() {
+          return mockResolve(volume);
+        });
+        spyOn(FilesystemService,'createFilewatcher').and.callFake(function() {
+          return mockResolve();
+        });
+        FilebrowserService.setVolume(volume);
+        $rootScope.$digest();
+        expect(ctrl.breadcrumbs.length).toBe(1);
+        expect(ctrl.breadcrumbs).toEqual(['/volume1/test/path']);
+    });
 
-    it('correctly decompose selected filepath into crumbs',function() {});
+    it('correctly decompose selected filepath into crumbs',function() {
+        var volume = {
+          available: '11G',
+          filepath: '/volume1/test/path',
+          size: '18G',
+          type: 'volume',
+          used: '6.0G',
+          used_pct: 36
+        };
+        var dirDetails = {
+            filepath:'/testdir',
+            is_directory:true,
+            dirpath: '/'
+        };
+        spyOn(FilesystemService,'getDirectoryDetails').and.callFake(function() {
+          return mockResolve(dirDetails);
+        });
+        spyOn(FilesystemService,'createFilewatcher').and.callFake(function() {
+          return mockResolve();
+        });
+        FilebrowserService.setVolume(volume);
+        $rootScope.$digest();
+        FilebrowserService.setCwd(dirDetails.filepath);
+        expect(ctrl.breadcrumbs.length).toBe(2);
+        expect(ctrl.breadcrumbs).toEqual(['/volume1/test/path', 'testdir']);
+    });
 
-    it('change directories when selected',function() {});
+    it('change directories when selected index==0',function() {
+        var volume = {
+          available: '11G',
+          filepath: '/volume1/test/path',
+          size: '18G',
+          type: 'volume',
+          used: '6.0G',
+          used_pct: 36
+        };
+        var dirDetails = {
+            filepath:'/testdir',
+            is_directory:true,
+            dirpath: '/'
+        };
+        spyOn(FilesystemService,'getDirectoryDetails').and.callFake(function() {
+          return mockResolve(dirDetails);
+        });
+        spyOn(FilesystemService,'createFilewatcher').and.callFake(function() {
+          return mockResolve();
+        });
+        FilebrowserService.setVolume(volume);
+        $rootScope.$digest();
+        spyOn(ctrl, 'changeDirectory');
+        ctrl.selectCrumb(0);
+        expect(ctrl.changeDirectory).toHaveBeenCalledWith(volume.filepath);
+    });
+
+    it('change directories when selected index!=0',function() {
+        var volume = {
+          available: '11G',
+          filepath: '/volume1/test/path',
+          size: '18G',
+          type: 'volume',
+          used: '6.0G',
+          used_pct: 36
+        };
+        var dirDetails = {
+            filepath:'/testdir/test2',
+            is_directory:true,
+            dirpath: '/testdir'
+        };
+        spyOn(FilesystemService,'getDirectoryDetails').and.callFake(function() {
+          return mockResolve(dirDetails);
+        });
+        spyOn(FilesystemService,'createFilewatcher').and.callFake(function() {
+          return mockResolve();
+        });
+        FilebrowserService.setVolume(volume);
+        $rootScope.$digest();
+        spyOn(ctrl, 'changeDirectory');
+        ctrl.selectCrumb(1);
+        expect(ctrl.changeDirectory).toHaveBeenCalledWith('/volume1/test/path/testdir');
+    });
 
   });
 
@@ -73,9 +182,31 @@ describe('sandstone.filebrowser.DetailsCtrl', function() {
     // Double-clicking in Directory Details triggers openDirectory()
     // Single-clicking triggers selectFile
 
-    it('openDirectory selected file if type is file',function() {});
+    it('openDirectory selected file if type is file',function() {
+        var file = {
+            filepath:'/testdir/test2',
+            is_directory:false,
+            type: 'file',
+            dirpath: '/testdir'
+        };
+        spyOn(FilebrowserService, 'setSelectedFile');
+        ctrl.openDirectory(file);
+        expect(FilebrowserService.setSelectedFile).toHaveBeenCalledWith(file);
+    });
 
-    it('openDirectory changes directory if type is directory',function() {});
+    it('openDirectory changes directory if type is directory',function() {
+        var dir = {
+            filepath:'/testdir/test2',
+            is_directory:false,
+            type: 'dir',
+            dirpath: '/testdir'
+        };
+        spyOn(FilebrowserService, 'setSelectedFile');
+        spyOn(FilebrowserService, 'setCwd');
+        ctrl.openDirectory(dir);
+        expect(FilebrowserService.setSelectedFile).toHaveBeenCalled();
+        expect(FilebrowserService.setCwd).toHaveBeenCalledWith(dir.filepath);
+    });
 
   });
 
@@ -85,15 +216,71 @@ describe('sandstone.filebrowser.DetailsCtrl', function() {
     beforeEach(inject(function(_$modal_) {
       $modal = _$modal_;
 
+      var mockModal = {
+        result: {
+          then: function(confirmCallback, cancelCallback) {
+            this.confirmCallback = confirmCallback;
+            this.cancelCallback = cancelCallback;
+          }
+        },
+        close: function() {
+            this.result.confirmCallback('Untitled');
+        },
+        dismiss: function() {
+          this.result.cancelCallback();
+        }
+      };
+
       var newFileName = 'filename';
       spyOn($modal,'open').and.callFake(function() {
-        return mockResolve(newFileName);
+        return mockModal;
       });
+
+      // Select volume
+
+      var volume = {
+        available: '11G',
+        filepath: '/volume1/test/path',
+        size: '18G',
+        type: 'volume',
+        used: '6.0G',
+        used_pct: 36
+      };
+      spyOn(FilesystemService,'getDirectoryDetails').and.callFake(function() {
+        return mockResolve(volume);
+      });
+      spyOn(FilesystemService,'createFilewatcher').and.callFake(function() {
+        return mockResolve();
+      });
+      FilebrowserService.setVolume(volume);
+      $rootScope.$digest();
     }));
 
-    it('creates a new file selects it',function() {});
+    it('creates a new file selects it',function() {
+        var filepath = '/volume1/test/path/Untitled';
 
-    it('creates a new directory and selects it',function() {});
+        spyOn(FilesystemService, 'createFile').and.callFake(function() {
+            return mockResolve(filepath);
+        });
+        spyOn(FilebrowserService, 'setSelectedFile');
+        ctrl.create('file');
+        ctrl.createModalInstance.close();
+        $rootScope.$digest();
+        expect(FilebrowserService.setSelectedFile).toHaveBeenCalled();
+    });
+
+    it('creates a new directory and selects it',function() {
+        var filepath = '/volume1/test/path/Untitled';
+
+        spyOn(FilesystemService, 'createDirectory').and.callFake(function() {
+            return mockResolve(filepath);
+        });
+        spyOn(FilebrowserService, 'setSelectedFile');
+        ctrl.create('directory');
+        ctrl.createModalInstance.close();
+        $rootScope.$digest();
+        expect(FilebrowserService.setSelectedFile).toHaveBeenCalled();
+    });
 
   });
 

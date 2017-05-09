@@ -8,8 +8,12 @@ describe('sandstone.filebrowser.fbFileDetails', function() {
   var FilesystemService;
   var FilebrowserService;
   var AlertService;
+  var broadcastservice;
   var mockResolve, mockReject;
   var $rootScope, digest, $q;
+  var $window;
+  var deleteModal;
+  var modal;
 
   beforeEach(module('sandstone'));
   beforeEach(module('sandstone.templates'));
@@ -54,8 +58,37 @@ describe('sandstone.filebrowser.fbFileDetails', function() {
     };
   });
 
-  beforeEach(inject(function(_FilesystemService_,_$q_) {
+  deleteModal = {
+    result: {
+      then: function(confirmCallback, cancelCallback) {
+        this.confirmCallback = confirmCallback;
+        this.cancelCallback = cancelCallback;
+      }
+    },
+    close: function() {
+      this.result.confirmCallback(fileDetails);
+    },
+    dismiss: function() {
+      this.result.cancelCallback();
+    }
+  };
+
+  beforeEach(inject(function(_FilesystemService_,_$q_, _$window_, BroadcastService, $modal) {
     $q = _$q_;
+    $window = _$window_;
+    broadcastservice = BroadcastService;
+    modal = $modal;
+
+    mockResolve = function(data) {
+      var deferred = _$q_.defer();
+      deferred.resolve(data);
+      return deferred.promise;
+    };
+    mockReject = function(data) {
+      var deferred = _$q_.defer();
+      deferred.reject(data);
+      return deferred.promise;
+    };
 
     FilesystemService = _FilesystemService_;
     // FilebrowserService automatically calls FS service methods
@@ -212,20 +245,94 @@ describe('sandstone.filebrowser.fbFileDetails', function() {
       expect(isolateScope.editFile.group).toEqual(originalGroup);
     });
 
-    it('editing permissions model changes permissions',function() {});
+    it('editing permissions model changes permissions',function() {
+        FilebrowserService.setSelectedFile(fileDetails);
+        $scope.$digest();
+        isolateScope.editFile.permModel = {
+            0: true,
+            1: true,
+            2: false,
+            3: true,
+            4: true,
+            5: false,
+            6: true,
+            7: true,
+            8: false,
+        };
+        spyOn(FilesystemService, 'changePermissions').and.callFake(function() {
+            return mockResolve();
+        });
+        spyOn(FilebrowserService, 'setSelectedFile');
+        isolateScope.changePermissions();
+        $scope.$digest();
+        expect(FilesystemService.changePermissions.calls.argsFor(0)).toEqual([fileDetails.filepath, 'rw-rw-rw-']);
+        expect(FilebrowserService.setSelectedFile).toHaveBeenCalledWith(fileDetails);
+    });
 
-    it('opening in editor sends signal and changes location',function() {});
+    it('opening in editor sends signal and changes location',function() {
+        FilebrowserService.setSelectedFile(fileDetails);
+        spyOn(broadcastservice, 'sendMessage');
+        isolateScope.openInEditor();
+        expect(broadcastservice.sendMessage).toHaveBeenCalled();
+        expect($window.location.href).toContain('#/editor');
+    });
 
-    it('duplicates created with proper suffix',function() {});
+    it('duplicates created with proper suffix',function() {
+        var selection = {cwd: dirDetails, selectedFile: fileDetails};
+        spyOn(FilebrowserService,'getSelection').and.returnValue(selection);
+        $scope.$digest();
+        FilebrowserService.setSelectedFile(fileDetails);
+        var cwd = FilebrowserService.getSelection().cwd;
+        var basepath = FilesystemService.join(cwd.filepath, fileDetails.name);
+        spyOn(FilesystemService, 'copy').and.callFake(function() {
+            return mockResolve(dirDetails.filepath);
+        });
+        spyOn(FilebrowserService, 'setSelectedFile');
+        isolateScope.duplicate();
+        $scope.$digest();
+        expect(FilesystemService.copy.calls.argsFor(0)).toEqual([fileDetails.filepath, basepath+' (1)']);
+        expect(FilebrowserService.setSelectedFile).toHaveBeenCalledWith(fileDetails);
+    });
 
-    it('file moved to location specified by move modal',function() {});
+    it('file moved to location specified by move modal',function() {
+        var selection = {cwd: dirDetails, selectedFile: fileDetails};
+        spyOn(FilebrowserService,'getSelection').and.returnValue(selection);
+        var newPath = '/volume1/test';
+        $scope.$digest();
+        spyOn(modal, "open").and.callFake(function(){
+          return deleteModal;
+        });
+        spyOn(FilesystemService, 'move').and.callFake(function() {
+          return mockResolve(newPath);
+        });
+        FilebrowserService.setSelectedFile(fileDetails);
+        isolateScope.move();
+        isolateScope.moveModalInstance.close();
+        $scope.$digest();
+        expect(FilesystemService.move).toHaveBeenCalled();
+    });
 
-    it('file is deleted and selection is cleared',function() {});
+    it('file is deleted and selection is cleared',function() {
+        var selection = {cwd: dirDetails, selectedFile: fileDetails};
+        spyOn(FilebrowserService,'getSelection').and.returnValue(selection);
+        $scope.$digest();
+        spyOn(modal, "open").and.callFake(function(){
+          return deleteModal;
+        });
+        spyOn(FilesystemService, 'delete').and.callFake(function() {
+          return mockResolve();
+        });
+        FilebrowserService.setSelectedFile(fileDetails);
+        isolateScope.delete();
+        isolateScope.deleteModalInstance.close();
+        $scope.$digest();
+        expect(FilesystemService.delete).toHaveBeenCalled();
+    });
 
   });
 
   describe('directive', function() {
-    var $compile, $scope, isolateScope, element;
+    var $compile, $scope, isolateScope, element, elementAsHtml;
 
     var getMatchesFromTpl = function(pattern,tpl) {
       var matches = tpl.match(pattern);
@@ -251,11 +358,45 @@ describe('sandstone.filebrowser.fbFileDetails', function() {
       isolateScope = element.isolateScope();
     }));
 
-    it('changes to edit propagate to template',function() {});
+    it('changes to edit propagate to template',function() {
+        FilebrowserService.setSelectedFile(fileDetails);
+        var newSelection = {
+          type: 'file',
+          filepath: '/volume1/file2',
+          dirpath: '/volume1',
+          name: 'file2',
+          owner: 'testuser',
+          group: 'testgrp',
+          permissions: 'rwxrw-r--',
+          size: '8.8K'
+        };
+        elementAsHtml = renderTpl(isolateScope, element);
+        expect(elementAsHtml).toContain(newSelection.owner);
+        expect(elementAsHtml).toContain(newSelection.size);
+    });
 
-    it('group select is populated',function() {});
+    it('group select is populated',function() {
+        elementAsHtml = renderTpl(isolateScope, element);
+        expect(elementAsHtml).toContain('testgrp');
+    });
 
-    it('permissions matrix renders properly',function() {});
+    it('permissions matrix renders properly',function() {
+        FilebrowserService.setSelectedFile(fileDetails);
+        elementAsHtml = renderTpl(isolateScope, element);
+        var perm = {
+            0: true,
+            1: true,
+            2: true,
+            3: true,
+            4: true,
+            5: false,
+            6: true,
+            7: false,
+            8: false
+        };
+        expect(isolateScope.editFile.permModel).toEqual(perm);
+        expect(elementAsHtml).toContain('editFile.permModel');
+    });
 
   });
 
