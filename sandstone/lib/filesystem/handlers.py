@@ -10,6 +10,9 @@ from sandstone.lib.handlers.rest import JSONHandler
 from sandstone.lib.filesystem.mixins import FSMixin
 from sandstone.lib.filesystem.filewatcher import Filewatcher
 
+from tornado import iostream
+from tornado import gen
+
 
 
 class FilesystemHandler(JSONHandler,FSMixin):
@@ -286,22 +289,43 @@ class FileContentsHandler(JSONHandler, FSMixin):
             raise tornado.web.HTTPError(404)
 
 class DownloadFileHandler(BaseHandler):
+
+    def _get_content(cls, abspath, start=None, end=None):
+        with open(abspath, "rb") as file:
+            if start is not None:
+                file.seek(start)
+            if end is not None:
+                remaining = end - (start or 0)
+            else:
+                remaining = None
+            while True:
+                chunk_size = 64 * 1024
+                if remaining is not None and remaining < chunk_size:
+                    chunk_size = remaining
+                chunk = file.read(chunk_size)
+                if chunk:
+                    if remaining is not None:
+                        remaining -= len(chunk)
+                    yield chunk
+                else:
+                    if remaining is not None:
+                        assert remaining == 0
+                    return
+
     @sandstone.lib.decorators.authenticated
+    @gen.coroutine
     def get(self, filepath):
         if not filepath or not os.path.exists(filepath):
             raise HTTPError(404)
         self.set_header('Content-Type', 'application/force-download')
         self.set_header('Content-Disposition', 'attachment; filename=%s' % filepath)
-        with open(filepath, "rb") as f:
+
+        content = self._get_content(filepath)
+        if isinstance(content, bytes):
+            content = [content]
+        for chunk in content:
             try:
-                while True:
-                    _buffer = f.read(4096)
-                    if _buffer:
-                        self.write(_buffer)
-                    else:
-                        f.close()
-                        self.finish()
-                        return
-            except:
-                raise HTTPError(404)
-        raise HTTPError(500)
+                self.write(chunk)
+                yield self.flush()
+            except iostream.StreamClosedError:
+                return
