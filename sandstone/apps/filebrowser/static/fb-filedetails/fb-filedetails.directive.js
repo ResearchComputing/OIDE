@@ -38,6 +38,10 @@ angular.module('sandstone.filebrowser')
           self.editFile = angular.copy(newValue.selectedFile);
           if (self.editFile) {
             self.editFile.permModel = permStringToModel(self.editFile.permissions);
+
+            // Encoded file url
+            self.encodedDownloadURL = '/a/filesystem/files/' + encodeURIComponent(self.editFile.filepath) + '/download/';
+            console.log(self.encodedDownloadURL);
           }
         }
       },true);

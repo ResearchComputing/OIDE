@@ -119,6 +119,10 @@
   position: absolute;
 }
 
+.filedetails-download {
+    border-radius: 0;
+}
+
 .filetable-filename-selected {
   color: #93c54b;
   font-weight: bold;

@@ -1,4 +1,5 @@
 import json
+import os
 import tornado.web
 import tornado.escape
 
@@ -283,3 +284,24 @@ class FileContentsHandler(JSONHandler, FSMixin):
             self.write({'msg': 'Updated file at {}'.format(filepath)})
         except OSError:
             raise tornado.web.HTTPError(404)
+
+class DownloadFileHandler(BaseHandler):
+    @sandstone.lib.decorators.authenticated
+    def get(self, filepath):
+        if not filepath or not os.path.exists(filepath):
+            raise HTTPError(404)
+        self.set_header('Content-Type', 'application/force-download')
+        self.set_header('Content-Disposition', 'attachment; filename=%s' % filepath)
+        with open(filepath, "rb") as f:
+            try:
+                while True:
+                    _buffer = f.read(4096)
+                    if _buffer:
+                        self.write(_buffer)
+                    else:
+                        f.close()
+                        self.finish()
+                        return
+            except:
+                raise HTTPError(404)
+        raise HTTPError(500)

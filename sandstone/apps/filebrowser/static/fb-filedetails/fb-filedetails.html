@@ -85,7 +85,12 @@
         </button>
         <button id="delete-file-btn" type="button" ng-click="delete()" tooltip="Delete" class="btn btn-default filedetails-bottom-actions">
           <i class="fa fa-trash-o"></i>
+      </button>
+      <form action="{{ encodedDownloadURL }}" ng-show="editFile.type === 'file'">
+          <button type="submit" id="download-file-btn" type="button" tooltip="Download" class="btn btn-default filedetails-bottom-actions filedetails-download">
+            <i class="fa fa-floppy-o"></i>
         </button>
+      </form>
       </div>
     </div>
   </div>
