@@ -34,29 +34,39 @@ angular.module('sandstone.terminal')
     return deferred.promise;
   };
 
+  window.onhashchange = function() {
+      if(window.location.hash !== '#/terminal') {
+          self.savedTerm = self.terminal.term;
+      }
+  };
+
   var makeTerminal = function() {
     var element = document.getElementById("terminal-pane");
 
     var rows = Math.max(2, Math.floor(element.offsetHeight/15)-1);
     var cols = Math.max(3, Math.floor(element.offsetWidth/7)-1);
 
-    self.terminal.term = new Terminal({
-      cols: cols,
-      rows: rows,
-      screenKeys: true,
-      useStyle: true
-    });
+
+    if(self.savedTerm) {
+        self.terminal.term = self.savedTerm;
+    } else {
+        self.terminal.term = new Terminal({
+          cols: cols,
+          rows: rows,
+          screenKeys: true,
+          useStyle: true
+        });
+        self.terminal.term.on('data', function(data) {
+          self.terminal.ws.send(JSON.stringify(['stdin', data]));
+        });
+
+        self.terminal.term.on('title', function(title) {
+          document.title = title;
+        });
+    }
+    self.terminal.term.open(element);
 
     self.terminal.ws.send(JSON.stringify(["set_size", rows, cols, window.innerHeight, window.innerWidth]));
-    self.terminal.term.on('data', function(data) {
-      self.terminal.ws.send(JSON.stringify(['stdin', data]));
-    });
-
-    self.terminal.term.on('title', function(title) {
-      document.title = title;
-    });
-
-    self.terminal.term.open(element);
 
     self.terminal.ws.onmessage = function(event) {
       var json_msg = JSON.parse(event.data);
