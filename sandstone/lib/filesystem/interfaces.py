@@ -134,11 +134,18 @@ class PosixFS:
             contents = []
             for line in lines[2:-1]:
                 line_details = self._parse_ls_line(line)
+
                 name = line_details['name']
                 fp = os.path.join(filepath,name)
                 line_details.update({
                     'filepath': fp
                 })
+
+                # ignore parent directory and current directory
+                parent_dir = os.path.abspath(os.path.join(filepath, os.pardir))
+                if line_details['filepath'] == filepath or line_details['filepath'] == parent_dir:
+                    continue
+
                 if dir_sizes and line_details['type'] == 'directory':
                     line_details['size'] = self.get_size(fp)
                 file_details = FileObject(**line_details)
