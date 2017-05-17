@@ -2,7 +2,7 @@
 
 angular.module('sandstone.filesystemservice', [])
 
-.service('FilesystemService', ['$http', '$log', '$q', function($http, $log, $q){
+.service('FilesystemService', ['$http', '$log', '$q', 'getUrlPrefix', function($http, $log, $q, getUrlPrefix){
   var self = this;
   // Private
   var _fsUrl = '/a/filesystem/';
@@ -287,6 +287,11 @@ angular.module('sandstone.filesystemservice', [])
       deferred.reject({data:data,status:status});
     });
     return deferred.promise;
+  };
+
+  self.getFileDownloadLink = function(filepath) {
+    var downloadUrl = getUrlPrefix() + _fsFileUrl + encodeURIComponent(filepath) + '/download/';
+    return downloadUrl;
   };
 
   self.createFile = function(filepath) {

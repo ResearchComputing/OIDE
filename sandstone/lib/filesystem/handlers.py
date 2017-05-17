@@ -1,4 +1,9 @@
+import datetime
 import json
+import mimetypes
+import os
+import stat
+import threading
 import tornado.web
 import tornado.escape
 
@@ -8,6 +13,12 @@ from sandstone.lib.handlers.base import BaseHandler
 from sandstone.lib.handlers.rest import JSONHandler
 from sandstone.lib.filesystem.mixins import FSMixin
 from sandstone.lib.filesystem.filewatcher import Filewatcher
+
+from tornado import httputil
+from tornado import iostream
+from tornado import gen
+from tornado.log import access_log, app_log, gen_log
+from tornado.web import StaticFileHandler
 
 
 
@@ -283,3 +294,148 @@ class FileContentsHandler(JSONHandler, FSMixin):
             self.write({'msg': 'Updated file at {}'.format(filepath)})
         except OSError:
             raise tornado.web.HTTPError(404)
+
+class FileDownloadHandler(BaseHandler,FSMixin):
+    """
+    This handler provides file downloads and hosting. FileContentsHandler will
+    eventually be deprecated by this handler.
+    """
+
+    def head(self, filepath):
+        return self.get(filepath, include_body=False)
+
+    @sandstone.lib.decorators.authenticated
+    @gen.coroutine
+    def get(self, filepath, include_body=True):
+        if not self.fs.exists(filepath):
+            raise tornado.web.HTTPError(404)
+
+        # Set up our path instance variables.
+        self.filepath = filepath
+        del filepath  # make sure we don't refer to filepath instead of self.filepath again
+
+        self.set_headers()
+
+        request_range = None
+        range_header = self.request.headers.get("Range")
+        if range_header:
+            # As per RFC 2616 14.16, if an invalid Range header is specified,
+            # the request will be treated as if the header didn't exist.
+            request_range = httputil._parse_request_range(range_header)
+
+        size = self.get_content_size()
+        if request_range:
+            start, end = request_range
+            if (start is not None and start >= size) or end == 0:
+                # As per RFC 2616 14.35.1, a range is not satisfiable only: if
+                # the first requested byte is equal to or greater than the
+                # content, or when a suffix with length 0 is specified
+                self.set_status(416)  # Range Not Satisfiable
+                self.set_header("Content-Type", "text/plain")
+                self.set_header("Content-Range", "bytes */%s" % (size, ))
+                return
+            if start is not None and start < 0:
+                start += size
+            if end is not None and end > size:
+                # Clients sometimes blindly use a large range to limit their
+                # download size; cap the endpoint at the actual file size.
+                end = size
+            # Note: only return HTTP 206 if less than the entire range has been
+            # requested. Not only is this semantically correct, but Chrome
+            # refuses to play audio if it gets an HTTP 206 in response to
+            # ``Range: bytes=0-``.
+            if size != (end or size) - (start or 0):
+                self.set_status(206)  # Partial Content
+                self.set_header("Content-Range",
+                                httputil._get_content_range(start, end, size))
+        else:
+            start = end = None
+
+        if start is not None and end is not None:
+            content_length = end - start
+        elif end is not None:
+            content_length = end
+        elif start is not None:
+            content_length = size - start
+        else:
+            content_length = size
+        self.set_header("Content-Length", content_length)
+
+        if include_body:
+            content = self.get_content(start, end)
+            if isinstance(content, bytes):
+                content = [content]
+            for chunk in content:
+                try:
+                    self.write(chunk)
+                    yield self.flush()
+                except iostream.StreamClosedError:
+                    return
+        else:
+            assert self.request.method == "HEAD"
+
+    def get_content(self, start=None, end=None):
+        """
+        Retrieve the content of the requested resource which is located
+        at the given absolute path.
+        This method should either return a byte string or an iterator
+        of byte strings.  The latter is preferred for large files
+        as it helps reduce memory fragmentation.
+        """
+        with open(self.filepath, "rb") as file:
+            if start is not None:
+                file.seek(start)
+            if end is not None:
+                remaining = end - (start or 0)
+            else:
+                remaining = None
+            while True:
+                chunk_size = 64 * 1024
+                if remaining is not None and remaining < chunk_size:
+                    chunk_size = remaining
+                chunk = file.read(chunk_size)
+                if chunk:
+                    if remaining is not None:
+                        remaining -= len(chunk)
+                    yield chunk
+                else:
+                    if remaining is not None:
+                        assert remaining == 0
+                    return
+
+    def set_headers(self):
+        """
+        Sets the content headers on the response.
+        """
+        self.set_header("Accept-Ranges", "bytes")
+
+        content_type = self.get_content_type()
+        if content_type:
+            self.set_header("Content-Type", content_type)
+
+    def _stat(self):
+        if not hasattr(self, '_stat_result'):
+            self._stat_result = os.stat(self.filepath)
+        return self._stat_result
+
+    def get_content_size(self):
+        """
+        Retrieve the total size of the resource at the given path.
+        """
+        stat_result = self._stat()
+        return stat_result[stat.ST_SIZE]
+
+    def get_content_type(self):
+        """
+        Returns the ``Content-Type`` header to be used for this request.
+        """
+        mime_type, encoding = mimetypes.guess_type(self.filepath)
+        if encoding == "gzip":
+            return "application/gzip"
+        elif encoding is not None:
+            return "application/octet-stream"
+        elif mime_type is not None:
+            return mime_type
+        # if mime_type not detected, use application/octet-stream
+        else:
+            return "application/octet-stream"

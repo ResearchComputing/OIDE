@@ -38,6 +38,12 @@ angular.module('sandstone.filebrowser')
           self.editFile = angular.copy(newValue.selectedFile);
           if (self.editFile) {
             self.editFile.permModel = permStringToModel(self.editFile.permissions);
+
+            if (self.editFile.type === 'file') {
+              self.downloadUrl = FilesystemService.getFileDownloadLink(self.editFile.filepath);
+            } else {
+              self.downloadUrl = undefined;
+            }
           }
         }
       },true);
