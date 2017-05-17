@@ -7,7 +7,7 @@ from sandstone.lib.filesystem.handlers import FileCreateHandler
 from sandstone.lib.filesystem.handlers import FileContentsHandler
 from sandstone.lib.filesystem.handlers import DirectoryHandler
 from sandstone.lib.filesystem.handlers import DirectoryCreateHandler
-from sandstone.lib.filesystem.handlers import DownloadFileHandler
+from sandstone.lib.filesystem.handlers import FileDownloadHandler
 
 
 
@@ -20,5 +20,5 @@ URL_SCHEMA = [
             url(r"/a/filesystem/files/", FileCreateHandler ,name='filesystem:files'),
             url(r"/a/filesystem/files/([^\/]*)/", FileHandler ,name='filesystem:files-details'),
             url(r"/a/filesystem/files/([^\/]*)/contents/", FileContentsHandler ,name='filesystem:files-contents'),
-            url(r"/a/filesystem/files/([^\/]*)/download/", DownloadFileHandler ,name='filesystem:file-download'),
+            url(r"/a/filesystem/files/([^\/]*)/download/", FileDownloadHandler ,name='filesystem:file-download'),
         ]

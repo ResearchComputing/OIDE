@@ -39,9 +39,11 @@ angular.module('sandstone.filebrowser')
           if (self.editFile) {
             self.editFile.permModel = permStringToModel(self.editFile.permissions);
 
-            // Encoded file url
-            self.encodedDownloadURL = '/a/filesystem/files/' + encodeURIComponent(self.editFile.filepath) + '/download/';
-            console.log(self.encodedDownloadURL);
+            if (self.editFile.type === 'file') {
+              self.downloadUrl = FilesystemService.getFileDownloadLink(self.editFile.filepath);
+            } else {
+              self.downloadUrl = undefined;
+            }
           }
         }
       },true);

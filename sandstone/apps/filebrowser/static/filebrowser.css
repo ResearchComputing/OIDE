@@ -47,9 +47,13 @@
 .fb-dir-actions {
   margin-top: 16px;
 }
-.fb-dir-actions button > i.fa {
+.fb-dir-actions .filedetails-bottom-actions > i.fa {
   display: inline;
   padding: 5px;
+}
+
+#download-file-btn {
+  padding-top: 10px;
 }
 
 /* File details styles */
@@ -64,7 +68,7 @@
   top: 20px;
 }
 
-.file-details .fb-dir-actions button > i.fa {
+.file-details .filedetails-bottom-actions > i.fa {
   font-size: 18px;
 }
 
@@ -117,10 +121,6 @@
   height:40px;
   bottom: 5px;
   position: absolute;
-}
-
-.filedetails-download {
-    border-radius: 0;
 }
 
 .filetable-filename-selected {
