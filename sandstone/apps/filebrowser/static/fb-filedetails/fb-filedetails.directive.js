@@ -7,7 +7,7 @@ angular.module('sandstone.filebrowser')
     restrict: 'A',
     scope: {},
     templateUrl: '/static/filebrowser/fb-filedetails/fb-filedetails.html',
-    controller: ['$scope', '$element', '$modal', 'FilesystemService', 'FilebrowserService', 'BroadcastService', 'AlertService', function($scope,$element,$modal,FilesystemService,FilebrowserService,BroadcastService,AlertService) {
+    controller: ['$scope', '$element', '$uibModal', 'FilesystemService', 'FilebrowserService', 'BroadcastService', 'AlertService', function($scope,$element,$uibModal,FilesystemService,FilebrowserService,BroadcastService,AlertService) {
       var self = $scope;
 
       var permStringToModel = function(perms) {
@@ -166,7 +166,7 @@ angular.module('sandstone.filebrowser')
       };
 
       self.move = function() {
-        self.moveModalInstance = $modal.open({
+        self.moveModalInstance = $uibModal.open({
           templateUrl: '/static/filebrowser/templates/move-modal.html',
           backdrop: 'static',
           keyboard: false,
@@ -194,7 +194,7 @@ angular.module('sandstone.filebrowser')
       };
 
       self.delete = function() {
-        self.deleteModalInstance = $modal.open({
+        self.deleteModalInstance = $uibModal.open({
           templateUrl: '/static/filebrowser/templates/delete-modal.html',
           backdrop: 'static',
           keyboard: false,

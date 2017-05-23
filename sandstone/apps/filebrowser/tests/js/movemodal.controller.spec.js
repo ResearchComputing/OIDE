@@ -54,7 +54,7 @@ describe('sandstone.filebrowser.MoveModalInstanceCtrl', function() {
     ctrl = $controller('MoveModalInstanceCtrl', {
       $scope:$scope,
       FilesystemService: FilesystemService,
-      $modalInstance: {},
+      $uibModalInstance: {},
       file: fileDetails
     });
 
@@ -68,7 +68,7 @@ describe('sandstone.filebrowser.MoveModalInstanceCtrl', function() {
       var ctrl = $controller('MoveModalInstanceCtrl', {
           $scope: $scope,
           FilesystemService: FilesystemService,
-          $modalInstance: {},
+          $uibModalInstance: {},
           file: fileDetails
       });
 
@@ -84,7 +84,7 @@ describe('sandstone.filebrowser.MoveModalInstanceCtrl', function() {
       var ctrl = $controller('MoveModalInstanceCtrl', {
           $scope: $scope,
           FilesystemService: FilesystemService,
-          $modalInstance: {},
+          $uibModalInstance: {},
           file: fileDetails
       });
 

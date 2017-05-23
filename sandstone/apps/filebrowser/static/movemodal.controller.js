@@ -2,7 +2,7 @@
 
 angular.module('sandstone.filebrowser')
 
-.controller('MoveModalInstanceCtrl', ['FilesystemService', '$modalInstance', 'file',function (FilesystemService, $modalInstance, file) {
+.controller('MoveModalInstanceCtrl', ['FilesystemService', '$uibModalInstance', 'file',function (FilesystemService, $uibModalInstance, file) {
   var self = this;
   self.treeData = {
     contents: [],
@@ -37,10 +37,10 @@ angular.module('sandstone.filebrowser')
     var dirpath = FilesystemService.normalize(self.newFile.dirpath);
 
     filepath = FilesystemService.join(dirpath,self.newFile.name);
-    $modalInstance.close(filepath);
+    $uibModalInstance.close(filepath);
   };
 
   self.cancel = function () {
-    $modalInstance.dismiss('cancel');
+    $uibModalInstance.dismiss('cancel');
   };
 }]);

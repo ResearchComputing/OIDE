@@ -73,11 +73,11 @@ describe('sandstone.filebrowser.fbFileDetails', function() {
     }
   };
 
-  beforeEach(inject(function(_FilesystemService_,_$q_, _$window_, BroadcastService, $modal) {
+  beforeEach(inject(function(_FilesystemService_,_$q_, _$window_, BroadcastService, $uibModal) {
     $q = _$q_;
     $window = _$window_;
     broadcastservice = BroadcastService;
-    modal = $modal;
+    modal = $uibModal;
 
     mockResolve = function(data) {
       var deferred = _$q_.defer();

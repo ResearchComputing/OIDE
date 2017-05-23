@@ -25,7 +25,7 @@ describe('sandstone.filebrowser.UploadModalInstanceCtrl', function() {
     ctrl = $controller('UploadModalInstanceCtrl', {
       $scope:$scope,
       FilesystemService: FilesystemService,
-      $modalInstance: {},
+      $uibModalInstance: {},
       FileUploader: FileUploader,
       directory: dir
     });

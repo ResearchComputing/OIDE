@@ -40,7 +40,7 @@ describe('sandstone.filebrowser.CreateModalInstanceCtrl', function() {
 
     ctrl = $controller('CreateModalInstanceCtrl', {
       $scope:$scope,
-      $modalInstance: {},
+      $uibModalInstance: {},
       action: fileAction
     });
     $scope.ctrl = ctrl;
@@ -50,7 +50,7 @@ describe('sandstone.filebrowser.CreateModalInstanceCtrl', function() {
   it('sets baseDirectory from action',function() {
       ctrl = $controller('CreateModalInstanceCtrl', {
           $scope: $scope,
-          $modalInstance: {},
+          $uibModalInstance: {},
           action: fileAction
       })
       $scope.ctrl = ctrl;
@@ -60,7 +60,7 @@ describe('sandstone.filebrowser.CreateModalInstanceCtrl', function() {
   it('sets new file name to Untitled if none specified',function() {
       ctrl = $controller('CreateModalInstanceCtrl', {
           $scope: $scope,
-          $modalInstance: {},
+          $uibModalInstance: {},
           action: fileActionNoName
       })
       $scope.ctrl = ctrl;

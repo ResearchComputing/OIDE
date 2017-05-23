@@ -74,22 +74,22 @@
   <div class="col-md-12">
     <div class="fb-dir-actions text-center">
       <div class="btn-group btn-group-sm" role="group">
-        <button id="edit-file-btn" type="button" ng-click="openInEditor()" tooltip="Open in Editor" class="btn btn-default filedetails-bottom-actions" ng-hide="editFile.type !== 'file'">
+        <button id="edit-file-btn" type="button" ng-click="openInEditor()" uib-tooltip="Open in Editor" class="btn btn-default filedetails-bottom-actions" ng-hide="editFile.type !== 'file'">
           <i class="fa fa-pencil"></i>
         </button>
-        <button id="duplicate-file-btn" type="button" ng-click="duplicate()" tooltip="Duplicate" class="btn btn-default filedetails-bottom-actions">
+        <button id="duplicate-file-btn" type="button" ng-click="duplicate()" uib-tooltip="Duplicate" class="btn btn-default filedetails-bottom-actions">
           <i class="fa fa-files-o"></i>
         </button>
-        <button id="move-file-btn" type="button" ng-click="move()" tooltip="Move" class="btn btn-default filedetails-bottom-actions">
+        <button id="move-file-btn" type="button" ng-click="move()" uib-tooltip="Move" class="btn btn-default filedetails-bottom-actions">
           <i class="fa fa-arrows-alt"></i>
         </button>
-        <button id="delete-file-btn" type="button" ng-click="delete()" tooltip="Delete" class="btn btn-default filedetails-bottom-actions">
+        <button id="delete-file-btn" type="button" ng-click="delete()" uib-tooltip="Delete" class="btn btn-default filedetails-bottom-actions">
           <i class="fa fa-trash-o"></i>
         </button>
-        <a href="{{downloadUrl}}" download="{{editFile.name}}" id="download-file-btn" tooltip="Download" class="btn btn-default filedetails-bottom-actions" ng-if="downloadUrl">
+        <a href="{{downloadUrl}}" download="{{editFile.name}}" id="download-file-btn" uib-tooltip="Download" class="btn btn-default filedetails-bottom-actions" ng-if="downloadUrl">
           <i class="fa fa-download"></i>
         </a>
-        <!-- <button id="download-file-btn" type="button" tooltip="Download" class="btn btn-default filedetails-bottom-actions" ng-if="downloadUrl">
+        <!-- <button id="download-file-btn" type="button" uib-tooltip="Download" class="btn btn-default filedetails-bottom-actions" ng-if="downloadUrl">
           <a href="{{downloadUrl}}" download="{{editFile.name}}"><i class="fa fa-download"></i></a>
         </button> -->
       </div>

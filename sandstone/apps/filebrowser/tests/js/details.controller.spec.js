@@ -211,10 +211,10 @@ describe('sandstone.filebrowser.DetailsCtrl', function() {
   });
 
   describe('directory actions: create', function() {
-    var $modal;
+    var $uibModal;
 
-    beforeEach(inject(function(_$modal_) {
-      $modal = _$modal_;
+    beforeEach(inject(function(_$uibModal_) {
+      $uibModal = _$uibModal_;
 
       var mockModal = {
         result: {
@@ -232,7 +232,7 @@ describe('sandstone.filebrowser.DetailsCtrl', function() {
       };
 
       var newFileName = 'filename';
-      spyOn($modal,'open').and.callFake(function() {
+      spyOn($uibModal,'open').and.callFake(function() {
         return mockModal;
       });
 
