@@ -2,13 +2,13 @@
 
 angular.module('sandstone.filebrowser')
 
-.controller('DeleteModalInstanceCtrl', ['FilesystemService', '$modalInstance', 'file',function (FilesystemService, $modalInstance, file) {
+.controller('DeleteModalInstanceCtrl', ['FilesystemService', '$uibModalInstance', 'file',function (FilesystemService, $uibModalInstance, file) {
   var self = this;
   self.file = file;
   self.delete = function () {
-    $modalInstance.close(self.file);
+    $uibModalInstance.close(self.file);
   };
   self.cancel = function () {
-    $modalInstance.dismiss('cancel');
+    $uibModalInstance.dismiss('cancel');
   };
 }]);

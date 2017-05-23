@@ -1,12 +1,12 @@
 <div id="editor-nav-tabs">
-  <tabset>
-    <tab
+  <uib-tabset active="ctrl.getCurrentDoc()">
+    <uib-tab
       ng-repeat="tab in ctrl.getOpenDocs()"
-      active="tab.active"
+      index="tab.filepath"
       ng-click="ctrl.openDocument(tab.filepath)">
-      <tab-heading>
+      <uib-tab-heading>
         <span
-          tooltip="{{tab.filepath}}"
+          uib-tooltip="{{tab.filepath}}"
           tooltip-trigger="mouseenter"
           tooltip-placement="bottom">
           {{tab.filename}}
@@ -16,8 +16,8 @@
           ng-class="{'tab-icon-selected':hoverMenu}"
           ng-mouseenter="hoverMenu=true"
           ng-mouseleave="hoverMenu=false"
-          dropdown
-          dropdown-toggle>
+          uib-dropdown
+          uib-dropdown-toggle>
           <ul class="dropdown-menu">
             <li><a
               href="#"
@@ -67,22 +67,22 @@
           ng-mouseleave="hoverClose=false"
           ng-click="ctrl.closeDocument($event,tab)">
         </span>
-      </tab-heading>
-    </tab>
-    <tab
-      tooltip="Create New Document"
+      </uib-tab-heading>
+    </uib-tab>
+    <uib-tab
+      index="create-new"
+      uib-tooltip="Create New Document"
       tooltip-trigger="mouseenter"
       tooltip-placement="right"
       ng-mouseenter="hoverNew=true"
       ng-mouseleave="hoverNew=false"
-      active="false"
       ng-click="ctrl.openDocument()">
-      <tab-heading>
+      <uib-tab-heading>
         <span
           class="fa fa-lg fa-plus"
           ng-class="{'tab-icon-selected':hoverNew}">
         </span>
-      </tab-heading>
-    </tab>
-  </tabset>
+      </uib-tab-heading>
+    </uib-tab>
+  </uib-tabset>
 </div>

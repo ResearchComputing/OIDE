@@ -3,7 +3,7 @@
     <button
       type="button"
       class="btn btn-default filetree-btn"
-      tooltip="Edit Selected"
+      uib-tooltip="Edit Selected"
       tooltip-trigger="mouseenter"
       tooltip-placement="bottom"
       ng-disabled="ctrl.sd.noSelections()||ctrl.sd.dirSelected()"
@@ -15,7 +15,7 @@
     <button
       type="button"
       class="btn btn-default filetree-btn"
-      tooltip="Duplicate Selected"
+      uib-tooltip="Duplicate Selected"
       tooltip-trigger="mouseenter"
       tooltip-placement="bottom"
       ng-disabled="ctrl.sd.noSelections()||ctrl.sd.multipleSelections()"
@@ -27,7 +27,7 @@
     <button
       type="button"
       class="btn btn-default filetree-btn"
-      tooltip="Delete Selected"
+      uib-tooltip="Delete Selected"
       tooltip-trigger="mouseenter"
       tooltip-placement="bottom"
       ng-disabled="ctrl.sd.noSelections()"
@@ -39,16 +39,16 @@
     id="fc-more-btn"
     class="btn-group btn-group-sm"
     role="group"
-    dropdown
+    uib-dropdown
     is-open="ctrl.fcDropdown">
     <button
       type="button"
       class="btn btn-default dropdown-toggle filetree-btn"
-      tooltip="More Actions"
+      uib-tooltip="More Actions"
       tooltip-trigger="mouseenter"
       tooltip-placement="bottom"
       ng-disabled="ctrl.sd.noSelections()"
-      dropdown-toggle>
+      uib-dropdown-toggle>
       <span class="fa fa-caret-down"></span>
     </button>
     <ul class="dropdown-menu filetree-dropdown" role="menu">

@@ -7,13 +7,13 @@
   <div class="col-md-3">
     <div class="fb-dir-actions text-center">
       <div class="btn-group btn-group-sm" role="group">
-        <button id="upload-file-btn" type="button" class="btn btn-default" tooltip="Upload" ng-click="ctrl.upload()" ng-disabled="!ctrl.selection.cwd" tooltip-trigger="mouseenter" tooltip-placement="bottom">
+        <button id="upload-file-btn" type="button" class="btn btn-default" uib-tooltip="Upload" ng-click="ctrl.upload()" ng-disabled="!ctrl.selection.cwd" tooltip-trigger="mouseenter" tooltip-placement="bottom">
           <i class="fa fa-upload"></i>
         </button>
-        <button id="create-file-btn" type="button" ng-click="ctrl.create('file')" ng-disabled="!ctrl.selection.cwd" class="btn btn-default" tooltip="Create File" tooltip-trigger="mouseenter" tooltip-placement="bottom">
+        <button id="create-file-btn" type="button" ng-click="ctrl.create('file')" ng-disabled="!ctrl.selection.cwd" class="btn btn-default" uib-tooltip="Create File" tooltip-trigger="mouseenter" tooltip-placement="bottom">
           <i class="fa fa-file-o"></i>
         </button>
-        <button id="create-dir-btn" type="button" ng-click="ctrl.create('directory')" ng-disabled="!ctrl.selection.cwd"  class="btn btn-default" tooltip="Create Directory"  tooltip-trigger="mouseenter" tooltip-placement="bottom">
+        <button id="create-dir-btn" type="button" ng-click="ctrl.create('directory')" ng-disabled="!ctrl.selection.cwd"  class="btn btn-default" uib-tooltip="Create Directory"  tooltip-trigger="mouseenter" tooltip-placement="bottom">
           <i class="fa fa-folder-o"></i>
         </button>
       </div>

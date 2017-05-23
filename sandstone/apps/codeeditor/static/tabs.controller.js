@@ -2,12 +2,17 @@
 
 angular.module('sandstone.editor')
 
-.controller('EditorTabsCtrl', ['$scope', '$modal', '$log', 'EditorService', 'FilesystemService', '$rootScope', '$document',
-  function ($scope, $modal, $log, EditorService, FilesystemService, $rootScope, $document) {
+.controller('EditorTabsCtrl', ['$scope', '$uibModal', '$log', 'EditorService', 'FilesystemService', '$rootScope', '$document',
+  function ($scope, $uibModal, $log, EditorService, FilesystemService, $rootScope, $document) {
     var self = this;
     self.getOpenDocs = function() {
       return EditorService.getOpenDocs();
     };
+
+    self.getCurrentDoc = function() {
+      return EditorService.getCurrentDoc();
+    };
+
     self.openDocument = function (filepath) {
       var fp = filepath || undefined;
       EditorService.openDocument(fp);
@@ -15,7 +20,7 @@ angular.module('sandstone.editor')
     self.closeDocument = function ($event, tab) {
       $event.preventDefault();
       if (tab.unsaved) {
-        self.unsavedModalInstance = $modal.open({
+        self.unsavedModalInstance = $uibModal.open({
           templateUrl: '/static/editor/templates/close-unsaved-modal.html',
           backdrop: 'static',
           keyboard: false,
@@ -50,7 +55,7 @@ angular.module('sandstone.editor')
       }
     };
     self.saveDocumentAs = function (tab) {
-      self.saveAsModalInstance = $modal.open({
+      self.saveAsModalInstance = $uibModal.open({
         templateUrl: '/static/editor/templates/saveas-modal.html',
         backdrop: 'static',
         keyboard: false,
@@ -125,7 +130,7 @@ angular.module('sandstone.editor')
     });
 
   }])
-.controller('SaveAsModalCtrl', function ($scope, $modalInstance, $http, file, FilesystemService) {
+.controller('SaveAsModalCtrl', function ($scope, $uibModalInstance, $http, file, FilesystemService) {
   var self = this;
   self.treeData = {
     contents: [],
@@ -160,40 +165,40 @@ angular.module('sandstone.editor')
     var dirpath = FilesystemService.normalize(self.newFile.dirpath);
 
     filepath = FilesystemService.join(dirpath,self.newFile.name);
-    $modalInstance.close(filepath);
+    $uibModalInstance.close(filepath);
   };
 
   self.cancel = function () {
-    $modalInstance.dismiss('cancel');
+    $uibModalInstance.dismiss('cancel');
   };
 })
-.controller('UnsavedModalCtrl', function ($scope, $modalInstance, file) {
+.controller('UnsavedModalCtrl', function ($scope, $uibModalInstance, file) {
 
   $scope.file = file;
 
   $scope.save = function () {
     $scope.file.saveFile = true;
-    $modalInstance.close($scope.file);
+    $uibModalInstance.close($scope.file);
   };
 
   $scope.close = function () {
     $scope.file.saveFile = false;
-    $modalInstance.close($scope.file);
+    $uibModalInstance.close($scope.file);
   };
 
   $scope.cancel = function () {
-    $modalInstance.dismiss('cancel');
+    $uibModalInstance.dismiss('cancel');
   };
 })
-.controller('DeleteModalCtrl', function ($modalInstance, files) {
+.controller('DeleteModalCtrl', function ($uibModalInstance, files) {
   var self =  this;
   self.files = files;
 
   self.remove = function () {
-    $modalInstance.close();
+    $uibModalInstance.close();
   };
 
   self.cancel = function () {
-    $modalInstance.dismiss('cancel');
+    $uibModalInstance.dismiss('cancel');
   };
 })

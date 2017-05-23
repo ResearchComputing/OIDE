@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('sandstone.editor')
-.controller('FiletreeCtrl', ['$modal', '$log', '$scope', '$document', 'EditorService', '$rootScope', 'FilesystemService', function($modal, $log, $scope, $document, EditorService, $rootScope, FilesystemService){
+.controller('FiletreeCtrl', ['$uibModal', '$log', '$scope', '$document', 'EditorService', '$rootScope', 'FilesystemService', function($uibModal, $log, $scope, $document, EditorService, $rootScope, FilesystemService){
   var self = this;
   self.treeData = {
     contents: [],
@@ -71,7 +71,7 @@ angular.module('sandstone.editor')
 
   self.createNewFile = function () {
     var selectedDir = self.treeData.selected[0];
-    var createModalInstance = $modal.open({
+    var createModalInstance = $uibModal.open({
       templateUrl: '/static/editor/templates/create-modal.html',
       backdrop: 'static',
       keyboard: false,
@@ -104,7 +104,7 @@ angular.module('sandstone.editor')
   };
   self.createNewDir = function () {
     var selectedDir = self.treeData.selected[0];
-    var createModalInstance = $modal.open({
+    var createModalInstance = $uibModal.open({
       templateUrl: '/static/editor/templates/create-modal.html',
       backdrop: 'static',
       keyboard: false,
@@ -137,7 +137,7 @@ angular.module('sandstone.editor')
   };
   self.createDuplicate = function () {
     var selectedFile = self.treeData.selected[0];
-    var createModalInstance = $modal.open({
+    var createModalInstance = $uibModal.open({
       templateUrl: '/static/editor/templates/create-modal.html',
       backdrop: 'static',
       keyboard: false,
@@ -180,7 +180,7 @@ angular.module('sandstone.editor')
   };
 
   self.delete = function () {
-    self.deleteModalInstance = $modal.open({
+    self.deleteModalInstance = $uibModal.open({
       templateUrl: '/static/editor/templates/delete-modal.html',
       backdrop: 'static',
       keyboard: false,
@@ -230,7 +230,7 @@ angular.module('sandstone.editor')
   };
 
   self.rename = function () {
-    var renameModalInstance = $modal.open({
+    var renameModalInstance = $uibModal.open({
       templateUrl: '/static/editor/templates/rename-modal.html',
       backdrop: 'static',
       keyboard: false,
@@ -253,7 +253,7 @@ angular.module('sandstone.editor')
 
 
 }])
-.controller('CreateModalCtrl', function ($modalInstance, action) {
+.controller('CreateModalCtrl', function ($uibModalInstance, action) {
   var self = this;
   self.action = action.action;
   self.type = action.type;
@@ -265,23 +265,23 @@ angular.module('sandstone.editor')
   }
 
   self.create = function () {
-    $modalInstance.close(self.newFileName);
+    $uibModalInstance.close(self.newFileName);
   };
 
   self.cancel = function () {
-    $modalInstance.dismiss('cancel');
+    $uibModalInstance.dismiss('cancel');
   };
 })
-.controller('RenameModalCtrl', function ($modalInstance, files) {
+.controller('RenameModalCtrl', function ($uibModalInstance, files) {
   var self = this;
   self.files = files;
   self.newFileName = files[0].filename;
 
   self.rename = function () {
-    $modalInstance.close(self.newFileName);
+    $uibModalInstance.close(self.newFileName);
   };
 
   self.cancel = function () {
-    $modalInstance.dismiss('cancel');
+    $uibModalInstance.dismiss('cancel');
   };
 });
