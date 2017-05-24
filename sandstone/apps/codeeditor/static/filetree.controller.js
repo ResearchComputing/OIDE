@@ -3,14 +3,8 @@
 angular.module('sandstone.editor')
 .controller('FiletreeCtrl', ['$modal', '$log', '$scope', '$document', 'EditorService', '$rootScope', 'FilesystemService', function($modal, $log, $scope, $document, EditorService, $rootScope, FilesystemService){
   var self = this;
-  self.treeData = {
-    contents: [],
-    selected: [],
-    expanded: []
-  };
-  self.treeOptions = {
-    multiSelection: false
-  };
+  self.treeData = EditorService.treeData;
+  self.treeOptions = EditorService.treeOptions;
 
   // Toggle multi-selection when meta or control keys are pressed
   var filetreeKeydown = function(event) {
