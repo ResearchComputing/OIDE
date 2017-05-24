@@ -37,6 +37,15 @@ angular.module('sandstone.editor')
     wordWrap: false
   };
 
+  var treeData = {
+    contents: [],
+    selected: [],
+    expanded: []
+  };
+  var treeOptions = {
+    multiSelection: false
+  };
+
   var applySettings = function () {
     editor.setShowInvisibles(editorSettings.showInvisibles);
     editor.getSession().setUseSoftTabs(editorSettings.useSoftTabs);
@@ -191,6 +200,8 @@ angular.module('sandstone.editor')
       }
       applySettings();
     },
+    treeData: treeData,
+    treeOptions: treeOptions,
     /**
      * return an object of open documents in the editor.
      * {
