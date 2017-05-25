@@ -9,7 +9,7 @@
  */
 angular.module('sandstone.editor')
 
-.factory('EditorService', ['$window', '$http', '$log', 'AceModeService', 'FilesystemService', '$rootScope', function ($window, $http,$log,AceModeService, FilesystemService, $rootScope) {
+.factory('EditorService', ['$window', '$http', '$log', '$q', 'AceModeService', 'FilesystemService', 'AlertService', '$rootScope', function ($window, $http,$log,$q,AceModeService,FilesystemService,AlertService,$rootScope) {
   var editor = {};
 
   // clipboard will hold all copy/paste text for editor
@@ -57,7 +57,10 @@ angular.module('sandstone.editor')
 
   $rootScope.$on('editor:open-document', function(event, data) {
       console.log(data);
-      openDocument(data.filepath);
+      var documentOpened = openDocument(data.filepath);
+      documentOpened.then(function(filepath) {
+        switchSession(filepath);
+      });
   });
 
   // Called when the contents of the current session have changed. Bound directly to
@@ -101,7 +104,7 @@ angular.module('sandstone.editor')
   var createUntitledDocument = function() {
     var filepath = getNextUntitledFilepath();
     createNewSession(filepath);
-    switchSession(filepath);
+    return filepath;
   };
 
   // Make the document specified by filepath the active document in the editor.
@@ -119,6 +122,7 @@ angular.module('sandstone.editor')
       $rootScope.$emit('aceModeChanged', mode);
       openDocs[filepath].session.setMode(mode.mode);
       applySettings();
+      return true;
     } else {
       return false;
     }
@@ -146,13 +150,15 @@ angular.module('sandstone.editor')
   };
 
   var openDocument = function(filepath) {
+    var deferred = $q.defer();
     if (typeof filepath === 'undefined') {
       // Create an untitled document, and a new editSession to associate it with.
-      createUntitledDocument();
+      var newFilepath = createUntitledDocument();
+      deferred.resolve(newFilepath)
     } else {
       if (filepath in openDocs) {
         // Switch to open document
-        switchSession(filepath);
+        deferred.resolve(filepath)
       } else {
         // Load document from filesystem
         $log.debug('Load '+filepath+' from filesystem.');
@@ -162,12 +168,27 @@ angular.module('sandstone.editor')
             var mode = AceModeService.getModeForPath(filepath);
             $rootScope.$emit('aceModeChanged', mode);
             createNewSession(filepath,contents,mode.mode);
-            switchSession(filepath);
+            deferred.resolve(filepath);
+          },
+          function(res) {
+            if (res.status === 404) {
+              AlertService.addAlert({
+                type: 'warning',
+                message: 'File does not exist: ' + filepath
+              });
+            } else {
+              AlertService.addAlert({
+                type: 'warning',
+                message: 'Failed to load file ' + filepath
+              });
+            }
+            deferred.reject(res);
           }
         );
       }
     }
-};
+    return deferred.promise;
+  };
 
   return {
     /**
@@ -196,7 +217,8 @@ angular.module('sandstone.editor')
         }
         switchSession(activeSession);
       } else {
-        createUntitledDocument();
+        var newFilepath = createUntitledDocument();
+        switchSession(newFilepath);
       }
       applySettings();
     },
@@ -216,6 +238,22 @@ angular.module('sandstone.editor')
      */
     getOpenDocs: function() {
       return openDocs;
+    },
+    /**
+     * @ngdoc
+     * @name sandstone.EditorService#setSession
+     * @methodOf sandstone.EditorService
+     *
+     * @description
+     * Method to set the editor session
+     * @example
+     * EditorService.setSession('/path/to/file');
+     * @param {str} [filepath] The filepath corresponding to the desired session.
+     * @returns {bool} If the filepath matched an existing session, returns true if session successfully switched. Otherwise, return false.
+     */
+    setSession: function(filepath) {
+      var switched = switchSession(filepath);
+      return switched;
     },
     /**
      * The following methods get/set editor settings. The editor settings object
@@ -283,27 +321,49 @@ angular.module('sandstone.editor')
      * @returns {str} returns filepath of saved document, or return undefined in case of failure.
      */
     saveDocument: function(filepath) {
-      var content = openDocs[filepath].session.getValue();
+      var deferred = $q.defer();
+      var content = openDocs[filepath].session.getValue() || '';
       var updateContents = function() {
-        var writeContents = FilesystemService.writeFileContents(filepath,content);
-        writeContents.then(
-          function() {
-            $log.debug('Saved file: ', filepath);
-            openDocs[filepath].unsaved = false;
-            $rootScope.$emit('refreshFiletree');
-            var mode = AceModeService.getModeForPath(filepath);
-            $rootScope.$emit('aceModeChanged', mode);
-          }
-        );
+        if (!content) {
+          deferred.resolve();
+        } else {
+          var writeContents = FilesystemService.writeFileContents(filepath,content);
+          writeContents.then(
+            function() {
+              $log.debug('Saved file: ', filepath);
+              openDocs[filepath].unsaved = false;
+              var mode = AceModeService.getModeForPath(filepath);
+              $rootScope.$emit('aceModeChanged', mode);
+              deferred.resolve(filepath);
+            },
+            function(res) {
+              AlertService.addAlert({
+                type: 'warning',
+                message: 'Failed to save file ' + filepath
+              });
+              deferred.reject(res);
+            }
+          );
+        }
       };
       var createAndUpdate = function(data) {
         if (data.status === 404) {
           var createFile = FilesystemService.createFile(filepath);
-          createFile.then(updateContents);
+          createFile.then(
+            updateContents,
+            function(res) {
+              AlertService.addAlert({
+                type: 'warning',
+                message: 'Failed to save file as ' + filepath
+              });
+              deferred.reject(res);
+            }
+          );
         }
       };
       var fileDetails = FilesystemService.getFileDetails(filepath);
       fileDetails.then(updateContents,createAndUpdate);
+      return deferred.promise;
     },
     fileRenamed: function(oldpath,newpath) {
       if (oldpath in openDocs) {

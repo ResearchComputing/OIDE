@@ -58,8 +58,11 @@ angular.module('sandstone.editor')
     //FiletreeService.openFilesInEditor();
     var treeData = self.treeData.selected;
     for(var i = 0; i < treeData.length; i++) {
-      EditorService.openDocument(treeData[i].filepath);
-      $log.debug('Opened document: ', treeData[i].filepath);
+      var documentOpened = EditorService.openDocument(treeData[i].filepath);
+      documentOpened.then(function(filepath) {
+        EditorService.setSession(filepath);
+        $log.debug('Opened document: ', filepath);
+      });
     }
   };
 

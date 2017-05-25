@@ -1,8 +1,9 @@
 describe('sandstone.editor tabs', function(){
   var scope;
-  var $editorService;
+  var EditorService;
   var httpBackend;
   var modal;
+  var $q
 
   var mockSaveAsModal = {
     result: {
@@ -28,10 +29,11 @@ describe('sandstone.editor tabs', function(){
   beforeEach(module('sandstone.filesystemservice'));
   beforeEach(module('ui.bootstrap'));
 
-  beforeEach(inject(function($controller, $rootScope, $modal, $log, EditorService, $httpBackend){
+  beforeEach(inject(function($controller, $rootScope, $modal, $log, _EditorService_, $httpBackend, _$q_){
+    $q = _$q_;
     scope = $rootScope.$new();
     controller = $controller;
-    $editorService = EditorService;
+    EditorService = _EditorService_;
     modal = $modal;
     httpBackend = $httpBackend;
     httpBackend.whenGET('/filebrowser/filetree/a/dir').respond(function(){
@@ -50,83 +52,90 @@ describe('sandstone.editor tabs', function(){
   describe('tabs controller specs', function(){
     it('EditorService should be defined', function(){
       // httpBackend.flush();
-      expect($editorService).toBeDefined();
+      expect(EditorService).toBeDefined();
     });
     it('get open docs should be called', function(){
       // httpBackend.flush();
-      spyOn($editorService, 'getOpenDocs');
+      spyOn(EditorService, 'getOpenDocs');
       scope.ctrl.getOpenDocs();
-      expect($editorService.getOpenDocs).toHaveBeenCalled();
+      expect(EditorService.getOpenDocs).toHaveBeenCalled();
     });
     it('should open doc', function(){
-      // httpBackend.flush();
-      spyOn($editorService, 'openDocument');
+      var deferredOpenDocument = $q.defer();
+      deferredOpenDocument.resolve();
+      spyOn(EditorService, 'openDocument').and.returnValue(deferredOpenDocument.promise);
+      spyOn(EditorService, 'setSession').and.returnValue(true);
       scope.ctrl.openDocument('/home/saurabh/file1');
-      expect($editorService.openDocument).toHaveBeenCalled();
+      scope.$digest();
+      expect(EditorService.setSession).toHaveBeenCalledWith('/home/saurabh/file1');
+      expect(EditorService.openDocument).not.toHaveBeenCalled();
+      scope.ctrl.openDocument();
+      scope.$digest();
+      expect(EditorService.openDocument).toHaveBeenCalled();
     });
     it('should save document', function(){
       // httpBackend.flush();
-      spyOn($editorService, 'saveDocument');
+      spyOn(EditorService, 'saveDocument');
       scope.ctrl.saveDocument({filepath: '/home/saurabh/file1'});
-      expect($editorService.saveDocument).toHaveBeenCalled();
+      expect(EditorService.saveDocument).toHaveBeenCalled();
     });
     it('should undo changes', function(){
       // httpBackend.flush();
-      spyOn($editorService, 'undoChanges');
+      spyOn(EditorService, 'undoChanges');
       scope.ctrl.undoChanges({filepath: '/home/saurabh/file1'});
-      expect($editorService.undoChanges).toHaveBeenCalled();
+      expect(EditorService.undoChanges).toHaveBeenCalled();
     });
     it('should redo changes', function(){
       // httpBackend.flush();
-      spyOn($editorService, 'redoChanges');
+      spyOn(EditorService, 'redoChanges');
       scope.ctrl.redoChanges({filepath: '/home/saurabh/file1'});
-      expect($editorService.redoChanges).toHaveBeenCalled();
+      expect(EditorService.redoChanges).toHaveBeenCalled();
     });
     it('should copy selection', function(){
       // httpBackend.flush();
-      spyOn($editorService, 'copySelection');
+      spyOn(EditorService, 'copySelection');
       scope.ctrl.copySelection();
-      expect($editorService.copySelection).toHaveBeenCalled();
+      expect(EditorService.copySelection).toHaveBeenCalled();
     });
     it('should cut selection', function(){
       // httpBackend.flush();
-      spyOn($editorService, 'cutSelection');
+      spyOn(EditorService, 'cutSelection');
       scope.ctrl.cutSelection();
-      expect($editorService.cutSelection).toHaveBeenCalled();
+      expect(EditorService.cutSelection).toHaveBeenCalled();
     });
     it('should paste to clipboard', function(){
       // httpBackend.flush();
-      spyOn($editorService, 'pasteClipboard');
+      spyOn(EditorService, 'pasteClipboard');
       scope.ctrl.pasteClipboard();
-      expect($editorService.pasteClipboard).toHaveBeenCalled();
+      expect(EditorService.pasteClipboard).toHaveBeenCalled();
     });
     it('should comment selection', function(){
       // httpBackend.flush();
-      spyOn($editorService, 'commentSelection');
+      spyOn(EditorService, 'commentSelection');
       scope.ctrl.commentSelection();
-      expect($editorService.commentSelection).toHaveBeenCalled();
+      expect(EditorService.commentSelection).toHaveBeenCalled();
     });
     it('should open search box', function(){
       // httpBackend.flush();
-      spyOn($editorService, 'openSearchBox');
+      spyOn(EditorService, 'openSearchBox');
       scope.ctrl.openSearchBox();
-      expect($editorService.openSearchBox).toHaveBeenCalled();
+      expect(EditorService.openSearchBox).toHaveBeenCalled();
     });
 
     it('should save file as', function(){
       spyOn(modal, "open").and.callFake(function(){
         return mockSaveAsModal;
       });
-      spyOn($editorService, "fileRenamed");
-      spyOn($editorService, "saveDocument");
+      spyOn(EditorService, "fileRenamed");
+      spyOn(EditorService, "saveDocument");
       var tab = {
         'filepath': '/home/saurabh/file1',
         'saveFile': true
       };
       scope.ctrl.saveDocumentAs(tab);
       scope.ctrl.saveAsModalInstance.close();
-      expect($editorService.fileRenamed).toHaveBeenCalled();
-      expect($editorService.saveDocument).toHaveBeenCalled();
+      expect(EditorService.fileRenamed).toHaveBeenCalled();
+      expect(EditorService.saveDocument).toHaveBeenCalled();
     });
 
     it('should save previously unsaved file as', function(){
@@ -139,13 +148,13 @@ describe('sandstone.editor tabs', function(){
         'saveFile': true,
         'unsaved': true
       };
-      spyOn($editorService, "closeDocument");
+      spyOn(EditorService, "closeDocument");
       var e = {
         preventDefault: function() {}
       };
       scope.ctrl.closeDocument(e,tab);
       scope.ctrl.unsavedModalInstance.close();
-      expect($editorService.closeDocument).toHaveBeenCalled();
+      expect(EditorService.closeDocument).toHaveBeenCalled();
     });
 
   });
