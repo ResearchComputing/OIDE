@@ -10,7 +10,14 @@ angular.module('sandstone.editor')
     };
     self.openDocument = function (filepath) {
       var fp = filepath || undefined;
-      EditorService.openDocument(fp);
+      if (fp) {
+        EditorService.setSession(fp);
+      } else {
+        var documentOpened = EditorService.openDocument(fp);
+        documentOpened.then(function(newFilepath) {
+          EditorService.setSession(newFilepath);
+        });
+      }
     };
     self.closeDocument = function ($event, tab) {
       $event.preventDefault();
