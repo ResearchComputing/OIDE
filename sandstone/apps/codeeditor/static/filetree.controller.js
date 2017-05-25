@@ -61,7 +61,7 @@ angular.module('sandstone.editor')
       var documentOpened = EditorService.openDocument(treeData[i].filepath);
       documentOpened.then(function(filepath) {
         EditorService.setSession(filepath);
-        $log.debug('Opened document: ', treeData[i].filepath);
+        $log.debug('Opened document: ', filepath);
       });
     }
   };

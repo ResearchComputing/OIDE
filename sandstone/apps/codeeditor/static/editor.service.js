@@ -321,26 +321,49 @@ angular.module('sandstone.editor')
      * @returns {str} returns filepath of saved document, or return undefined in case of failure.
      */
     saveDocument: function(filepath) {
-      var content = openDocs[filepath].session.getValue();
+      var deferred = $q.defer();
+      var content = openDocs[filepath].session.getValue() || '';
       var updateContents = function() {
-        var writeContents = FilesystemService.writeFileContents(filepath,content);
-        writeContents.then(
-          function() {
-            $log.debug('Saved file: ', filepath);
-            openDocs[filepath].unsaved = false;
-            var mode = AceModeService.getModeForPath(filepath);
-            $rootScope.$emit('aceModeChanged', mode);
-          }
-        );
+        if (!content) {
+          deferred.resolve();
+        } else {
+          var writeContents = FilesystemService.writeFileContents(filepath,content);
+          writeContents.then(
+            function() {
+              $log.debug('Saved file: ', filepath);
+              openDocs[filepath].unsaved = false;
+              var mode = AceModeService.getModeForPath(filepath);
+              $rootScope.$emit('aceModeChanged', mode);
+              deferred.resolve(filepath);
+            },
+            function(res) {
+              AlertService.addAlert({
+                type: 'warning',
+                message: 'Failed to save file ' + filepath
+              });
+              deferred.reject(res);
+            }
+          );
+        }
       };
       var createAndUpdate = function(data) {
         if (data.status === 404) {
           var createFile = FilesystemService.createFile(filepath);
-          createFile.then(updateContents);
+          createFile.then(
+            updateContents,
+            function(res) {
+              AlertService.addAlert({
+                type: 'warning',
+                message: 'Failed to save file as ' + filepath
+              });
+              deferred.reject(res);
+            }
+          );
         }
       };
       var fileDetails = FilesystemService.getFileDetails(filepath);
       fileDetails.then(updateContents,createAndUpdate);
+      return deferred.promise;
     },
     fileRenamed: function(oldpath,newpath) {
       if (oldpath in openDocs) {
