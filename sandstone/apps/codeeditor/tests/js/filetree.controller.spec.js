@@ -80,14 +80,14 @@ xdescribe('filetree', function(){
   beforeEach(module('sandstone.filetreedirective'));
   beforeEach(module('ui.bootstrap'));
 
-  beforeEach(inject(function($controller, $rootScope, $log, $document, $httpBackend, _$compile_, FilesystemService, EditorService, _$modal_){
+  beforeEach(inject(function($controller, $rootScope, $log, $document, $httpBackend, _$compile_, FilesystemService, EditorService, _$uibModal_){
     scope = $rootScope.$new();
     rootScope = $rootScope;
     $compile = _$compile_;
     httpBackend = $httpBackend;
     filesystemService = FilesystemService;
     editorService = EditorService;
-    modal = _$modal_;
+    modal = _$uibModal_;
     httpBackend.whenGET('/filebrowser/filetree/a/dir').respond(function(){
       return [200, dirs];
     });

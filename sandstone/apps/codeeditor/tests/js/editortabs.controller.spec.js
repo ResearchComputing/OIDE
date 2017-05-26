@@ -29,12 +29,12 @@ describe('sandstone.editor tabs', function(){
   beforeEach(module('sandstone.filesystemservice'));
   beforeEach(module('ui.bootstrap'));
 
-  beforeEach(inject(function($controller, $rootScope, $modal, $log, _EditorService_, $httpBackend, _$q_){
+  beforeEach(inject(function($controller, $rootScope, $uibModal, $log, _EditorService_, $httpBackend, _$q_){
     $q = _$q_;
     scope = $rootScope.$new();
     controller = $controller;
     EditorService = _EditorService_;
-    modal = $modal;
+    modal = $uibModal;
     httpBackend = $httpBackend;
     httpBackend.whenGET('/filebrowser/filetree/a/dir').respond(function(){
       return [200, []];
@@ -42,7 +42,7 @@ describe('sandstone.editor tabs', function(){
     controller = $controller('EditorTabsCtrl', {
       $scope: scope,
       EditorService: EditorService,
-      $modal: $modal,
+      $uibModal: $uibModal,
       $log: $log
     });
     scope.ctrl = controller;

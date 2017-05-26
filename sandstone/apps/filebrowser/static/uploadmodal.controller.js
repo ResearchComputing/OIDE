@@ -2,7 +2,7 @@
 
 angular.module('sandstone.filebrowser')
 
-.controller('UploadModalInstanceCtrl', ['FilesystemService', '$modalInstance', 'FileUploader', 'directory', 'getXsrfCookie', 'getUrlPrefix',function (FilesystemService, $modalInstance, FileUploader, directory, getXsrfCookie, getUrlPrefix) {
+.controller('UploadModalInstanceCtrl', ['FilesystemService', '$uibModalInstance', 'FileUploader', 'directory', 'getXsrfCookie', 'getUrlPrefix',function (FilesystemService, $uibModalInstance, FileUploader, directory, getXsrfCookie, getUrlPrefix) {
   var self = this;
   self.dirpath = directory.filepath;
   var uploader = self.uploader = new FileUploader({
@@ -57,6 +57,6 @@ angular.module('sandstone.filebrowser')
    };
 
   self.cancel = function () {
-    $modalInstance.dismiss();
+    $uibModalInstance.dismiss();
   };
 }]);

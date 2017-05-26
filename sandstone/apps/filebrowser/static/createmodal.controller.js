@@ -2,7 +2,7 @@
 
 angular.module('sandstone.filebrowser')
 
-.controller('CreateModalInstanceCtrl', function ($modalInstance, action) {
+.controller('CreateModalInstanceCtrl', function ($uibModalInstance, action) {
   var self = this;
   self.type = action.type;
   self.baseDirectory = action.baseDirectory;
@@ -13,10 +13,10 @@ angular.module('sandstone.filebrowser')
   }
 
   self.create = function () {
-    $modalInstance.close(self.newFileName);
+    $uibModalInstance.close(self.newFileName);
   };
 
   self.cancel = function () {
-    $modalInstance.dismiss('cancel');
+    $uibModalInstance.dismiss('cancel');
   };
 });

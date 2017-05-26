@@ -2,7 +2,7 @@
 
 angular.module('sandstone.filebrowser')
 
-.controller('DetailsCtrl', ['$scope', '$modal', 'FilebrowserService', 'FilesystemService', 'AlertService', function($scope,$modal,FilebrowserService,FilesystemService,AlertService) {
+.controller('DetailsCtrl', ['$scope', '$uibModal', 'FilebrowserService', 'FilesystemService', 'AlertService', function($scope,$uibModal,FilebrowserService,FilesystemService,AlertService) {
   var self = this;
 
   // Breadcrumbs
@@ -70,7 +70,7 @@ angular.module('sandstone.filebrowser')
   };
 
   self.create = function(type) {
-    self.createModalInstance = $modal.open({
+    self.createModalInstance = $uibModal.open({
       templateUrl: '/static/filebrowser/templates/create-modal.html',
       backdrop: 'static',
       keyboard: false,
@@ -110,7 +110,7 @@ angular.module('sandstone.filebrowser')
   };
 
   self.upload = function() {
-    var modalInstance = $modal.open({
+    var modalInstance = $uibModal.open({
       templateUrl: '/static/filebrowser/templates/upload-modal.html',
       controller: 'UploadModalInstanceCtrl as ctrl',
       backdrop: 'static',

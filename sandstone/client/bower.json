@@ -11,7 +11,7 @@
     "angular-ui-router": "0.2.15",
     "html5-boilerplate": "~4.3.0",
     "bootstrap": "",
-    "angular-bootstrap": "0.13.x",
+    "angular-bootstrap": "2.5.x",
     "angular-ui-ace": "https://github.com/SandstoneHPC/ui-ace.git#0.2.5",
     "ng-context-menu": "",
     "angular-tree-control": "https://github.com/SandstoneHPC/angular-tree-control.git#1.0.0",
