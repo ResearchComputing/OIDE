@@ -1,88 +1,91 @@
 <div id="editor-nav-tabs">
-  <uib-tabset active="ctrl.getCurrentDoc()">
-    <uib-tab
-      ng-repeat="tab in ctrl.getOpenDocs()"
-      index="tab.filepath"
-      ng-click="ctrl.openDocument(tab.filepath)">
-      <uib-tab-heading>
-        <span
-          uib-tooltip="{{tab.filepath}}"
-          tooltip-trigger="mouseenter"
-          tooltip-placement="bottom">
-          {{tab.filename}}
-        </span>
-        <span
-          class="fa fa-lg fa-caret-down tab-icon dropdown"
-          ng-class="{'tab-icon-selected':hoverMenu}"
-          ng-mouseenter="hoverMenu=true"
-          ng-mouseleave="hoverMenu=false"
-          uib-dropdown
-          uib-dropdown-toggle>
-          <ul class="dropdown-menu">
-            <li><a
-              href="#"
-              ng-click="ctrl.undoChanges(tab)">
-              Undo
-              <span class="menu-shortcut pull-right">ctrl+z</span>
-            </a></li>
-            <li><a
-              href="#"
-              ng-click="ctrl.redoChanges(tab)">
-              Redo
-              <span class="menu-shortcut pull-right">ctrl+y</span>
-            </a></li>
-            <li><a
-              href="#"
-              ng-click="ctrl.commentSelection()">
-              Comment
-              <span class="menu-shortcut pull-right">ctrl+/</span>
-            </a></li>
-            <li><a
-              href="#"
-              ng-click="ctrl.openSearchBox()">
-              Find &amp; Replace
-            </a></li>
-            <li class="divider"></li>
-            <li><a
-              href="#"
-              ng-click="ctrl.saveDocument(tab)">
-              Save
-            </a></li>
-            <li><a
-              href="#"
-              ng-click="ctrl.saveDocumentAs(tab)">
-              Save As...
-            </a></li>
-            <li><a
-              href="#"
+  <div>
+    <ul class="nav nav-tabs">
+      <li ng-class="{active: tab.active}" class="uib-tab nav-item" ng-repeat="tab in ctrl.getOpenDocs()" ng-click="ctrl.openDocument(tab.filepath)">
+        <a href="" class="nav-link">
+          <!-- <div> -->
+            <span
+              uib-tooltip="{{tab.filepath}}"
+              tooltip-trigger="mouseenter"
+              tooltip-placement="bottom">
+              {{tab.filename}}
+            </span>
+            <span
+              class="fa fa-lg fa-caret-down tab-icon dropdown"
+              ng-class="{'tab-icon-selected':hoverMenu}"
+              ng-mouseenter="hoverMenu=true"
+              ng-mouseleave="hoverMenu=false"
+              uib-dropdown
+              uib-dropdown-toggle>
+              <ul class="dropdown-menu">
+                <li><a
+                  href="#"
+                  ng-click="ctrl.undoChanges(tab)">
+                  Undo
+                  <span class="menu-shortcut pull-right">ctrl+z</span>
+                </a></li>
+                <li><a
+                  href="#"
+                  ng-click="ctrl.redoChanges(tab)">
+                  Redo
+                  <span class="menu-shortcut pull-right">ctrl+y</span>
+                </a></li>
+                <li><a
+                  href="#"
+                  ng-click="ctrl.commentSelection()">
+                  Comment
+                  <span class="menu-shortcut pull-right">ctrl+/</span>
+                </a></li>
+                <li><a
+                  href="#"
+                  ng-click="ctrl.openSearchBox()">
+                  Find &amp; Replace
+                </a></li>
+                <li class="divider"></li>
+                <li><a
+                  href="#"
+                  ng-click="ctrl.saveDocument(tab)">
+                  Save
+                </a></li>
+                <li><a
+                  href="#"
+                  ng-click="ctrl.saveDocumentAs(tab)">
+                  Save As...
+                </a></li>
+                <li><a
+                  href="#"
+                  ng-click="ctrl.closeDocument($event,tab)">
+                  Close File
+                </a></li>
+              </ul>
+            </span>
+            <span
+              class="fa fa-lg tab-icon"
+              ng-class="{'fa-times':!tab.unsaved||hoverClose,'fa-circle-o':tab.unsaved&&!hoverClose,'tab-icon-selected':hoverClose}"
+              ng-mouseenter="hoverClose=true"
+              ng-mouseleave="hoverClose=false"
               ng-click="ctrl.closeDocument($event,tab)">
-              Close File
-            </a></li>
-          </ul>
-        </span>
-        <span
-          class="fa fa-lg tab-icon"
-          ng-class="{'fa-times':!tab.unsaved||hoverClose,'fa-circle-o':tab.unsaved&&!hoverClose,'tab-icon-selected':hoverClose}"
-          ng-mouseenter="hoverClose=true"
-          ng-mouseleave="hoverClose=false"
-          ng-click="ctrl.closeDocument($event,tab)">
-        </span>
-      </uib-tab-heading>
-    </uib-tab>
-    <uib-tab
-      index="create-new"
-      uib-tooltip="Create New Document"
-      tooltip-trigger="mouseenter"
-      tooltip-placement="right"
-      ng-mouseenter="hoverNew=true"
-      ng-mouseleave="hoverNew=false"
-      ng-click="ctrl.openDocument()">
-      <uib-tab-heading>
-        <span
-          class="fa fa-lg fa-plus"
-          ng-class="{'tab-icon-selected':hoverNew}">
-        </span>
-      </uib-tab-heading>
-    </uib-tab>
-  </uib-tabset>
+            </span>
+          <!-- </div> -->
+        </a>
+      </li>
+      <li
+        class="uib-tab nav-item"
+        uib-tooltip="Create New Document"
+        tooltip-trigger="mouseenter"
+        tooltip-placement="right"
+        ng-mouseenter="hoverNew=true"
+        ng-mouseleave="hoverNew=false"
+        ng-click="ctrl.openDocument()">
+        <a href="" class="nav-link">
+          <div>
+            <span
+              class="fa fa-lg fa-plus"
+              ng-class="{'tab-icon-selected':hoverNew}">
+            </span>
+          </div>
+        </a>
+      </li>
+    </ul>
+  </div>
 </div>
