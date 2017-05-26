@@ -46,6 +46,16 @@ body {
   }
 }
 
+/*
+ * Fix for ui-bootstrap modal backdrop
+ */
+div[uib-modal-backdrop].modal-backdrop {
+  height: 100%;
+}
+
+/*
+ * Sandstone alerts styles
+ */
 .ss-alerts-box {
   position: fixed;
   top: 65px;
