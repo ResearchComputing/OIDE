@@ -2,6 +2,7 @@ Sandstone IDE - [sandstonehpc.github.io](https://sandstonehpc.github.io/)
 ====
 
 [![Build Status](https://travis-ci.org/SandstoneHPC/sandstone-ide.svg?branch=master)](https://travis-ci.org/SandstoneHPC/sandstone-ide)
+[![DOI](https://zenodo.org/badge/29930712.svg)](https://zenodo.org/badge/latestdoi/29930712)
 
 Sandstone IDE is a consolidated set of web-based, visual utilities that facilitate access to HPC resources.
 
