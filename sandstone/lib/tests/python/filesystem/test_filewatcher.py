@@ -62,10 +62,9 @@ class FilewatcherTestCase(unittest.TestCase):
             'is_directory': False,
             'dirpath': os.path.dirname(filepath)
         }
-        self.assertTrue(mock_broadcast.called)
-        broadcast_call_msg = mock_broadcast.call_args[0][0]
-        self.assertEqual(key, broadcast_call_msg.key)
-        self.assertEqual(data, broadcast_call_msg.data)
+        self.assertEqual(mock_broadcast.call_count,2)
+        broadcast_created = mock_broadcast.call_args_list[1]
+        broadcast_created.assert_called_with(key=key,data=data)
 
     @mock.patch('sandstone.lib.broadcast.manager.BroadcastManager.broadcast')
     def test_file_deleted_event(self, mock_broadcast):
@@ -85,10 +84,9 @@ class FilewatcherTestCase(unittest.TestCase):
             'is_directory': False,
             'dirpath': os.path.dirname(filepath)
         }
-        self.assertTrue(mock_broadcast.called)
-        broadcast_call_msg = mock_broadcast.call_args[0][0]
-        self.assertEqual(key, broadcast_call_msg.key)
-        self.assertEqual(data, broadcast_call_msg.data)
+        self.assertEqual(mock_broadcast.call_count,2)
+        broadcast_deleted = mock_broadcast.call_args_list[1]
+        broadcast_deleted.assert_called_with(key=key,data=data)
 
     @mock.patch('sandstone.lib.broadcast.manager.BroadcastManager.broadcast')
     def test_file_moved_event(self, mock_broadcast):
@@ -111,7 +109,29 @@ class FilewatcherTestCase(unittest.TestCase):
             'src_dirpath': os.path.dirname(filepath),
             'dest_dirpath': os.path.dirname(newpath)
         }
-        self.assertTrue(mock_broadcast.called)
-        broadcast_call_msg = mock_broadcast.call_args[0][0]
-        self.assertEqual(key, broadcast_call_msg.key)
-        self.assertEqual(data, broadcast_call_msg.data)
+        self.assertEqual(mock_broadcast.call_count,2)
+        broadcast_moved = mock_broadcast.call_args_list[1]
+        broadcast_moved.assert_called_with(key=key,data=data)
+
+    @mock.patch('sandstone.lib.broadcast.manager.BroadcastManager.broadcast')
+    def test_file_modified_event(self, mock_broadcast):
+        # create temp file
+        filepath = os.path.join(self.test_dir, 'tmp.txt')
+        fd = open(filepath, 'w')
+        fd.close()
+        Filewatcher.add_directory_to_watch(self.test_dir)
+        # modify the file
+        with open(filepath, 'w') as fd:
+            fd.write('test')
+        # introduce a small delay for Filewatcher events to trigger
+        time.sleep(1)
+
+        key = 'filesystem:file_modified'
+        data = {
+            'filepath': filepath,
+            'is_directory': False,
+            'dirpath': self.test_dir
+        }
+        self.assertEqual(mock_broadcast.call_count,1)
+        broadcast_modified = mock_broadcast.call_args_list[0]
+        broadcast_modified.assert_called_with(key=key,data=data)
