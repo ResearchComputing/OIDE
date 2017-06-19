@@ -12,6 +12,14 @@ angular.module('sandstone.editor')
 .factory('EditorService', ['$window', '$http', '$log', '$q', 'AceModeService', 'FilesystemService', 'AlertService', '$rootScope', function ($window, $http,$log,$q,AceModeService,FilesystemService,AlertService,$rootScope) {
   var editor = {};
 
+  // modifiedFiles will hold modified filepaths that are opened in the editor.
+  // If a filepath is in suppressed, it will prevent the next event containing
+  // that path from being added to the queue.
+  var modifiedFiles = {
+    suppressed: [],
+    queue: []
+  };
+
   // clipboard will hold all copy/paste text for editor
   var clipboard = '';
   /**
@@ -61,6 +69,18 @@ angular.module('sandstone.editor')
       documentOpened.then(function(filepath) {
         switchSession(filepath);
       });
+  });
+
+  $rootScope.$on('filesystem:file_modified', function(event, data) {
+      if (data.filepath in openDocs) {
+        var suppressedIndex = modifiedFiles.suppressed.indexOf(data.filepath);
+        if (suppressedIndex >= 0) {
+          modifiedFiles.suppressed.splice(suppressedIndex,1);
+        } else {
+          console.log('Open file ' + data.filepath + ' modified on disk.');
+          modifiedFiles.queue.push(data.filepath);
+        }
+      }
   });
 
   // Called when the contents of the current session have changed. Bound directly to
@@ -165,6 +185,10 @@ angular.module('sandstone.editor')
         var fileContents = FilesystemService.getFileContents(filepath);
         fileContents.then(
           function(contents) {
+            // Add file directory to watchers to get notifications of file modification.
+            var dirpath = FilesystemService.dirname(filepath);
+            FilesystemService.createFilewatcher(dirpath);
+
             var mode = AceModeService.getModeForPath(filepath);
             $rootScope.$emit('aceModeChanged', mode);
             createNewSession(filepath,contents,mode.mode);
@@ -221,6 +245,24 @@ angular.module('sandstone.editor')
         switchSession(newFilepath);
       }
       applySettings();
+    },
+    /*
+     * The modified queue is used to store filepaths of modified files that are
+     * currently opened in the editor. The TabsCtrl is responsible for alerting
+     * the user and handling state reconciliation.
+     */
+    getModifiedFiles: function() {
+      return modifiedFiles.queue;
+    },
+    removeFromModifiedFile: function(filepath) {
+      var index = modifiedFiles.queue.indexOf(filepath);
+      var suppressedIndex = modifiedFiles.suppressed.indexOf(filepath);
+      if (index >=0) {
+        modifiedFiles.queue.splice(index,1);
+      }
+      if (suppressedIndex >=0) {
+        modifiedFiles.suppressed.splice(suppressedIndex,1);
+      }
     },
     treeData: treeData,
     treeOptions: treeOptions,
@@ -303,6 +345,12 @@ angular.module('sandstone.editor')
       if (filepath in openDocs) {
         delete openDocs[filepath];
 
+        // Remove filewatcher if the filepath is valid
+        if (FilesystemService.isAbsolute(filepath)) {
+          var dirname = FilesystemService.dirname(filepath);
+          FilesystemService.deleteFilewatcher(dirname);
+        }
+
         if (Object.keys(openDocs).length !== 0) {
           switchSession(Object.keys(openDocs)[0]);
         }
@@ -327,6 +375,7 @@ angular.module('sandstone.editor')
         if (!content) {
           deferred.resolve();
         } else {
+          modifiedFiles.suppressed.push(filepath);
           var writeContents = FilesystemService.writeFileContents(filepath,content);
           writeContents.then(
             function() {
@@ -337,6 +386,12 @@ angular.module('sandstone.editor')
               deferred.resolve(filepath);
             },
             function(res) {
+              // Unsuppress filepath since write failed
+              var suppressedIndex = modifiedFiles.suppressed.indexOf(filepath);
+              if (suppressedIndex >= 0) {
+                modifiedFiles.suppressed.splice(suppressedIndex,1);
+              }
+
               AlertService.addAlert({
                 type: 'warning',
                 message: 'Failed to save file ' + filepath
@@ -350,7 +405,13 @@ angular.module('sandstone.editor')
         if (data.status === 404) {
           var createFile = FilesystemService.createFile(filepath);
           createFile.then(
-            updateContents,
+            function() {
+              // Add to watchlist now that file is saved and updated
+              var dirname = FilesystemService.dirname(filepath);
+              FilesystemService.createFilewatcher(dirname);
+
+              updateContents();
+            },
             function(res) {
               AlertService.addAlert({
                 type: 'warning',
