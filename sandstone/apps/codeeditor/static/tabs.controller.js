@@ -5,6 +5,30 @@ angular.module('sandstone.editor')
 .controller('EditorTabsCtrl', ['$scope', '$uibModal', '$log', 'EditorService', 'FilesystemService', '$rootScope', '$document',
   function ($scope, $uibModal, $log, EditorService, FilesystemService, $rootScope, $document) {
     var self = this;
+
+    $scope.$watch(function() {
+      return EditorService.getModifiedFiles();
+    }, function(newValue) {
+      var currentDoc = EditorService.getCurrentDoc();
+      if (newValue.indexOf(currentDoc) >= 0) {
+        self.promptChangedOnDisk(currentDoc);
+      }
+    },true);
+
+    self.promptChangedOnDisk = function(filepath) {
+      self.changedModalInstance = $uibModal.open({
+        templateUrl: '/static/editor/templates/file-changed-modal.html',
+        backdrop: 'static',
+        keyboard: false,
+        controller: 'ChangedModalCtrl',
+        resolve: {
+          file: function () {
+            return filepath;
+          }
+        }
+      });
+    };
+
     self.getOpenDocs = function() {
       return EditorService.getOpenDocs();
     };
@@ -191,6 +215,27 @@ angular.module('sandstone.editor')
   $scope.close = function () {
     $scope.file.saveFile = false;
     $uibModalInstance.close($scope.file);
+  };
+
+  $scope.cancel = function () {
+    $uibModalInstance.dismiss('cancel');
+  };
+})
+.controller('ChangedModalCtrl', function ($scope, $uibModalInstance, file) {
+
+  $scope.action = {
+    filepath: file,
+    save: true
+  };
+
+  $scope.save = function () {
+    $scope.action.save = true;
+    $uibModalInstance.close($scope.action);
+  };
+
+  $scope.load = function () {
+    $scope.action.save = false;
+    $uibModalInstance.close($scope.action);
   };
 
   $scope.cancel = function () {
