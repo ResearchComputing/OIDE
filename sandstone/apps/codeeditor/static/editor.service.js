@@ -12,14 +12,6 @@ angular.module('sandstone.editor')
 .factory('EditorService', ['$window', '$http', '$log', '$q', 'AceModeService', 'FilesystemService', 'AlertService', '$rootScope', function ($window, $http,$log,$q,AceModeService,FilesystemService,AlertService,$rootScope) {
   var editor = {};
 
-  // modifiedFiles will hold modified filepaths that are opened in the editor.
-  // If a filepath is in suppressed, it will prevent the next event containing
-  // that path from being added to the queue.
-  var modifiedFiles = {
-    suppressed: [],
-    queue: []
-  };
-
   // clipboard will hold all copy/paste text for editor
   var clipboard = '';
   /**
@@ -29,6 +21,8 @@ angular.module('sandstone.editor')
    *   '<filepath>': {
    *     filename: str,
    *     unsaved: boolean,
+   *     changedOnDisk: boolean,
+   *     suppressChangeNotification: boolean,
    *     active: boolean,
    *     session: obj (defined by Ace)
    *   },
@@ -73,12 +67,13 @@ angular.module('sandstone.editor')
 
   $rootScope.$on('filesystem:file_modified', function(event, data) {
       if (data.filepath in openDocs) {
-        var suppressedIndex = modifiedFiles.suppressed.indexOf(data.filepath);
-        if (suppressedIndex >= 0) {
-          modifiedFiles.suppressed.splice(suppressedIndex,1);
+        var doc = openDocs[data.filepath];
+        if (doc.suppressChangeNotification) {
+          doc.suppressChangeNotification = false;
         } else {
           console.log('Open file ' + data.filepath + ' modified on disk.');
-          modifiedFiles.queue.push(data.filepath);
+          doc.unsaved = true;
+          doc.changedOnDisk = true;
         }
       }
   });
@@ -246,28 +241,12 @@ angular.module('sandstone.editor')
       }
       applySettings();
     },
-    /*
-     * The modified queue is used to store filepaths of modified files that are
-     * currently opened in the editor. The TabsCtrl is responsible for alerting
-     * the user and handling state reconciliation.
-     */
-    getModifiedFiles: function() {
-      return modifiedFiles.queue;
-    },
-    removeFromModifiedFile: function(filepath) {
-      var index = modifiedFiles.queue.indexOf(filepath);
-      var suppressedIndex = modifiedFiles.suppressed.indexOf(filepath);
-      if (index >=0) {
-        modifiedFiles.queue.splice(index,1);
-      }
-      if (suppressedIndex >=0) {
-        modifiedFiles.suppressed.splice(suppressedIndex,1);
-      }
-    },
+
     treeData: treeData,
     treeOptions: treeOptions,
     /**
-     * return an object of open documents in the editor.
+     * If a filepath path is specified, return the open document object.
+     * If no path specified, return an object of open documents in the editor.
      * {
      *   '<filepath>': {
      *     filename: str,
@@ -278,8 +257,13 @@ angular.module('sandstone.editor')
      *   ...
      * }
      */
-    getOpenDocs: function() {
-      return openDocs;
+    getOpenDocs: function(filepath) {
+      var fp = filepath || undefined;
+      if ((fp) && (fp in openDocs)) {
+        return openDocs[fp];
+      } else {
+        return openDocs;
+      }
     },
     /**
      * @ngdoc
@@ -370,27 +354,26 @@ angular.module('sandstone.editor')
      */
     saveDocument: function(filepath) {
       var deferred = $q.defer();
-      var content = openDocs[filepath].session.getValue() || '';
+      var doc = openDocs[filepath];
+      var content = doc.session.getValue() || '';
       var updateContents = function() {
         if (!content) {
           deferred.resolve();
         } else {
-          modifiedFiles.suppressed.push(filepath);
+          doc.suppressChangeNotification = true;
           var writeContents = FilesystemService.writeFileContents(filepath,content);
           writeContents.then(
             function() {
               $log.debug('Saved file: ', filepath);
-              openDocs[filepath].unsaved = false;
+              doc.unsaved = false;
+              doc.changedOnDisk = false;
               var mode = AceModeService.getModeForPath(filepath);
               $rootScope.$emit('aceModeChanged', mode);
               deferred.resolve(filepath);
             },
             function(res) {
-              // Unsuppress filepath since write failed
-              var suppressedIndex = modifiedFiles.suppressed.indexOf(filepath);
-              if (suppressedIndex >= 0) {
-                modifiedFiles.suppressed.splice(suppressedIndex,1);
-              }
+              // Unsuppress change notifications since write failed
+              doc.suppressChangeNotification = false;
 
               AlertService.addAlert({
                 type: 'warning',

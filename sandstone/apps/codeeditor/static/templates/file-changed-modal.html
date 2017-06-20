@@ -3,6 +3,11 @@
 </div>
 <div class="modal-body">
   <span class="modal-body-message">This file has been changed on disk. Would you like to load the changes or save the file?</span>
+  <ul>
+    <li>
+      {{ action.filepath }}
+    </li>
+  </ul>
 </div>
 <div class="modal-footer">
   <button class="btn btn-success" ng-click="save()">Save File</button>
