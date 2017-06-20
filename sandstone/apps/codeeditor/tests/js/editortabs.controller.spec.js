@@ -157,5 +157,7 @@ describe('sandstone.editor tabs', function(){
       expect(EditorService.closeDocument).toHaveBeenCalled();
     });
 
+    it('prompts the user when the current document has changed on disk', function() {});
+
   });
 });

@@ -1,123 +1,73 @@
 'use strict';
 
-xdescribe('sandstone.editor.EditorService', function() {
+describe('sandstone.editor.EditorService', function() {
+  var FilesystemService;
+  var EditorService;
+  var AlertService;
+  var mockResolve, mockReject;
+  var $rootScope, digest;
+
   beforeEach(module('sandstone'));
+  beforeEach(module('sandstone.filesystemservice'));
   beforeEach(module('sandstone.editor'));
 
-  describe('sandstone.editor.EditorService settings', function() {
-    var aceMock,sessMock, httpBackend;
+  beforeEach(inject(function(_FilesystemService_,_$q_,_$rootScope_) {
+    mockResolve = function(data) {
+      var deferred = _$q_.defer();
+      deferred.resolve(data);
+      return deferred.promise;
+    };
+    mockReject = function(data) {
+      var deferred = _$q_.defer();
+      deferred.reject(data);
+      return deferred.promise;
+    };
 
-    beforeEach(function() {
-      sessMock = jasmine.createSpyObj(
-        'sessMock',
-        [
-          'getUndoManager',
-          'setUndoManager',
-          'getDocument',
-          'setUseSoftTabs',
-          'setTabSize',
-          'setUseWrapMode'
-        ]
-      );
-      aceMock = jasmine.createSpyObj(
-        'aceMock',
-        [
-          'setSession',
-          'setShowInvisibles',
-          'setFontSize',
-          'setDisplayIndentGuides'
-        ]
-      );
-      aceMock.getSession = function() {
-        return sessMock;
-      };
-    });
+    FilesystemService = _FilesystemService_;
+  }));
 
-    beforeEach(inject(function($httpBackend){
-      httpBackend = $httpBackend;
-      httpBackend.whenGET(/\/filebrowser\/localfiles.*/).respond(function(){
-        var file = {
-          contents: 'this is a basic file'
-        };
-        return [200, file];
-      });
-      httpBackend.whenPUT(/\/filebrowser\/localfiles.*/).respond(function(){
-        return [200, {}];
-      });
-      httpBackend.whenPOST(/\/filebrowser\/localfiles.*/).respond(function(){
-        return [200, {}];
-      });
-    }));
+  beforeEach(inject(function(_EditorService_,_AlertService_,_$q_,_$rootScope_) {
+    EditorService = _EditorService_;
+    AlertService = _AlertService_;
+    $rootScope = _$rootScope_;
 
-    it('starts with the correct defaults.', inject(function(EditorService) {
-      var defaults = {
-        showInvisibles: true,
-        useSoftTabs: true,
-        fontSize: 12,
-        tabSize: 4,
-        showIndentGuides: true,
-        wordWrap: false
-      };
-      expect(EditorService.getSettings()).toEqual(defaults);
-    }));
-    it('correctly modifies settings.', inject(function(EditorService) {
-      EditorService.onAceLoad(aceMock);
-      var newSettings = {
-        showInvisibles: false,
-        useSoftTabs: false,
-        fontSize: 14,
-        tabSize: 2,
-        showIndentGuides: false
-      };
-      EditorService.setSettings(newSettings);
-      expect(EditorService.getSettings()).toEqual(newSettings);
-      expect(sessMock.setUseSoftTabs).toHaveBeenCalledWith(false);
-      expect(sessMock.setTabSize).toHaveBeenCalledWith(2);
-      expect(aceMock.setShowInvisibles).toHaveBeenCalledWith(false);
-      expect(aceMock.setFontSize).toHaveBeenCalledWith(14);
-    }));
-    it('should open a document', inject(function(EditorService){
-      EditorService.onAceLoad(aceMock);
-      var filepath = "/home/saurabh/file1";
-      EditorService.openDocument(filepath);
-      httpBackend.flush();
-      expect(Object.keys(EditorService.getOpenDocs()).length).toBe(2);
-      expect(EditorService.getCurrentDoc()).toBe("/home/saurabh/file1");
-    }));
-    it('should close a document when only 1 file', inject(function(EditorService){
-      EditorService.onAceLoad(aceMock);
-      var currentFile = EditorService.getCurrentDoc();
-      EditorService.closeDocument(currentFile);
-      expect(Object.keys(EditorService.getOpenDocs()).length).toBe(0);
-    }));
-    it('should close a document when multiple files are open', inject(function(EditorService){
-      EditorService.onAceLoad(aceMock);
-      var filename = "/home/saurabh/file1";
-      EditorService.openDocument(filename);
-      EditorService.closeDocument(filename);
-      expect(Object.keys(EditorService.getOpenDocs()).length).toBe(1);
-    }));
-    it('should save a document if it exists', inject(function(EditorService){
-      httpBackend.whenGET(/\/filebrowser\/a\/fileutil\?filepath=.*&operation=CHECK_EXISTS/).respond(function(){
-        return [200, {result: true}];
-      });
-      EditorService.onAceLoad(aceMock);
-      EditorService.openDocument("/home/saurabh/file1");
-      httpBackend.flush();
-      EditorService.saveDocument("/home/saurabh/file1");
-      httpBackend.flush();
-      expect(EditorService.getOpenDocs()["/home/saurabh/file1"].unsaved).not.toBeTruthy();
-    }));
-    it('should save a document if it doesnt exists', inject(function(EditorService){
-      httpBackend.whenGET(/\/filebrowser\/a\/fileutil\?filepath=.*&operation=CHECK_EXISTS/).respond(function(){
-        return [200, {result: false}];
-      });
-      EditorService.onAceLoad(aceMock);
-      EditorService.openDocument("/home/saurabh/file1");
-      httpBackend.flush();
-      EditorService.saveDocument("/home/saurabh/file1");
-      httpBackend.flush();
-      expect(EditorService.getOpenDocs()["/home/saurabh/file1"].unsaved).not.toBeTruthy();
-    }));
+    digest = function() {
+      $rootScope.$digest();
+    };
+  }));
+
+  describe('ace editor methods', function() {
+
+    it('creates an untitled document on start up if no active sessions exist', function() {});
+
+    it('loads active session on start up if one exists', function() {});
+
+    it('creates a new ace edit session', function() {});
+
+    it('multi-step undo stack', function() {});
+
+    it('multi-step redo stack', function() {});
+
   });
+
+  describe('document methods', function() {
+
+    it('switches between edit sessions', function() {});
+
+    it('creates a new untitled document', function() {});
+
+    it('loads a document from disk', function() {});
+
+    it('reloads the contents of an edit session from disk', function() {});
+
+    it('closes a document and removes filewatchers', function() {});
+
+    it('saves a document and suppresses notifications', function() {});
+
+    it('creates and saves to a new file if one does exist on disk', function() {});
+
+    it('updates the document when a file is renamed', function() {});
+
+  });
+
 });
