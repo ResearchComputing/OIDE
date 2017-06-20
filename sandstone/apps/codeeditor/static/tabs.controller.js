@@ -46,7 +46,7 @@ angular.module('sandstone.editor')
             }
           );
         } else {
-          $log.info('File reloaded');
+          EditorService.reloadDocument(action.filepath);
         }
       });
     };

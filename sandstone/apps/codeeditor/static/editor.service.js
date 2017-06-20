@@ -155,6 +155,8 @@ angular.module('sandstone.editor')
       filepath: filepath,
       filename: FilesystemService.basename(filepath),
       unsaved: false,
+      changedOnDisk: false,
+      suppressChangeNotification: false,
       active: false
     };
     openDocs[filepath].session = new $window.ace.createEditSession(c,m);
@@ -162,6 +164,35 @@ angular.module('sandstone.editor')
     if (um) {
       openDocs[filepath].session.setUndoManager(um);
     }
+  };
+
+  var reloadDocument = function(filepath) {
+    var deferred = $q.defer();
+    var fileContents = FilesystemService.getFileContents(filepath);
+    fileContents.then(
+      function(contents) {
+        var doc = openDocs[filepath];
+        doc.session.setValue(contents);
+        doc.changedOnDisk = false;
+        doc.unsaved = true;
+        deferred.resolve(filepath);
+      },
+      function(res) {
+        if (res.status === 404) {
+          AlertService.addAlert({
+            type: 'warning',
+            message: 'File does not exist: ' + filepath
+          });
+        } else {
+          AlertService.addAlert({
+            type: 'warning',
+            message: 'Failed to load file ' + filepath
+          });
+        }
+        deferred.reject(res);
+      }
+    );
+    return deferred.promise;
   };
 
   var openDocument = function(filepath) {
@@ -313,6 +344,7 @@ angular.module('sandstone.editor')
      * @returns {str} returns filepath of opened document, or return undefined if opening fails.
      */
     openDocument: openDocument,
+    reloadDocument: reloadDocument,
     /**
      * @ngdoc
      * @name sandstone.EditorService#closeDocument
