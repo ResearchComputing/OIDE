@@ -53,7 +53,24 @@ describe('sandstone.editor.EditorService', function() {
 
     it('loads a document from disk', function() {});
 
-    it('reloads the contents of an edit session from disk', function() {});
+    it('reloads the contents of an edit session from disk', function() {
+      var testPath = '/a/test.txt';
+      var testContents = 'file contents\n';
+      var deferredGetFileContents = $q.defer();
+      deferredGetFileContents.resolve(testContents);
+      spyOn(FilesystemService,'getFileContents').and.returnValue(deferredGetFileContents.promise);
+      EditorService._openDocs[testPath] = {
+        session: {setValue: function() {}},
+        changedOnDisk: true
+      };
+      var testDoc = EditorService._openDocs[testPath];
+      spyOn(EditorService._openDocs[testPath].session,'setValue');
+      EditorService.reloadDocument(testPath);
+      $rootScope.$digest();
+      expect(EditorService._openDocs[testPath].session.setValue).toHaveBeenCalledWith(testContents);
+      expect(testDoc.changedOnDisk).toEqual(false);
+      expect(testDoc.unsaved).toEqual(false);
+    });
 
     it('closes a document and removes filewatchers', function() {});
 

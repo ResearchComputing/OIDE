@@ -174,7 +174,7 @@ angular.module('sandstone.editor')
         var doc = openDocs[filepath];
         doc.session.setValue(contents);
         doc.changedOnDisk = false;
-        doc.unsaved = true;
+        doc.unsaved = false;
         deferred.resolve(filepath);
       },
       function(res) {
