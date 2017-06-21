@@ -1,5 +1,6 @@
 describe('sandstone.editor tabs', function(){
-  var scope;
+  var $scope;
+  var $controller;
   var EditorService;
   var httpBackend;
   var modal;
@@ -29,24 +30,25 @@ describe('sandstone.editor tabs', function(){
   beforeEach(module('sandstone.filesystemservice'));
   beforeEach(module('ui.bootstrap'));
 
-  beforeEach(inject(function($controller, $rootScope, $uibModal, $log, _EditorService_, $httpBackend, _$q_){
+  beforeEach(inject(function(_$controller_, $rootScope, $uibModal, $log, _EditorService_, $httpBackend, _$q_){
+    var ctrl;
     $q = _$q_;
-    scope = $rootScope.$new();
-    controller = $controller;
+    $scope = $rootScope.$new();
+    $controller = _$controller_;
     EditorService = _EditorService_;
     modal = $uibModal;
     httpBackend = $httpBackend;
     httpBackend.whenGET('/filebrowser/filetree/a/dir').respond(function(){
       return [200, []];
     });
-    controller = $controller('EditorTabsCtrl', {
-      $scope: scope,
+    ctrl = $controller('EditorTabsCtrl', {
+      $scope: $scope,
       EditorService: EditorService,
       $uibModal: $uibModal,
       $log: $log
     });
-    scope.ctrl = controller;
-    scope.$apply();
+    $scope.ctrl = ctrl;
+    $scope.$apply();
   }));
 
   describe('tabs controller specs', function(){
@@ -57,7 +59,7 @@ describe('sandstone.editor tabs', function(){
     it('get open docs should be called', function(){
       // httpBackend.flush();
       spyOn(EditorService, 'getOpenDocs');
-      scope.ctrl.getOpenDocs();
+      $scope.ctrl.getOpenDocs();
       expect(EditorService.getOpenDocs).toHaveBeenCalled();
     });
     it('should open doc', function(){
@@ -65,60 +67,60 @@ describe('sandstone.editor tabs', function(){
       deferredOpenDocument.resolve();
       spyOn(EditorService, 'openDocument').and.returnValue(deferredOpenDocument.promise);
       spyOn(EditorService, 'setSession').and.returnValue(true);
-      scope.ctrl.openDocument('/home/saurabh/file1');
-      scope.$digest();
+      $scope.ctrl.openDocument('/home/saurabh/file1');
+      $scope.$digest();
       expect(EditorService.setSession).toHaveBeenCalledWith('/home/saurabh/file1');
       expect(EditorService.openDocument).not.toHaveBeenCalled();
-      scope.ctrl.openDocument();
-      scope.$digest();
+      $scope.ctrl.openDocument();
+      $scope.$digest();
       expect(EditorService.openDocument).toHaveBeenCalled();
     });
     it('should save document', function(){
       // httpBackend.flush();
       spyOn(EditorService, 'saveDocument');
-      scope.ctrl.saveDocument({filepath: '/home/saurabh/file1'});
+      $scope.ctrl.saveDocument({filepath: '/home/saurabh/file1'});
       expect(EditorService.saveDocument).toHaveBeenCalled();
     });
     it('should undo changes', function(){
       // httpBackend.flush();
       spyOn(EditorService, 'undoChanges');
-      scope.ctrl.undoChanges({filepath: '/home/saurabh/file1'});
+      $scope.ctrl.undoChanges({filepath: '/home/saurabh/file1'});
       expect(EditorService.undoChanges).toHaveBeenCalled();
     });
     it('should redo changes', function(){
       // httpBackend.flush();
       spyOn(EditorService, 'redoChanges');
-      scope.ctrl.redoChanges({filepath: '/home/saurabh/file1'});
+      $scope.ctrl.redoChanges({filepath: '/home/saurabh/file1'});
       expect(EditorService.redoChanges).toHaveBeenCalled();
     });
     it('should copy selection', function(){
       // httpBackend.flush();
       spyOn(EditorService, 'copySelection');
-      scope.ctrl.copySelection();
+      $scope.ctrl.copySelection();
       expect(EditorService.copySelection).toHaveBeenCalled();
     });
     it('should cut selection', function(){
       // httpBackend.flush();
       spyOn(EditorService, 'cutSelection');
-      scope.ctrl.cutSelection();
+      $scope.ctrl.cutSelection();
       expect(EditorService.cutSelection).toHaveBeenCalled();
     });
     it('should paste to clipboard', function(){
       // httpBackend.flush();
       spyOn(EditorService, 'pasteClipboard');
-      scope.ctrl.pasteClipboard();
+      $scope.ctrl.pasteClipboard();
       expect(EditorService.pasteClipboard).toHaveBeenCalled();
     });
     it('should comment selection', function(){
       // httpBackend.flush();
       spyOn(EditorService, 'commentSelection');
-      scope.ctrl.commentSelection();
+      $scope.ctrl.commentSelection();
       expect(EditorService.commentSelection).toHaveBeenCalled();
     });
     it('should open search box', function(){
       // httpBackend.flush();
       spyOn(EditorService, 'openSearchBox');
-      scope.ctrl.openSearchBox();
+      $scope.ctrl.openSearchBox();
       expect(EditorService.openSearchBox).toHaveBeenCalled();
     });
 
@@ -132,8 +134,8 @@ describe('sandstone.editor tabs', function(){
         'filepath': '/home/saurabh/file1',
         'saveFile': true
       };
-      scope.ctrl.saveDocumentAs(tab);
-      scope.ctrl.saveAsModalInstance.close();
+      $scope.ctrl.saveDocumentAs(tab);
+      $scope.ctrl.saveAsModalInstance.close();
       expect(EditorService.fileRenamed).toHaveBeenCalled();
       expect(EditorService.saveDocument).toHaveBeenCalled();
     });
@@ -152,9 +154,22 @@ describe('sandstone.editor tabs', function(){
       var e = {
         preventDefault: function() {}
       };
-      scope.ctrl.closeDocument(e,tab);
-      scope.ctrl.unsavedModalInstance.close();
+      $scope.ctrl.closeDocument(e,tab);
+      $scope.ctrl.unsavedModalInstance.close();
       expect(EditorService.closeDocument).toHaveBeenCalled();
+    });
+
+    it('prompts the user when the current document has changed on disk', function() {
+      var testPath = '/a/test.txt';
+      var testDoc = {changedOnDisk: false};
+      spyOn($scope.ctrl, 'promptChangedOnDisk');
+      spyOn(EditorService, 'getCurrentDoc').and.returnValue('/a/test.txt');
+      spyOn(EditorService, 'getOpenDocs').and.returnValue(testDoc);
+      $scope.$digest();
+      expect($scope.ctrl.promptChangedOnDisk).not.toHaveBeenCalled();
+      testDoc.changedOnDisk = true;
+      $scope.$digest();
+      expect($scope.ctrl.promptChangedOnDisk).toHaveBeenCalledWith(testPath);
     });
 
   });

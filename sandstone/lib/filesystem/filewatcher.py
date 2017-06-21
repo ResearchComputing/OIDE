@@ -54,6 +54,21 @@ class FilesystemEventHandler(watchdog.events.FileSystemEventHandler):
         bmsg = BroadcastMessage(key=key, data=data)
         BroadcastManager.broadcast(bmsg)
 
+    def on_modified(self, event):
+        """
+        Event handler when a file is modified.
+        """
+        key = 'filesystem:file_modified'
+        data = {
+            'filepath': event.src_path,
+            'is_directory': event.is_directory,
+            'dirpath': os.path.dirname(event.src_path)
+        }
+
+        bmsg = BroadcastMessage(key=key, data=data)
+        BroadcastManager.broadcast(bmsg)
+
+
 class Filewatcher(object):
     """
     Starts a watchdog instance to watch over the filesystem

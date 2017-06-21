@@ -5,6 +5,52 @@ angular.module('sandstone.editor')
 .controller('EditorTabsCtrl', ['$scope', '$uibModal', '$log', 'EditorService', 'FilesystemService', '$rootScope', '$document',
   function ($scope, $uibModal, $log, EditorService, FilesystemService, $rootScope, $document) {
     var self = this;
+
+    $scope.$watch(
+      function() {
+        var currentDoc = EditorService.getCurrentDoc();
+        var doc = EditorService.getOpenDocs(currentDoc);
+        if (doc.changedOnDisk) {
+          return currentDoc;
+        }
+      },
+      function(newValue) {
+        if (newValue) {
+          self.promptChangedOnDisk(newValue);
+        }
+      }
+    );
+
+    self.promptChangedOnDisk = function(filepath) {
+      self.changedModalInstance = $uibModal.open({
+        templateUrl: '/static/editor/templates/file-changed-modal.html',
+        backdrop: 'static',
+        keyboard: false,
+        controller: 'ChangedModalCtrl',
+        resolve: {
+          file: function () {
+            return filepath;
+          }
+        }
+      });
+
+      self.changedModalInstance.result.then(function(action) {
+        if (action.save) {
+          var documentSaved = EditorService.saveDocument(action.filepath);
+          documentSaved.then(
+            function() {},
+            function(res) {
+              if (res.status == 404) {
+                self.saveDocumentAs(action.filepath);
+              }
+            }
+          );
+        } else {
+          EditorService.reloadDocument(action.filepath);
+        }
+      });
+    };
+
     self.getOpenDocs = function() {
       return EditorService.getOpenDocs();
     };
@@ -61,7 +107,7 @@ angular.module('sandstone.editor')
         EditorService.closeDocument(tab.filepath);
       }
     };
-    self.saveDocumentAs = function (tab) {
+    self.saveDocumentAs = function (filepath) {
       self.saveAsModalInstance = $uibModal.open({
         templateUrl: '/static/editor/templates/saveas-modal.html',
         backdrop: 'static',
@@ -71,9 +117,10 @@ angular.module('sandstone.editor')
         controllerAs: 'ctrl',
         resolve: {
           file: function () {
-            var dirpath = FilesystemService.dirname(tab.filepath);
+            var dirpath = FilesystemService.dirname(filepath);
+            var filename = FilesystemService.basename(filepath);
             var file = {
-              name: tab.filename,
+              name: filename,
               dirpath: dirpath
             };
             return file;
@@ -81,9 +128,9 @@ angular.module('sandstone.editor')
         }
       });
 
-      self.saveAsModalInstance.result.then(function (filepath) {
-        EditorService.fileRenamed(tab.filepath,filepath);
-        EditorService.saveDocument(filepath);
+      self.saveAsModalInstance.result.then(function (saveFilepath) {
+        EditorService.fileRenamed(filepath,saveFilepath);
+        EditorService.saveDocument(saveFilepath);
         $log.debug('Saved files at: ' + new Date());
         self.saveAsModalInstance = null;
       }, function () {
@@ -191,6 +238,27 @@ angular.module('sandstone.editor')
   $scope.close = function () {
     $scope.file.saveFile = false;
     $uibModalInstance.close($scope.file);
+  };
+
+  $scope.cancel = function () {
+    $uibModalInstance.dismiss('cancel');
+  };
+})
+.controller('ChangedModalCtrl', function ($scope, $uibModalInstance, file) {
+
+  $scope.action = {
+    filepath: file,
+    save: true
+  };
+
+  $scope.save = function () {
+    $scope.action.save = true;
+    $uibModalInstance.close($scope.action);
+  };
+
+  $scope.load = function () {
+    $scope.action.save = false;
+    $uibModalInstance.close($scope.action);
   };
 
   $scope.cancel = function () {

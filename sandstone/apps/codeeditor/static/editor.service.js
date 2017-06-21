@@ -21,6 +21,8 @@ angular.module('sandstone.editor')
    *   '<filepath>': {
    *     filename: str,
    *     unsaved: boolean,
+   *     changedOnDisk: boolean,
+   *     suppressChangeNotification: boolean,
    *     active: boolean,
    *     session: obj (defined by Ace)
    *   },
@@ -61,6 +63,19 @@ angular.module('sandstone.editor')
       documentOpened.then(function(filepath) {
         switchSession(filepath);
       });
+  });
+
+  $rootScope.$on('filesystem:file_modified', function(event, data) {
+      if (data.filepath in openDocs) {
+        var doc = openDocs[data.filepath];
+        if (doc.suppressChangeNotification) {
+          doc.suppressChangeNotification = false;
+        } else {
+          console.log('Open file ' + data.filepath + ' modified on disk.');
+          doc.unsaved = true;
+          doc.changedOnDisk = true;
+        }
+      }
   });
 
   // Called when the contents of the current session have changed. Bound directly to
@@ -140,6 +155,8 @@ angular.module('sandstone.editor')
       filepath: filepath,
       filename: FilesystemService.basename(filepath),
       unsaved: false,
+      changedOnDisk: false,
+      suppressChangeNotification: false,
       active: false
     };
     openDocs[filepath].session = new $window.ace.createEditSession(c,m);
@@ -147,6 +164,35 @@ angular.module('sandstone.editor')
     if (um) {
       openDocs[filepath].session.setUndoManager(um);
     }
+  };
+
+  var reloadDocument = function(filepath) {
+    var deferred = $q.defer();
+    var fileContents = FilesystemService.getFileContents(filepath);
+    fileContents.then(
+      function(contents) {
+        var doc = openDocs[filepath];
+        doc.session.setValue(contents);
+        doc.changedOnDisk = false;
+        doc.unsaved = false;
+        deferred.resolve(filepath);
+      },
+      function(res) {
+        if (res.status === 404) {
+          AlertService.addAlert({
+            type: 'warning',
+            message: 'File does not exist: ' + filepath
+          });
+        } else {
+          AlertService.addAlert({
+            type: 'warning',
+            message: 'Failed to load file ' + filepath
+          });
+        }
+        deferred.reject(res);
+      }
+    );
+    return deferred.promise;
   };
 
   var openDocument = function(filepath) {
@@ -165,6 +211,10 @@ angular.module('sandstone.editor')
         var fileContents = FilesystemService.getFileContents(filepath);
         fileContents.then(
           function(contents) {
+            // Add file directory to watchers to get notifications of file modification.
+            var dirpath = FilesystemService.dirname(filepath);
+            FilesystemService.createFilewatcher(dirpath);
+
             var mode = AceModeService.getModeForPath(filepath);
             $rootScope.$emit('aceModeChanged', mode);
             createNewSession(filepath,contents,mode.mode);
@@ -191,11 +241,13 @@ angular.module('sandstone.editor')
   };
 
   return {
+    // Exposed for unit testing this service. DO NOT USE this object directly.
+    _openDocs: openDocs,
     /**
      * Called when ace editor has loaded. Must be bound to directive by controller.
      */
     onAceLoad: function(_ace) {
-      var um,content,mode,activeSession,sel,unsaved;
+      var um,content,mode,activeSession,sel,unsaved,changedOnDisk,suppressChangeNotification;
       editor = _ace;
       if (Object.keys(openDocs).length !== 0) {
         for (var filepath in openDocs) {
@@ -210,9 +262,13 @@ angular.module('sandstone.editor')
             mode = openDocs[filepath].session.$modeId;
             sel = openDocs[filepath].session.selection;
             unsaved = openDocs[filepath].unsaved;
+            changedOnDisk = openDocs[filepath].changedOnDisk;
+            suppressChangeNotification = openDocs[filepath].suppressChangeNotification;
             createNewSession(filepath,content,mode,um);
             openDocs[filepath].session.selection = sel;
             openDocs[filepath].unsaved = unsaved;
+            openDocs[filepath].changedOnDisk = changedOnDisk;
+            openDocs[filepath].suppressChangeNotification = suppressChangeNotification;
           }
         }
         switchSession(activeSession);
@@ -222,10 +278,12 @@ angular.module('sandstone.editor')
       }
       applySettings();
     },
+
     treeData: treeData,
     treeOptions: treeOptions,
     /**
-     * return an object of open documents in the editor.
+     * If a filepath path is specified, return the open document object.
+     * If no path specified, return an object of open documents in the editor.
      * {
      *   '<filepath>': {
      *     filename: str,
@@ -236,8 +294,13 @@ angular.module('sandstone.editor')
      *   ...
      * }
      */
-    getOpenDocs: function() {
-      return openDocs;
+    getOpenDocs: function(filepath) {
+      var fp = filepath || undefined;
+      if ((fp) && (fp in openDocs)) {
+        return openDocs[fp];
+      } else {
+        return openDocs;
+      }
     },
     /**
      * @ngdoc
@@ -287,6 +350,7 @@ angular.module('sandstone.editor')
      * @returns {str} returns filepath of opened document, or return undefined if opening fails.
      */
     openDocument: openDocument,
+    reloadDocument: reloadDocument,
     /**
      * @ngdoc
      * @name sandstone.EditorService#closeDocument
@@ -302,6 +366,12 @@ angular.module('sandstone.editor')
     closeDocument: function(filepath) {
       if (filepath in openDocs) {
         delete openDocs[filepath];
+
+        // Remove filewatcher if the filepath is valid
+        if (FilesystemService.isAbsolute(filepath)) {
+          var dirname = FilesystemService.dirname(filepath);
+          FilesystemService.deleteFilewatcher(dirname);
+        }
 
         if (Object.keys(openDocs).length !== 0) {
           switchSession(Object.keys(openDocs)[0]);
@@ -322,21 +392,27 @@ angular.module('sandstone.editor')
      */
     saveDocument: function(filepath) {
       var deferred = $q.defer();
-      var content = openDocs[filepath].session.getValue() || '';
+      var doc = openDocs[filepath];
+      var content = doc.session.getValue() || '';
       var updateContents = function() {
         if (!content) {
           deferred.resolve();
         } else {
+          doc.suppressChangeNotification = true;
           var writeContents = FilesystemService.writeFileContents(filepath,content);
           writeContents.then(
             function() {
               $log.debug('Saved file: ', filepath);
-              openDocs[filepath].unsaved = false;
+              doc.unsaved = false;
+              doc.changedOnDisk = false;
               var mode = AceModeService.getModeForPath(filepath);
               $rootScope.$emit('aceModeChanged', mode);
               deferred.resolve(filepath);
             },
             function(res) {
+              // Unsuppress change notifications since write failed
+              doc.suppressChangeNotification = false;
+
               AlertService.addAlert({
                 type: 'warning',
                 message: 'Failed to save file ' + filepath
@@ -350,7 +426,13 @@ angular.module('sandstone.editor')
         if (data.status === 404) {
           var createFile = FilesystemService.createFile(filepath);
           createFile.then(
-            updateContents,
+            function() {
+              // Add to watchlist now that file is saved and updated
+              var dirname = FilesystemService.dirname(filepath);
+              FilesystemService.createFilewatcher(dirname);
+
+              updateContents();
+            },
             function(res) {
               AlertService.addAlert({
                 type: 'warning',
