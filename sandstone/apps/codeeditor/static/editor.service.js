@@ -247,7 +247,7 @@ angular.module('sandstone.editor')
      * Called when ace editor has loaded. Must be bound to directive by controller.
      */
     onAceLoad: function(_ace) {
-      var um,content,mode,activeSession,sel,unsaved;
+      var um,content,mode,activeSession,sel,unsaved,changedOnDisk,suppressChangeNotification;
       editor = _ace;
       if (Object.keys(openDocs).length !== 0) {
         for (var filepath in openDocs) {
@@ -262,9 +262,13 @@ angular.module('sandstone.editor')
             mode = openDocs[filepath].session.$modeId;
             sel = openDocs[filepath].session.selection;
             unsaved = openDocs[filepath].unsaved;
+            changedOnDisk = openDocs[filepath].changedOnDisk;
+            suppressChangeNotification = openDocs[filepath].suppressChangeNotification;
             createNewSession(filepath,content,mode,um);
             openDocs[filepath].session.selection = sel;
             openDocs[filepath].unsaved = unsaved;
+            openDocs[filepath].changedOnDisk = changedOnDisk;
+            openDocs[filepath].suppressChangeNotification = suppressChangeNotification;
           }
         }
         switchSession(activeSession);
