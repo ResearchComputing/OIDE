@@ -241,6 +241,8 @@ angular.module('sandstone.editor')
   };
 
   return {
+    // Exposed for unit testing this service. DO NOT USE this object directly.
+    _openDocs: openDocs,
     /**
      * Called when ace editor has loaded. Must be bound to directive by controller.
      */

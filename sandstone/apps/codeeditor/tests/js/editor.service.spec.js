@@ -5,13 +5,13 @@ describe('sandstone.editor.EditorService', function() {
   var EditorService;
   var AlertService;
   var mockResolve, mockReject;
-  var $rootScope, digest;
+  var $rootScope, $q, $window;
 
   beforeEach(module('sandstone'));
   beforeEach(module('sandstone.filesystemservice'));
   beforeEach(module('sandstone.editor'));
 
-  beforeEach(inject(function(_FilesystemService_,_$q_,_$rootScope_) {
+  beforeEach(inject(function(_FilesystemService_,_$q_,_EditorService_,_AlertService_,_$rootScope_,_$window_) {
     mockResolve = function(data) {
       var deferred = _$q_.defer();
       deferred.resolve(data);
@@ -23,17 +23,12 @@ describe('sandstone.editor.EditorService', function() {
       return deferred.promise;
     };
 
+    $q = _$q_;
     FilesystemService = _FilesystemService_;
-  }));
-
-  beforeEach(inject(function(_EditorService_,_AlertService_,_$q_,_$rootScope_) {
     EditorService = _EditorService_;
     AlertService = _AlertService_;
     $rootScope = _$rootScope_;
-
-    digest = function() {
-      $rootScope.$digest();
-    };
+    $window = _$window_;
   }));
 
   describe('ace editor methods', function() {
@@ -64,9 +59,35 @@ describe('sandstone.editor.EditorService', function() {
 
     it('saves a document and suppresses notifications', function() {});
 
-    it('creates and saves to a new file if one does exist on disk', function() {});
+    it('creates and saves to a new file if one does not exist on disk', function() {});
 
     it('updates the document when a file is renamed', function() {});
+
+  });
+
+  describe('events and signals', function() {
+
+    it('editor:open-document opens a document', function() {});
+
+    it('filesystem:file_modified marks doc changed unless suppressed', function() {
+      var testPath = '/a/test.txt';
+      EditorService._openDocs[testPath] = {
+        changedOnDisk: false,
+        suppressChangeNotification: true,
+        unsaved: false
+      };
+      var testDoc = EditorService._openDocs[testPath];
+      $rootScope.$emit('filesystem:file_modified',{filepath:testPath});
+      $rootScope.$digest();
+      expect(testDoc.changedOnDisk).toBe(false);
+      expect(testDoc.suppressChangeNotification).toBe(false);
+      expect(testDoc.unsaved).toBe(false);
+      $rootScope.$emit('filesystem:file_modified',{filepath:testPath});
+      $rootScope.$digest();
+      expect(testDoc.changedOnDisk).toBe(true);
+      expect(testDoc.suppressChangeNotification).toBe(false);
+      expect(testDoc.unsaved).toBe(true);
+    });
 
   });
 
