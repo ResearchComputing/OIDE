@@ -43,8 +43,8 @@ angular.module('sandstone.terminal')
   var makeTerminal = function() {
     var element = document.getElementById("terminal-pane");
 
-    var rows = Math.max(2, Math.floor(element.offsetHeight/15)-1);
-    var cols = Math.max(3, Math.floor(element.offsetWidth/7)-1);
+    var rows = Math.max(24, Math.floor(element.offsetHeight/14)-1);
+    var cols = Math.max(3, Math.floor(element.offsetWidth/10)-1);
 
 
     if(self.savedTerm) {
