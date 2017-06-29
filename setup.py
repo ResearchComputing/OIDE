@@ -21,7 +21,8 @@ setup(
         'terminado',
         'watchdog',
         'cerberus',
-        'PyDispatcher'
+        'PyDispatcher',
+        'python-magic',
     ],
     classifiers=[
         'Development Status :: 4 - Beta',

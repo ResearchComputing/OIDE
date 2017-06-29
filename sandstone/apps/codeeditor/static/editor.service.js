@@ -226,6 +226,11 @@ angular.module('sandstone.editor')
                 type: 'warning',
                 message: 'File does not exist: ' + filepath
               });
+            } else if(res.status === 204) {
+              AlertService.addAlert({
+                type: 'warning',
+                message: 'Unsupported type. Cannot load binary file ' + filepath
+              });
             } else {
               AlertService.addAlert({
                 type: 'warning',
