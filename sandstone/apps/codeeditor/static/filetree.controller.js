@@ -157,14 +157,14 @@ angular.module('sandstone.editor')
       newPath = FilesystemService.join(normDirpath,newFileName);
 
       if (selectedFile.type === 'directory') {
-        var createDirectory = FilesystemService.createDirectory(newPath);
+        var createDirectory = FilesystemService.copy(selectedFile.filepath,newPath);
         createDirectory.then(
           function(uri){
             $log.debug('Directory duplicated at: ' + newPath);
           }
         );
       } else if (selectedFile.type === 'file') {
-        var createFile = FilesystemService.createFile(newPath);
+        var createFile = FilesystemService.copy(selectedFile.filepath,newPath);
         createFile.then(
           function(uri){
             $log.debug('File duplicated at: ' + newPath);
