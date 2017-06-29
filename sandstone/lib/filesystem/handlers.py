@@ -1,6 +1,7 @@
 import datetime
 import json
 import mimetypes
+import magic
 import os
 import stat
 import threading
@@ -270,15 +271,24 @@ class FileContentsHandler(JSONHandler, FSMixin):
     This handler provides read and write functionality for file contents.
     """
 
+    unsupported_types = ['application/octet-stream']
+
     @sandstone.lib.decorators.authenticated
     def get(self, filepath):
         """
         Get the contents of the specified file.
         """
-        try:
-            contents = self.fs.read_file(filepath)
+        exists = self.fs.exists(filepath)
+        if exists:
+            mime = magic.Magic(mime=True)
+            mime_type = mime.from_file(filepath)
+            if mime_type in self.unsupported_types:
+                self.set_status(204)
+                return
+            else:
+                contents = self.fs.read_file(filepath)
             self.write({'filepath':filepath,'contents': contents})
-        except OSError:
+        else:
             raise tornado.web.HTTPError(404)
 
     @sandstone.lib.decorators.authenticated

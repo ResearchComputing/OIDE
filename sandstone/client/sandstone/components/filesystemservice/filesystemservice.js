@@ -261,8 +261,12 @@ angular.module('sandstone.filesystemservice', [])
 
     var deferred = $q.defer();
     var req = $http.get(requestUrl);
-    req.success(function(data) {
-      deferred.resolve(data.contents);
+    req.success(function(data,status) {
+      if(status === 204) {
+        deferred.reject({data:data,status:status});
+      } else {
+        deferred.resolve(data.contents);
+      }
     });
     req.error(function(data,status) {
       deferred.reject({data:data,status:status});
