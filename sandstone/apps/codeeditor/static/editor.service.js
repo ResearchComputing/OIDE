@@ -324,22 +324,6 @@ angular.module('sandstone.editor')
       return switched;
     },
     /**
-     * @ngdoc
-     * @name sandstone.EditorService#setSession
-     * @methodOf sandstone.EditorService
-     *
-     * @description
-     * Method to set the editor session
-     * @example
-     * EditorService.setSession('/path/to/file');
-     * @param {str} [filepath] The filepath corresponding to the desired session.
-     * @returns {bool} If the filepath matched an existing session, returns true if session successfully switched. Otherwise, return false.
-     */
-    setSession: function(filepath) {
-      var switched = switchSession(filepath);
-      return switched;
-    },
-    /**
      * The following methods get/set editor settings. The editor settings object
      * is in the following format, with defaults indicated:
      * {
