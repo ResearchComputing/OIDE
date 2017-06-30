@@ -10,7 +10,7 @@ angular.module('sandstone.editor')
       function() {
         var currentDoc = EditorService.getCurrentDoc();
         var doc = EditorService.getOpenDocs(currentDoc);
-        if (doc.changedOnDisk) {
+        if (doc.changedOnDisk && !doc.suppressChangeNotification) {
           return currentDoc;
         }
       },
@@ -167,21 +167,21 @@ angular.module('sandstone.editor')
       EditorService.openSearchBox();
     };
 
-    $document.on('keydown', function(e) {
-      if(e.ctrlKey && (e.which == 83)) {
-        var currentTab = EditorService.getCurrentDoc();
-        var tab = {
-          filepath: currentTab
-        };
-        if(e.shiftKey) {
-          self.saveDocumentAs(tab)
-        } else {
-          self.saveDocument(tab);
-        }
-        event.preventDefault();
-        return false;
-      }
-    });
+    // $document.on('keydown', function(e) {
+    //   if(e.ctrlKey && (e.which == 83)) {
+    //     var currentTab = EditorService.getCurrentDoc();
+    //     var tab = {
+    //       filepath: currentTab
+    //     };
+    //     if(e.shiftKey) {
+    //       self.saveDocumentAs(tab)
+    //     } else {
+    //       self.saveDocument(tab);
+    //     }
+    //     event.preventDefault();
+    //     return false;
+    //   }
+    // });
 
   }])
 .controller('SaveAsModalCtrl', function ($scope, $uibModalInstance, $http, file, FilesystemService) {
